@@ -3,6 +3,7 @@
 import numpy as np
 import cv2
 import pandas as pd
+import matplotlib.pyplot as plt
 import torch
 # import pyyaml module
 import yaml
@@ -14,14 +15,13 @@ import time
 START_TIME = time.time()
 
 SEED = 42     
+np.random.seed(SEED)
 INT = np.int64
 FLOAT = np.float64
 UINT  = np.uint8
 TOTAL_NUMBER_OF_SHAPES = 10
 BACKGROUND_COLOR = 0 # black = 0 gray = 128 white = 255
 SHAPE_THICKNESS = 2 #Thickness of -1 px will fill the rectangle shape by the specified color.
-
-
 
 # 2 bits
 COLOR_LIST = ['blue', 'green', 'red', 'white']
@@ -61,13 +61,45 @@ COLUMNS = [ #'shape_id',\
             'alpha',\
             'shape_center_x',\
             'shape_center_y',\
-            'color',\
+            'shape_color',\
             #'shape_thickness'\
             ]
 
+COLOR_DICT_WORD_2_BGR_CODE = {}
+
+COLOR_DICT_WORD_2_BGR_CODE['white'] = (255, 255, 255) # BGR code
+COLOR_DICT_WORD_2_BGR_CODE['black'] = (0, 0, 0) # BGR code
+
+COLOR_DICT_WORD_2_BGR_CODE['blue'] = (255, 0, 0) # BGR code
+COLOR_DICT_WORD_2_BGR_CODE['green'] = (0, 255, 0) # BGR code
+COLOR_DICT_WORD_2_BGR_CODE['red'] = (0, 0, 255) # BGR code
+
+COLOR_DICT_WORD_2_BGR_CODE['yellow'] = (0, 255, 255) # BGR code
+COLOR_DICT_WORD_2_BGR_CODE['magenta'] = (255, 0, 255) # BGR code
+COLOR_DICT_WORD_2_BGR_CODE['cyan'] = (255, 255, 0) # BGR code
+
+COLOR_DICT_BGR_2_WORD_CODE = {}
+for word_code in COLOR_DICT_WORD_2_BGR_CODE:
+    #"B-G-R" code
+    B,G,R = COLOR_DICT_WORD_2_BGR_CODE[word_code]
+    BRG_code = str(B) + '-' + str(G) + '-' + str(R)
+    COLOR_DICT_BGR_2_WORD_CODE[BRG_code] = word_code
+
 class ImagesGenerator:
-    def __init__(self) -> None:
-        pass
+    def __init__(self, kwargs) -> None:
+        self.config_file_full_path = kwargs['config_file_full_path']
+        self.current_working_directory_full_path = kwargs['current_working_directory_full_path']
+        os.chdir(self.current_working_directory_full_path)
+        
+        # Open the file and load the file
+        self.config_data = None
+        with open(self.config_file_full_path) as config_file_handle:
+            self.config_data = yaml.load(config_file_handle, Loader=SafeLoader)
+        
+        self.file_info_dict = {key:val  for one_info in data['file_info'] \
+                                        for key,val in one_info.items()}
+        
+    
     def __str__(self) -> str:
         pass
 
@@ -80,6 +112,10 @@ class SuperClassShape:
         # self.shape_handle = kwargs['shape_handle']
         self.shape_id = kwargs['shape_id']
         
+        # depends on the exact shape, and since this is an abstract class we can leave it empty
+        self.shape_name = ""
+        self.a, self.b, self.alpha = None, None, None
+        
         # random parameters to be changed/generated
         self.shape_center_x, self.shape_center_y = kwargs['shape_center_x'], kwargs['shape_center_y']
         self.shape_rotation_angle = kwargs['shape_rotation_angle']
@@ -90,32 +126,42 @@ class SuperClassShape:
         
     def __str__(self) -> str:
         # print out id of an shape and its name
-        return f"Shape id = {self.shape_id}\n" + f"Shape name = {self.shape_name}"
+        #return f"Shape id = {self.shape_id}\n" + f"Shape name = {self.shape_name}"
+        B,G,R = self.shape_color
+        BRG_code = str(B) + '-' + str(G) + '-' + str(R)
+        return f"name = {self.shape_name};\n" + \
+                f"cen. = ({self.shape_center_x},{self.shape_center_y});\n" + \
+                f"col. = {COLOR_DICT_BGR_2_WORD_CODE[BRG_code]};\n" + \
+                f"a, b, alpha = {self.a}, {self.b}, {self.alpha};\n" + \
+                f"fill = {self.shape_thickness}"
     
     def draw_(self, path, image = None) -> None:
         raise NotImplementedError("This is abstract class.")
     
 class Ellipse(SuperClassShape): # elipsa
+    
     def __init__(self, kwargs) -> None:
         super().__init__(kwargs)
         self.shape_name = kwargs['shape_name'] # 'Ellipse'
         self.a, self.b, self.alpha = kwargs['a'], kwargs['b'], kwargs['alpha']
+        
     def draw_(self, path, image = None) -> None:
         # Reading an image in default mode
         if image == None:
             image = cv2.imread(path)
         center_coordinates = (self.shape_center_x, self.shape_center_y)
         axesLength = (self.a, self.b)
-        # (0-360) to draw a full Ellipse;
-        # (0-180) to draw a half Ellipse;
-        angle, startAngle,endAngle = self.alpha, 0 ,360
+        # (0-360) to draw a full Ellipse; (0-180) to draw a half Ellipse;
+        rotation_angle, startAngle,endAngle = self.alpha, 0 ,360
         color = self.shape_color#(0, 0, 255) # Red color in BGR
         image = cv2.ellipse(image, center_coordinates, axesLength,
-                angle, startAngle, endAngle, color, self.shape_thickness)
+                            rotation_angle, startAngle, endAngle, 
+                            color, self.shape_thickness)
         
         cv2.imwrite(path, image)
-        #image = cv2.ellipse(image, center, axes, angle, 0., i, (0,255,0))
+
         
+#TO DO:
 class Polygon(SuperClassShape): # mnogougao
     def __init__(self, kwargs) -> None:
         super().__init__(kwargs)
@@ -152,6 +198,7 @@ class Parallelogram(SuperClassShape): # paralelogram - rectangle
             image = cv2.rectangle(image, upper_left_coords, down_right_coords, color, thickness)
         elif 0 < self.alpha and self.alpha < 90:
             # Parallelogram
+            
             # nodes of Parallelogram =
             # A(lower left), B(lower right), C(upper right), D(upper left)
             D = [upper_left_coords[0], upper_left_coords[1]]
@@ -170,18 +217,20 @@ class Parallelogram(SuperClassShape): # paralelogram - rectangle
             isClosed = True
             if thickness >= 0:
                 image = cv2.polylines(image, [pts], isClosed, color, thickness)
-            else:
+            elif thickness == -1:
+                # if thickness == -1:  then the Parallelogram has to be filled
                 image = cv2.polylines(image, [pts], isClosed, color, 2)
                 cv2.fillPoly(image, [pts], color)
-            
-            
+            else:
+                assert(False, "thickness parameter has to be integer >= -1!" )    
         else:
             assert(False, "Alpha has to be between 0 and 90!" )
         cv2.imwrite(path, image)
+        
 class ShapeList:
     def __init__(self) -> None:
         self.TOTAL_NUMBER_OF_SHAPES = TOTAL_NUMBER_OF_SHAPES
-        self.shape_list : SuperClassShape = [None] * self.TOTAL_NUMBER_OF_SHAPES
+        self.shape_list : SuperClassShape = []
         
     
     def create_and_add_shape(self, kwargs_shape : dict) -> SuperClassShape:
@@ -200,7 +249,6 @@ class ShapeList:
     
 class GeneratedImage:
     def __init__(self, kwargs) -> None:
-        
         # parsing info regarding the location of the file
         self.file_path : str      = kwargs["file_path"]
         self.file_name  : str     = kwargs["file_name"]
@@ -281,9 +329,8 @@ class GeneratedImage:
                     image = cv2.circle(cv2.imread(image_path), center_coordinates, radius, color, thickness)
                     cv2.imwrite(image_path, image)
         
-        
 
-np.random.seed(SEED)
+
 
 current_working_absoulte_path = '/home/novakovm/iris/MILOS'
 os.chdir(current_working_absoulte_path)
@@ -329,9 +376,6 @@ all_shapes_variable_data = {}
 for c in COLUMNS:
     all_shapes_variable_data[c] = []
 
-
-                
-
 for i in range(TOTAL_NUMBER_OF_SHAPES):
     kwargs_shape = {}
     
@@ -341,8 +385,8 @@ for i in range(TOTAL_NUMBER_OF_SHAPES):
     # shape info
     #kwargs_shape['shape_handle'] = None
     
+    #simple id (i.e. the order of shape creation)
     kwargs_shape['shape_id'] = i
-    
     
     # random parameters to be changed/generated
     kwargs_shape['shape_center_x'] = np.random.choice(X_CENTER_SPACE_np, size = 1)[0]
@@ -351,40 +395,26 @@ for i in range(TOTAL_NUMBER_OF_SHAPES):
     kwargs_shape['shape_rotation_angle'] = None
     kwargs_shape['shape_scale_size'] = None
     
-    color = np.random.choice( COLOR_LIST, size = 1)
-    if color == 'blue':
-        kwargs_shape['shape_color'] = (255, 0, 0) # BGR code
-    elif color == 'green':
-        kwargs_shape['shape_color'] = (0, 255, 0) # BGR code
-    elif color == 'red':
-        kwargs_shape['shape_color'] = (0, 0, 255) # BGR code
-    elif color == 'white':
-        kwargs_shape['shape_color'] = (255, 255 , 255) # BGR code
-
-    
+    shape_color : str = np.random.choice( COLOR_LIST, size = 1)[0] # color is in words (e.g. 'red')
+    kwargs_shape['shape_color'] = COLOR_DICT_WORD_2_BGR_CODE[shape_color]
     kwargs_shape['shape_thickness'] = np.random.choice(FILL_NOFILL_np, size = 1)[0] # 5 = # Line thickness of 5 px
-    
-    # shape specific fields
     kwargs_shape['shape_name'] = np.random.choice(['Ellipse','Parallelogram'], size=1)[0] # print(np.random.choice(prog_langs, size=10, replace=True, p=[0.3, 0.5, 0.0, 0.2]))
-    
     
     
     if kwargs_shape['shape_name'] == "Ellipse":
         kwargs_shape['a'] = np.random.choice(a_CENTER_SPACE_np, size = 1)[0]
         kwargs_shape['b'] = np.random.choice(b_CENTER_SPACE_np, size = 1)[0]
-        kwargs_shape['alpha'] = np.random.choice(alpha_CENTER_SPACE_np, size = 1)[0] #0
-        
+        kwargs_shape['alpha'] = np.random.choice(alpha_CENTER_SPACE_np, size = 1)[0] # default 0
     elif kwargs_shape['shape_name'] == "Parallelogram":
         kwargs_shape['a'] = np.random.choice(a_CENTER_SPACE_np, size = 1)[0]
         kwargs_shape['b'] = np.random.choice(b_CENTER_SPACE_np, size = 1)[0]
-        kwargs_shape['alpha'] = np.random.choice(alpha_CENTER_SPACE_np, size = 1)[0] #90
-        
+        kwargs_shape['alpha'] = np.random.choice(alpha_CENTER_SPACE_np, size = 1)[0] # default 90
     else:
         assert(False, 'The shape must be Ellipse or Parallelogram!')
     
     # fill in pandas df
     for c in COLUMNS:
-        all_shapes_variable_data[c].append(color[0] if c == 'color' else kwargs_shape[c])
+        all_shapes_variable_data[c].append(kwargs_shape[c])
     
     new_shape = list_of_shapes.create_and_add_shape(kwargs_shape)
     first_generated_image.add_shape(shape=new_shape)
@@ -395,6 +425,27 @@ DF_all_shapes_variable_data = pd.DataFrame.from_dict(all_shapes_variable_data)
 figure_all_shapes_variable_data = DF_all_shapes_variable_data.hist()[0][0].get_figure()
 figure_all_shapes_variable_data.tight_layout()
 figure_all_shapes_variable_data.savefig('DATA/shapes_stats.png')
+
+
+figure_all_shapes_variable_colors = DF_all_shapes_variable_data[['shape_color']].apply(pd.value_counts).reset_index()
+figure_all_shapes_variable_colors['shape_color_word'] = figure_all_shapes_variable_colors.apply(lambda row:  COLOR_DICT_BGR_2_WORD_CODE['-'.join([str(x) for x in row['index']])] , axis = 1)#.to_frame(name = 'shape_color_word')
+figure_all_shapes_variable_colors.drop(['index'], axis=1, inplace=True)
+#figure_all_shapes_variable_colors = figure_all_shapes_variable_colors[['shape_color_word', 'shape_color']]
+figure_all_shapes_variable_colors.set_index('shape_color_word', inplace=True)
+figure_all_shapes_variable_colors = figure_all_shapes_variable_colors.T.reset_index().drop(['index'], axis=1)
+
+
+plt.figure(0)
+plt.title('Histogram of Shape Colors')
+plt.bar(np.arange(figure_all_shapes_variable_colors.shape[1]), figure_all_shapes_variable_colors.values[0], align='center', width=0.5, color=figure_all_shapes_variable_colors.columns.values, edgecolor='black')
+plt.xticks(np.arange(figure_all_shapes_variable_colors.shape[1]), figure_all_shapes_variable_colors.columns.values, size='small')
+plt.yticks(np.arange(1, 1 + np.max(figure_all_shapes_variable_colors.values[0])), np.arange(1, 1 + np.max(figure_all_shapes_variable_colors.values[0])), size='small')
+plt.grid(which='both')
+plt.savefig('DATA/shapes_color_stats.png')
+
+
+#figure_all_shapes_variable_colors.plot(kind='bar', subplots=True)
+#.savefig('DATA/color_stats.png')
  
 
 # Allows us to see image
