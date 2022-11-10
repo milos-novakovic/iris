@@ -2,27 +2,50 @@
 # image using numpy.zeroes() function
 import numpy as np
 import cv2
+import pandas as pd
+import torch
 # import pyyaml module
 import yaml
 from yaml.loader import SafeLoader
 import os
+import time
+START_TIME = time.time()
 
 INT = np.int64
 FLOAT = np.float64
 UINT  = np.uint8
-TOTAL_NUMBER_OF_SHAPES = 10
+TOTAL_NUMBER_OF_SHAPES = 1000
 BACKGROUND_COLOR = 0 # black = 0 gray = 128 white = 255
 SHAPE_THICKNESS = 2 #Thickness of -1 px will fill the rectangle shape by the specified color.
 
 
+
+# 2 bits
 COLOR_LIST = ['blue', 'green', 'red', 'white']
-
+# 2 bits
 Y_CENTER_SPACE = [0., 0.25, 0.5, 0.75] # 0, 1/4, 2/4, 3/4
+# 2 bits
 X_CENTER_SPACE = [0., 0.25, 0.5, 0.75] # 0, 1/4, 2/4, 3/4
-
+# 2 bits
 b_CENTER_SPACE = [0.0625, 0.125 , 0.1875, 0.25] # 1/16, 2/16, 3/16, 4/16
+# 2 bits
 a_CENTER_SPACE = [0.0625, 0.125 , 0.1875, 0.25] # 1/16, 2/16, 3/16, 4/16
+# 2 bits
 alpha_CENTER_SPACE = [30, 45, 60, 90]
+# 0 bits
+FILL_NOFILL = [SHAPE_THICKNESS]
+
+number_of_bits_required_for_one_shape = sum([np.log2(1.0 * len(space))\
+                                            for space in \
+                                            [COLOR_LIST,\
+                                            Y_CENTER_SPACE,\
+                                            X_CENTER_SPACE,\
+                                            b_CENTER_SPACE,\
+                                            a_CENTER_SPACE,\
+                                            alpha_CENTER_SPACE,\
+                                            FILL_NOFILL]])
+
+number_of_bits_required_for_one_image = TOTAL_NUMBER_OF_SHAPES * number_of_bits_required_for_one_shape
 
 class ImagesGenerator:
     def __init__(self) -> None:
@@ -58,14 +81,14 @@ class Ellipse(SuperClassShape): # elipsa
     def __init__(self, kwargs) -> None:
         super().__init__(kwargs)
         self.shape_name = kwargs['shape_name'] # 'Ellipse'
-        self.a, self.b = kwargs['a'], kwargs['b']
+        self.a, self.b, self.alpha = kwargs['a'], kwargs['b'], kwargs['alpha']
     def draw_(self, path, image = None) -> None:
         # Reading an image in default mode
         if image == None:
             image = cv2.imread(path)
         center_coordinates = (self.shape_center_x, self.shape_center_y)
         axesLength = (self.a, self.b)
-        angle = 0#self.shape_rotation_angle
+        angle = self.alpha#self.shape_rotation_angle
         startAngle = 0
         endAngle = 360
         color = self.shape_color#(0, 0, 255) # Red color in BGR
@@ -102,7 +125,7 @@ class Parallelogram(SuperClassShape): # paralelogram - rectangle
         if self.alpha == 90:
             delta_x = 0
         else:
-            delta_x = self.b / (2.0*np.tanh(self.alpha))
+            delta_x = int(round(self.b / (2.0*np.tanh(self.alpha))))
         
         # self.shape_center_x -= delta_x
         # self.shape_center_y = unchanged
@@ -231,6 +254,21 @@ class GeneratedImage:
             image = cv2.line( cv2.imread(image_path), start_point, end_point, color, thickness)
             cv2.imwrite(image_path, image)
         
+        for x_coor in X_CENTER_SPACE_np:
+            for y_coor in Y_CENTER_SPACE_np:
+                # Center coordinates
+                center_coordinates = (x_coor, y_coor)
+                # Radius of circle
+                radius = 10
+                # CYAN color in BGR 
+                color = (255, 255, 0)# (255, 255, 255)
+                # Line thickness of -1 px
+                thickness = -1
+                # Using cv2.circle() method
+                # Draw a circle of red color of thickness -1 px
+                image = cv2.circle(cv2.imread(image_path), center_coordinates, radius, color, thickness)
+                cv2.imwrite(image_path, image)
+        
         
 SEED = 42     
 np.random.seed(SEED)
@@ -273,8 +311,36 @@ b_CENTER_SPACE_np = np.round(np.array(b_CENTER_SPACE) * file_info_dict['H'], 0).
 a_CENTER_SPACE_np = np.round(np.array(a_CENTER_SPACE) * file_info_dict['W'], 0).astype(int) #np.arange(0,file_info_dict['W'], file_info_dict['W'] // 4 )
 alpha_CENTER_SPACE_np = np.array(alpha_CENTER_SPACE).astype(int)
 
+FILL_NOFILL_np = np.array(FILL_NOFILL).astype(int)
+
 first_generated_image.draw_grid_on_image(X_coors=X_CENTER_SPACE_np, Y_coors=Y_CENTER_SPACE_np)       
-        
+
+
+COLOR_LIST,\
+                                            Y_CENTER_SPACE,\
+                                            X_CENTER_SPACE,\
+                                            b_CENTER_SPACE,\
+                                            a_CENTER_SPACE,\
+                                            alpha_CENTER_SPACE,\
+                                            FILL_NOFILL
+                                            
+
+COLUMNS = [ 'shape_id',\
+            'shape_name',\
+            'a',\
+            'b',\
+            'alpha',\
+            'shape_center_x',\
+            'shape_center_y',\
+            'color',\
+            'shape_thickness']
+
+all_shapes_variable_data = {}
+for c in COLUMNS:
+    all_shapes_variable_data[c] = []
+
+
+                
 
 for i in range(TOTAL_NUMBER_OF_SHAPES):
     kwargs_shape = {}
@@ -305,7 +371,8 @@ for i in range(TOTAL_NUMBER_OF_SHAPES):
     elif color == 'white':
         kwargs_shape['shape_color'] = (255, 255 , 255) # BGR code
 
-    kwargs_shape['shape_thickness'] = SHAPE_THICKNESS# 5 = # Line thickness of 5 px
+    
+    kwargs_shape['shape_thickness'] = np.random.choice(FILL_NOFILL_np, size = 1)[0] # 5 = # Line thickness of 5 px
     
     # shape specific fields
     kwargs_shape['shape_name'] = np.random.choice(['Ellipse','Parallelogram'], size=1)[0] # print(np.random.choice(prog_langs, size=10, replace=True, p=[0.3, 0.5, 0.0, 0.2]))
@@ -315,19 +382,26 @@ for i in range(TOTAL_NUMBER_OF_SHAPES):
     if kwargs_shape['shape_name'] == "Ellipse":
         kwargs_shape['a'] = np.random.choice(a_CENTER_SPACE_np, size = 1)[0]
         kwargs_shape['b'] = np.random.choice(b_CENTER_SPACE_np, size = 1)[0]
+        kwargs_shape['alpha'] = np.random.choice(alpha_CENTER_SPACE_np, size = 1)[0] #0
         
     elif kwargs_shape['shape_name'] == "Parallelogram":
         kwargs_shape['a'] = np.random.choice(a_CENTER_SPACE_np, size = 1)[0]
         kwargs_shape['b'] = np.random.choice(b_CENTER_SPACE_np, size = 1)[0]
         kwargs_shape['alpha'] = np.random.choice(alpha_CENTER_SPACE_np, size = 1)[0] #90
     
-    print(kwargs_shape)
+    # fill in pandas df
+    for c in COLUMNS:
+        all_shapes_variable_data[c].append(color[0] if c == 'color' else kwargs_shape[c])
+    
     new_shape = list_of_shapes.create_and_add_shape(kwargs_shape)
     first_generated_image.add_shape(shape=new_shape)
     #first_generated_image.add_shape_from_list(index_=i, list_of_shapes=list_of_shapes)
     
-    
-     
+# create pandas df
+DF_all_shapes_variable_data = pd.DataFrame.from_dict(all_shapes_variable_data)
+figure_all_shapes_variable_data = DF_all_shapes_variable_data.hist()[0][0].get_figure()
+figure_all_shapes_variable_data.tight_layout()
+figure_all_shapes_variable_data.savefig('qwe.png')
  
 '''
 
@@ -361,3 +435,8 @@ cv2.imshow('dark', img)
 # until closed forcefully
 cv2.waitKey(0)
 cv2.destroyAllWindows()
+
+print(f"Number of bits for one SHAPE = {number_of_bits_required_for_one_shape}b.")
+print(f"Number of SHAPEs = {TOTAL_NUMBER_OF_SHAPES}.")
+print(f"Number of bits for one IMAGE = {number_of_bits_required_for_one_image}b.")
+print(f"Total number of seconds that the program runs = {round(time.time() - START_TIME)} sec.")
