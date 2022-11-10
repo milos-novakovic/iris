@@ -9,12 +9,15 @@ import yaml
 from yaml.loader import SafeLoader
 import os
 import time
+
+
 START_TIME = time.time()
 
+SEED = 42     
 INT = np.int64
 FLOAT = np.float64
 UINT  = np.uint8
-TOTAL_NUMBER_OF_SHAPES = 1000
+TOTAL_NUMBER_OF_SHAPES = 10
 BACKGROUND_COLOR = 0 # black = 0 gray = 128 white = 255
 SHAPE_THICKNESS = 2 #Thickness of -1 px will fill the rectangle shape by the specified color.
 
@@ -33,8 +36,9 @@ a_CENTER_SPACE = [0.0625, 0.125 , 0.1875, 0.25] # 1/16, 2/16, 3/16, 4/16
 # 2 bits
 alpha_CENTER_SPACE = [30, 45, 60, 90]
 # 0 bits
-FILL_NOFILL = [SHAPE_THICKNESS]
+FILL_NOFILL = [-1, SHAPE_THICKNESS]
 
+# calculate the number of bits required for exactly one shape
 number_of_bits_required_for_one_shape = sum([np.log2(1.0 * len(space))\
                                             for space in \
                                             [COLOR_LIST,\
@@ -45,7 +49,21 @@ number_of_bits_required_for_one_shape = sum([np.log2(1.0 * len(space))\
                                             alpha_CENTER_SPACE,\
                                             FILL_NOFILL]])
 
+# calculate the number of bits required for all shapes combined
 number_of_bits_required_for_one_image = TOTAL_NUMBER_OF_SHAPES * number_of_bits_required_for_one_shape
+
+# which shape features will be changed
+# i.e. columns in pandas DF that will show the histograms of randomly distributed features
+COLUMNS = [ #'shape_id',\
+            'shape_name',\
+            'a',\
+            'b',\
+            'alpha',\
+            'shape_center_x',\
+            'shape_center_y',\
+            'color',\
+            #'shape_thickness'\
+            ]
 
 class ImagesGenerator:
     def __init__(self) -> None:
@@ -88,15 +106,12 @@ class Ellipse(SuperClassShape): # elipsa
             image = cv2.imread(path)
         center_coordinates = (self.shape_center_x, self.shape_center_y)
         axesLength = (self.a, self.b)
-        angle = self.alpha#self.shape_rotation_angle
-        startAngle = 0
-        endAngle = 360
+        # (0-360) to draw a full Ellipse;
+        # (0-180) to draw a half Ellipse;
+        angle, startAngle,endAngle = self.alpha, 0 ,360
         color = self.shape_color#(0, 0, 255) # Red color in BGR
-        thickness = self.shape_thickness
-        # Using cv2.ellipse() method
-        # Draw a ellipse with red line borders of thickness of 5 px
         image = cv2.ellipse(image, center_coordinates, axesLength,
-                angle, startAngle, endAngle, color, thickness)
+                angle, startAngle, endAngle, color, self.shape_thickness)
         
         cv2.imwrite(path, image)
         #image = cv2.ellipse(image, center, axes, angle, 0., i, (0,255,0))
@@ -120,36 +135,30 @@ class Parallelogram(SuperClassShape): # paralelogram - rectangle
             image = cv2.imread(path)
         color = self.shape_color#(0, 0, 255) # Red color in BGR
         thickness = self.shape_thickness
-        
         delta_x = None
         if self.alpha == 90:
+            # Rectangle
             delta_x = 0
         else:
+            # Parallelogram
             delta_x = int(round(self.b / (2.0*np.tanh(self.alpha))))
         
-        # self.shape_center_x -= delta_x
-        # self.shape_center_y = unchanged
-        
-        upper_left_coords = (self.shape_center_x - self.a//2 + delta_x, self.shape_center_y - self.b//2)
-        down_right_coords = (self.shape_center_x + self.a//2 + delta_x, self.shape_center_y + self.b//2)
-            
-        
+        upper_left_coords = (self.shape_center_x - self.a//2 + delta_x, \
+                            self.shape_center_y - self.b//2)
+        down_right_coords = (self.shape_center_x + self.a//2 + delta_x, \
+                            self.shape_center_y + self.b//2)
         if self.alpha == 90:
-            # rectangle
-
+            # Rectangle
             image = cv2.rectangle(image, upper_left_coords, down_right_coords, color, thickness)
-        
         elif 0 < self.alpha and self.alpha < 90:
-
-            # nodes of Parallelogram
+            # Parallelogram
+            # nodes of Parallelogram =
+            # A(lower left), B(lower right), C(upper right), D(upper left)
             D = [upper_left_coords[0], upper_left_coords[1]]
             C = [self.a + D[0] , D[1]]
-            
             A = [D[0] - 2*delta_x , D[1] + self.b]             
             B = [self.a + A[0], A[1]]
             
-            
-
             # Polygon corner points coordinates
             pts = np.array([D, A, B,C],np.int32).reshape((-1, 1, 2))     
             # example of pts
@@ -159,9 +168,13 @@ class Parallelogram(SuperClassShape): # paralelogram - rectangle
             #       [[138, -50]]], dtype=int32)       
             
             isClosed = True
+            if thickness >= 0:
+                image = cv2.polylines(image, [pts], isClosed, color, thickness)
+            else:
+                image = cv2.polylines(image, [pts], isClosed, color, 2)
+                cv2.fillPoly(image, [pts], color)
             
-            # Using cv2.polylines() method 
-            image = cv2.polylines(image, [pts], isClosed, color, thickness)
+            
         else:
             assert(False, "Alpha has to be between 0 and 90!" )
         cv2.imwrite(path, image)
@@ -201,7 +214,6 @@ class GeneratedImage:
         
         # parsing info regarding the content of the image
         # 'background_color'
-        # 
         self.image_objects : dict   = kwargs['image_objects'] if "image_objects" in kwargs else {}
 
         self.TOTAL_NUMBER_OF_SHAPES = TOTAL_NUMBER_OF_SHAPES
@@ -209,9 +221,7 @@ class GeneratedImage:
         
     def generate_image(self, new_file_version = None) -> None:
         assert(self.image_objects['background_color'].dtype == UINT)
-        
-        # Creating a black image with 3 channels
-        # RGB and unsigned int datatype
+        # Creating a black image with 3 channels; RGB and unsigned int datatype
         self.image_objects['background_image'] = self.image_objects['background_color'] * np.ones((self.H, self.W, self.C), dtype = "uint8")
         cv2.imwrite(self.get_full_path(new_file_version), self.image_objects['background_image'])
 
@@ -228,7 +238,7 @@ class GeneratedImage:
         shape : SuperClassShape = list_of_shapes.shape_list[index_]
         shape.draw_(self.get_full_path())
         
-    def draw_grid_on_image(self, X_coors, Y_coors) -> None:
+    def draw_grid_on_image(self, X_coors, Y_coors, draw_lines = True, draw_circles = True) -> None:
         #image path
         image_path = self.get_full_path()
 
@@ -238,39 +248,41 @@ class GeneratedImage:
         # Line thickness of 1 px
         thickness = 1
 
-        # drawing a grid (line by line)
-        for x_coor in X_CENTER_SPACE_np:
-            # start and end of the line
-            start_point = (x_coor, np.min(Y_CENTER_SPACE_np))
-            end_point = (x_coor, np.max(Y_CENTER_SPACE_np))
-            image = cv2.line( cv2.imread(image_path), start_point, end_point, color, thickness)
-            cv2.imwrite(image_path, image)
-        
-        # drawing a grid (line by line)
-        for y_coor in Y_CENTER_SPACE_np:
-            # start and end of the line
-            start_point = (np.min(X_CENTER_SPACE_np), y_coor)
-            end_point = (np.max(X_CENTER_SPACE_np), y_coor)
-            image = cv2.line( cv2.imread(image_path), start_point, end_point, color, thickness)
-            cv2.imwrite(image_path, image)
-        
-        for x_coor in X_CENTER_SPACE_np:
+        if draw_lines:
+            # drawing a grid (line by line)
+            for x_coor in X_CENTER_SPACE_np:
+                # start and end of the line
+                start_point = (x_coor, np.min(Y_CENTER_SPACE_np))
+                end_point = (x_coor, np.max(Y_CENTER_SPACE_np))
+                image = cv2.line( cv2.imread(image_path), start_point, end_point, color, thickness)
+                cv2.imwrite(image_path, image)
+            
+            # drawing a grid (line by line)
             for y_coor in Y_CENTER_SPACE_np:
-                # Center coordinates
-                center_coordinates = (x_coor, y_coor)
-                # Radius of circle
-                radius = 10
-                # CYAN color in BGR 
-                color = (255, 255, 0)# (255, 255, 255)
-                # Line thickness of -1 px
-                thickness = -1
-                # Using cv2.circle() method
-                # Draw a circle of red color of thickness -1 px
-                image = cv2.circle(cv2.imread(image_path), center_coordinates, radius, color, thickness)
+                # start and end of the line
+                start_point = (np.min(X_CENTER_SPACE_np), y_coor)
+                end_point = (np.max(X_CENTER_SPACE_np), y_coor)
+                image = cv2.line( cv2.imread(image_path), start_point, end_point, color, thickness)
                 cv2.imwrite(image_path, image)
         
+        if draw_circles:    
+            for x_coor in X_CENTER_SPACE_np:
+                for y_coor in Y_CENTER_SPACE_np:
+                    # Center coordinates
+                    center_coordinates = (x_coor, y_coor)
+                    # Radius of circle
+                    radius = 10
+                    # CYAN color in BGR 
+                    color = (255, 255, 0)# (255, 255, 255)
+                    # Line thickness of -1 px
+                    thickness = -1
+                    # Using cv2.circle() method
+                    # Draw a circle of red color of thickness -1 px
+                    image = cv2.circle(cv2.imread(image_path), center_coordinates, radius, color, thickness)
+                    cv2.imwrite(image_path, image)
         
-SEED = 42     
+        
+
 np.random.seed(SEED)
 
 current_working_absoulte_path = '/home/novakovm/iris/MILOS'
@@ -297,43 +309,21 @@ shape_info_dict['shape_ids'] = np.arange(1,TOTAL_NUMBER_OF_SHAPES)
 
 list_of_shapes = ShapeList()
 
-
-
-
+# coordinates of all possible centers of shapes
 Y_CENTER_SPACE_np = np.round(np.array(Y_CENTER_SPACE) * file_info_dict['H'], 0).astype(int)
 X_CENTER_SPACE_np = np.round(np.array(X_CENTER_SPACE) * file_info_dict['W'], 0).astype(int)
 
+# lengths of all possible dimensions of shapes
+b_CENTER_SPACE_np = np.round(np.array(b_CENTER_SPACE) * file_info_dict['H'], 0).astype(int)
+a_CENTER_SPACE_np = np.round(np.array(a_CENTER_SPACE) * file_info_dict['W'], 0).astype(int)
 
-#Y_CENTER_SPACE = np.arange(0,file_info_dict['H'], file_info_dict['H'] // 4 )
-#X_CENTER_SPACE = np.arange(0,file_info_dict['W'], file_info_dict['W'] // 4 )
-
-b_CENTER_SPACE_np = np.round(np.array(b_CENTER_SPACE) * file_info_dict['H'], 0).astype(int) #np.arange(0,file_info_dict['H'], file_info_dict['H'] // 4 )
-a_CENTER_SPACE_np = np.round(np.array(a_CENTER_SPACE) * file_info_dict['W'], 0).astype(int) #np.arange(0,file_info_dict['W'], file_info_dict['W'] // 4 )
+# angle of skewness (for Parallelogram) and rotation (for Ellipse)
 alpha_CENTER_SPACE_np = np.array(alpha_CENTER_SPACE).astype(int)
 
+# fills or no fills
 FILL_NOFILL_np = np.array(FILL_NOFILL).astype(int)
 
 first_generated_image.draw_grid_on_image(X_coors=X_CENTER_SPACE_np, Y_coors=Y_CENTER_SPACE_np)       
-
-
-COLOR_LIST,\
-                                            Y_CENTER_SPACE,\
-                                            X_CENTER_SPACE,\
-                                            b_CENTER_SPACE,\
-                                            a_CENTER_SPACE,\
-                                            alpha_CENTER_SPACE,\
-                                            FILL_NOFILL
-                                            
-
-COLUMNS = [ 'shape_id',\
-            'shape_name',\
-            'a',\
-            'b',\
-            'alpha',\
-            'shape_center_x',\
-            'shape_center_y',\
-            'color',\
-            'shape_thickness']
 
 all_shapes_variable_data = {}
 for c in COLUMNS:
@@ -388,6 +378,9 @@ for i in range(TOTAL_NUMBER_OF_SHAPES):
         kwargs_shape['a'] = np.random.choice(a_CENTER_SPACE_np, size = 1)[0]
         kwargs_shape['b'] = np.random.choice(b_CENTER_SPACE_np, size = 1)[0]
         kwargs_shape['alpha'] = np.random.choice(alpha_CENTER_SPACE_np, size = 1)[0] #90
+        
+    else:
+        assert(False, 'The shape must be Ellipse or Parallelogram!')
     
     # fill in pandas df
     for c in COLUMNS:
@@ -401,36 +394,9 @@ for i in range(TOTAL_NUMBER_OF_SHAPES):
 DF_all_shapes_variable_data = pd.DataFrame.from_dict(all_shapes_variable_data)
 figure_all_shapes_variable_data = DF_all_shapes_variable_data.hist()[0][0].get_figure()
 figure_all_shapes_variable_data.tight_layout()
-figure_all_shapes_variable_data.savefig('qwe.png')
+figure_all_shapes_variable_data.savefig('DATA/shapes_stats.png')
  
-'''
 
-file_full_str = file_path + file_name + file_extension
-
-H,W,C= 600,800,3
-# Creating a black image with 3 channels
-# RGB and unsigned int datatype
-img = 128*np.ones((H, W, C), dtype = "uint8")
-cv2.imwrite(file_full_str, img)
-
-
-# Creating a black image with 3
-# channels RGB and unsigned int datatype
-img = np.zeros((400, 400, 3), dtype = "uint8")
-# Creating rectangle
-cv2.rectangle(img, (30, 30), (300, 200), (0, 255, 0), 5)
-cv2.imwrite(file_full_str, img)
-
-# Creating a black image with 3
-# channels RGB and unsigned int datatype
-img = np.zeros((400, 400, 3), dtype = "uint8")
-  
-# Creating circle
-cv2.circle(img, (200, 200), 80, (255, 0, 0), 3)
-  
-cv2.imshow('dark', img)
-
-'''
 # Allows us to see image
 # until closed forcefully
 cv2.waitKey(0)
