@@ -10,7 +10,7 @@ import os
 INT = np.int64
 FLOAT = np.float64
 UINT  = np.uint8
-TOTAL_NUMBER_OF_SHAPES = 20
+TOTAL_NUMBER_OF_SHAPES = 10
 BACKGROUND_COLOR = 0 # black = 0 gray = 128 white = 255
 SHAPE_THICKNESS = 2 #Thickness of -1 px will fill the rectangle shape by the specified color.
 
@@ -20,8 +20,8 @@ COLOR_LIST = ['blue', 'green', 'red', 'white']
 Y_CENTER_SPACE = [0., 0.25, 0.5, 0.75] # 0, 1/4, 2/4, 3/4
 X_CENTER_SPACE = [0., 0.25, 0.5, 0.75] # 0, 1/4, 2/4, 3/4
 
-b_CENTER_SPACE = [0.    , 0.0625, 0.125 , 0.1875] # 0, 1/16, 2/16, 3/16
-a_CENTER_SPACE = [0.    , 0.0625, 0.125 , 0.1875] # 0, 1/16, 2/16, 3/16
+b_CENTER_SPACE = [0.0625, 0.125 , 0.1875, 0.25] # 1/16, 2/16, 3/16, 4/16
+a_CENTER_SPACE = [0.0625, 0.125 , 0.1875, 0.25] # 1/16, 2/16, 3/16, 4/16
 alpha_CENTER_SPACE = [30, 45, 60, 90]
 
 class ImagesGenerator:
@@ -91,31 +91,50 @@ class Parallelogram(SuperClassShape): # paralelogram - rectangle
         self.shape_name = kwargs['shape_name'] #'Parallelogram'
         self.a, self.b, self.alpha = kwargs['a'], kwargs['b'], kwargs['alpha']
         
-        #rectangle
-        self.alpha = 90
-        
     def draw_(self, path, image = None) -> None:
         # Reading an image in default mode
         if image == None:
             image = cv2.imread(path)
-        upper_left_coords = (self.shape_center_x - self.b//2, self.shape_center_y - self.a//2)
-        down_right_coords = (self.shape_center_x + self.b//2, self.shape_center_y + self.a//2)
         color = self.shape_color#(0, 0, 255) # Red color in BGR
         thickness = self.shape_thickness
         
+        delta_x = None
+        if self.alpha == 90:
+            delta_x = 0
+        else:
+            delta_x = self.b / (2.0*np.tanh(self.alpha))
+        
+        # self.shape_center_x -= delta_x
+        # self.shape_center_y = unchanged
+        
+        upper_left_coords = (self.shape_center_x - self.a//2 + delta_x, self.shape_center_y - self.b//2)
+        down_right_coords = (self.shape_center_x + self.a//2 + delta_x, self.shape_center_y + self.b//2)
+            
+        
         if self.alpha == 90:
             # rectangle
+
             image = cv2.rectangle(image, upper_left_coords, down_right_coords, color, thickness)
         
         elif 0 < self.alpha and self.alpha < 90:
+
             # nodes of Parallelogram
-            A = [upper_left_coords[0] , upper_left_coords[1] + self.b]             
-            B = [self.a + A[0], A[1]]
-            D = [upper_left_coords[0] + self.b * 1.0 / np.tanh(self.alpha), upper_left_coords[1]]
+            D = [upper_left_coords[0], upper_left_coords[1]]
             C = [self.a + D[0] , D[1]]
+            
+            A = [D[0] - 2*delta_x , D[1] + self.b]             
+            B = [self.a + A[0], A[1]]
+            
+            
 
             # Polygon corner points coordinates
-            pts = np.array([D, A, B,C],np.int32).reshape((-1, 1, 2))            
+            pts = np.array([D, A, B,C],np.int32).reshape((-1, 1, 2))     
+            # example of pts
+            # array([[[ 38, -50]],
+            #       [[-37,  25]],
+            #       [[ 63,  25]],
+            #       [[138, -50]]], dtype=int32)       
+            
             isClosed = True
             
             # Using cv2.polylines() method 
@@ -186,6 +205,33 @@ class GeneratedImage:
         shape : SuperClassShape = list_of_shapes.shape_list[index_]
         shape.draw_(self.get_full_path())
         
+    def draw_grid_on_image(self, X_coors, Y_coors) -> None:
+        #image path
+        image_path = self.get_full_path()
+
+        # White color in BGR
+        color = (255, 255 , 255)
+
+        # Line thickness of 1 px
+        thickness = 1
+
+        # drawing a grid (line by line)
+        for x_coor in X_CENTER_SPACE_np:
+            # start and end of the line
+            start_point = (x_coor, np.min(Y_CENTER_SPACE_np))
+            end_point = (x_coor, np.max(Y_CENTER_SPACE_np))
+            image = cv2.line( cv2.imread(image_path), start_point, end_point, color, thickness)
+            cv2.imwrite(image_path, image)
+        
+        # drawing a grid (line by line)
+        for y_coor in Y_CENTER_SPACE_np:
+            # start and end of the line
+            start_point = (np.min(X_CENTER_SPACE_np), y_coor)
+            end_point = (np.max(X_CENTER_SPACE_np), y_coor)
+            image = cv2.line( cv2.imread(image_path), start_point, end_point, color, thickness)
+            cv2.imwrite(image_path, image)
+        
+        
 SEED = 42     
 np.random.seed(SEED)
 
@@ -214,6 +260,8 @@ shape_info_dict['shape_ids'] = np.arange(1,TOTAL_NUMBER_OF_SHAPES)
 list_of_shapes = ShapeList()
 
 
+
+
 Y_CENTER_SPACE_np = np.round(np.array(Y_CENTER_SPACE) * file_info_dict['H'], 0).astype(int)
 X_CENTER_SPACE_np = np.round(np.array(X_CENTER_SPACE) * file_info_dict['W'], 0).astype(int)
 
@@ -224,6 +272,9 @@ X_CENTER_SPACE_np = np.round(np.array(X_CENTER_SPACE) * file_info_dict['W'], 0).
 b_CENTER_SPACE_np = np.round(np.array(b_CENTER_SPACE) * file_info_dict['H'], 0).astype(int) #np.arange(0,file_info_dict['H'], file_info_dict['H'] // 4 )
 a_CENTER_SPACE_np = np.round(np.array(a_CENTER_SPACE) * file_info_dict['W'], 0).astype(int) #np.arange(0,file_info_dict['W'], file_info_dict['W'] // 4 )
 alpha_CENTER_SPACE_np = np.array(alpha_CENTER_SPACE).astype(int)
+
+first_generated_image.draw_grid_on_image(X_coors=X_CENTER_SPACE_np, Y_coors=Y_CENTER_SPACE_np)       
+        
 
 for i in range(TOTAL_NUMBER_OF_SHAPES):
     kwargs_shape = {}
@@ -259,6 +310,8 @@ for i in range(TOTAL_NUMBER_OF_SHAPES):
     # shape specific fields
     kwargs_shape['shape_name'] = np.random.choice(['Ellipse','Parallelogram'], size=1)[0] # print(np.random.choice(prog_langs, size=10, replace=True, p=[0.3, 0.5, 0.0, 0.2]))
     
+    
+    
     if kwargs_shape['shape_name'] == "Ellipse":
         kwargs_shape['a'] = np.random.choice(a_CENTER_SPACE_np, size = 1)[0]
         kwargs_shape['b'] = np.random.choice(b_CENTER_SPACE_np, size = 1)[0]
@@ -268,7 +321,7 @@ for i in range(TOTAL_NUMBER_OF_SHAPES):
         kwargs_shape['b'] = np.random.choice(b_CENTER_SPACE_np, size = 1)[0]
         kwargs_shape['alpha'] = np.random.choice(alpha_CENTER_SPACE_np, size = 1)[0] #90
     
-    
+    print(kwargs_shape)
     new_shape = list_of_shapes.create_and_add_shape(kwargs_shape)
     first_generated_image.add_shape(shape=new_shape)
     #first_generated_image.add_shape_from_list(index_=i, list_of_shapes=list_of_shapes)
