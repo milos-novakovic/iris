@@ -1,0 +1,29 @@
+# args of the class GeneratedImage
+file_info:
+  - file_path: '/home/novakovm/iris/MILOS/DATA/'
+  - file_name: 'color_img'
+  - file_version: '_003'
+  #- begin_file_version: 1
+  #- end_file_version: 2
+  - file_extension: '.jpg'
+  - H : 600
+  - W : 800
+  - C : 3
+
+# args of the class SuperClassShape
+shape_info:
+  - file_path: '/home/novakovm/iris/MILOS/DATA/'
+  - file_name: 'color_img'
+  - file_version: '_001'
+  #- begin_file_version: 1
+  #- end_file_version: 2
+  - file_extension: '.jpg'
+  - H : 600
+  - W : 800
+  - C : 3
+
+
+all_possible_shapes:
+  - Ellipse
+  - Polygon
+  - Parallelogram
