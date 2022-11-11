@@ -19,11 +19,14 @@ np.random.seed(SEED)
 INT = np.int64
 FLOAT = np.float64
 UINT  = np.uint8
-TOTAL_NUMBER_OF_SHAPES = 100
+TOTAL_NUMBER_OF_SHAPES = 10
 BACKGROUND_COLOR = 0 # black = 0 gray = 128 white = 255
 SHAPE_THICKNESS = 2 #Thickness of -1 px will fill the rectangle shape by the specified color.
 HIST_Y_TICKS_STEP_SIZE = 4
 
+DRAW_IMAGINARY_LINES, DRAW_IMAGINARY_CIRCLES = False, True
+
+COOR_BEGIN_X, COOR_BEGIN_Y = 0.1, 0.1
 
 #1 bit
 SHAPE_TYPE_SPACE = ['Ellipse','Parallelogram']
@@ -45,7 +48,8 @@ FILL_NOFILL = [-1, SHAPE_THICKNESS]
 # calculate the number of bits required for exactly one shape
 number_of_bits_required_for_one_shape = sum([np.log2(1.0 * len(space))\
                                             for space in \
-                                            [COLOR_LIST,\
+                                            [SHAPE_TYPE_SPACE,\
+                                            COLOR_LIST,\
                                             Y_CENTER_SPACE,\
                                             X_CENTER_SPACE,\
                                             b_CENTER_SPACE,\
@@ -328,7 +332,6 @@ class GeneratedImage:
                     color = (255, 255, 0)# (255, 255, 255)
                     # Line thickness of -1 px
                     thickness = -1
-                    # Using cv2.circle() method
                     # Draw a circle of red color of thickness -1 px
                     image = cv2.circle(cv2.imread(image_path), center_coordinates, radius, color, thickness)
                     cv2.imwrite(image_path, image)
@@ -361,8 +364,8 @@ shape_info_dict['shape_ids'] = np.arange(1,TOTAL_NUMBER_OF_SHAPES)
 list_of_shapes = ShapeList()
 
 # coordinates of all possible centers of shapes
-Y_CENTER_SPACE_np = np.round(np.array(Y_CENTER_SPACE) * file_info_dict['H'], 0).astype(int)
-X_CENTER_SPACE_np = np.round(np.array(X_CENTER_SPACE) * file_info_dict['W'], 0).astype(int)
+Y_CENTER_SPACE_np = np.round(file_info_dict['H']*COOR_BEGIN_Y + np.array(Y_CENTER_SPACE) * file_info_dict['H'], 0).astype(int)
+X_CENTER_SPACE_np = np.round(file_info_dict['W']*COOR_BEGIN_X + np.array(X_CENTER_SPACE) * file_info_dict['W'], 0).astype(int)
 
 # lengths of all possible dimensions of shapes
 b_CENTER_SPACE_np = np.round(np.array(b_CENTER_SPACE) * file_info_dict['H'], 0).astype(int)
@@ -373,8 +376,6 @@ alpha_CENTER_SPACE_np = np.array(alpha_CENTER_SPACE).astype(int)
 
 # fills or no fills
 FILL_NOFILL_np = np.array(FILL_NOFILL).astype(int)
-
-first_generated_image.draw_grid_on_image(X_coors=X_CENTER_SPACE_np, Y_coors=Y_CENTER_SPACE_np)       
 
 all_shapes_variable_data = {}
 for c in COLUMNS:
@@ -424,6 +425,7 @@ for i in range(TOTAL_NUMBER_OF_SHAPES):
     first_generated_image.add_shape(shape=new_shape)
     #first_generated_image.add_shape_from_list(index_=i, list_of_shapes=list_of_shapes)
 
+first_generated_image.draw_grid_on_image(X_coors=X_CENTER_SPACE_np, Y_coors=Y_CENTER_SPACE_np, draw_lines = DRAW_IMAGINARY_LINES, draw_circles = DRAW_IMAGINARY_CIRCLES)
 
 fig, axs = plt.subplots(3, 3, figsize=(20, 10))
 
@@ -435,6 +437,8 @@ DF_all_shapes_variable_data['shape_color_word'] = DF_all_shapes_variable_data.ap
 DF_all_shapes_variable_data= DF_all_shapes_variable_data[['image_id', 'shape_id'] + COLUMNS + ['shape_color_word']]
 DF_all_shapes_variable_data.to_csv('all_generated_shapes.csv', mode='a', index=False, header= not(os.path.isfile('all_generated_shapes.csv')) )
 
+
+# create histograms
 for i_col, col in enumerate(COLUMNS):
     
     col_space = None
