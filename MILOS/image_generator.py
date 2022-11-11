@@ -19,79 +19,51 @@ np.random.seed(SEED)
 INT = np.int64
 FLOAT = np.float64
 UINT  = np.uint8
-TOTAL_NUMBER_OF_SHAPES = 10
-BACKGROUND_COLOR = 0 # black = 0 gray = 128 white = 255
-SHAPE_THICKNESS = 2 #Thickness of -1 px will fill the rectangle shape by the specified color.
-HIST_Y_TICKS_STEP_SIZE = 4
 
-DRAW_IMAGINARY_LINES, DRAW_IMAGINARY_CIRCLES = False, True
 
-COOR_BEGIN_X, COOR_BEGIN_Y = 0.1, 0.1
+# HIST_Y_TICKS_STEP_SIZE = 4
+# BACKGROUND_COLOR = 0 # black = 0 gray = 128 white = 255
+# SHAPE_THICKNESS = 2 #Thickness of -1 px will fill the rectangle shape by the specified color.
+# DRAW_IMAGINARY_LINES, DRAW_IMAGINARY_CIRCLES = False, True
 
-#1 bit
-SHAPE_TYPE_SPACE = ['Ellipse','Parallelogram']
-# 2 bits
-COLOR_LIST = ['blue', 'green', 'red', 'white']
-# 2 bits
-Y_CENTER_SPACE = [0., 0.25, 0.5, 0.75] # 0, 1/4, 2/4, 3/4
-# 2 bits
-X_CENTER_SPACE = [0., 0.25, 0.5, 0.75] # 0, 1/4, 2/4, 3/4
-# 2 bits
-b_CENTER_SPACE = [0.0625, 0.125 , 0.1875, 0.25] # 1/16, 2/16, 3/16, 4/16
-# 2 bits
-a_CENTER_SPACE = [0.0625, 0.125 , 0.1875, 0.25] # 1/16, 2/16, 3/16, 4/16
-# 2 bits
-alpha_CENTER_SPACE = [30, 45, 60, 90]
-# 0 bits
-FILL_NOFILL = [-1, SHAPE_THICKNESS]
 
-# calculate the number of bits required for exactly one shape
-number_of_bits_required_for_one_shape = sum([np.log2(1.0 * len(space))\
-                                            for space in \
-                                            [SHAPE_TYPE_SPACE,\
-                                            COLOR_LIST,\
-                                            Y_CENTER_SPACE,\
-                                            X_CENTER_SPACE,\
-                                            b_CENTER_SPACE,\
-                                            a_CENTER_SPACE,\
-                                            alpha_CENTER_SPACE,\
-                                            FILL_NOFILL]])
 
-# calculate the number of bits required for all shapes combined
-number_of_bits_required_for_one_image = TOTAL_NUMBER_OF_SHAPES * number_of_bits_required_for_one_shape
 
-# which shape features will be changed
-# i.e. columns in pandas DF that will show the histograms of randomly distributed features
-COLUMNS = [ #'shape_id',\
-            'shape_name',\
-            'a',\
-            'b',\
-            'shape_center_x',\
-            'shape_center_y',\
-            'alpha',\
-            'shape_color',\
-            #'shape_thickness'\
-            ]
 
-COLOR_DICT_WORD_2_BGR_CODE = {}
+# # which shape features will be changed
+# # i.e. columns in pandas DF that will show the histograms of randomly distributed features
+# COLUMNS = [ #'shape_id',\
+#             'shape_name',\
+#             'a',\
+#             'b',\
+#             'shape_center_x',\
+#             'shape_center_y',\
+#             'alpha',\
+#             'shape_color',\
+#             #'shape_thickness'\
+#             ]
 
-COLOR_DICT_WORD_2_BGR_CODE['white'] = (255, 255, 255) # BGR code
-COLOR_DICT_WORD_2_BGR_CODE['black'] = (0, 0, 0) # BGR code
 
-COLOR_DICT_WORD_2_BGR_CODE['blue'] = (255, 0, 0) # BGR code
-COLOR_DICT_WORD_2_BGR_CODE['green'] = (0, 255, 0) # BGR code
-COLOR_DICT_WORD_2_BGR_CODE['red'] = (0, 0, 255) # BGR code
+# word to BGR code dict
+# COLOR_DICT_WORD_2_BGR_CODE = {}
 
-COLOR_DICT_WORD_2_BGR_CODE['yellow'] = (0, 255, 255) # BGR code
-COLOR_DICT_WORD_2_BGR_CODE['magenta'] = (255, 0, 255) # BGR code
-COLOR_DICT_WORD_2_BGR_CODE['cyan'] = (255, 255, 0) # BGR code
+# COLOR_DICT_WORD_2_BGR_CODE['white'] = (255, 255, 255) # BGR code
+# COLOR_DICT_WORD_2_BGR_CODE['black'] = (0, 0, 0) # BGR code
 
-COLOR_DICT_BGR_2_WORD_CODE = {}
-for word_code in COLOR_DICT_WORD_2_BGR_CODE:
-    #"B-G-R" code
-    B,G,R = COLOR_DICT_WORD_2_BGR_CODE[word_code]
-    BRG_code = str(B) + '-' + str(G) + '-' + str(R)
-    COLOR_DICT_BGR_2_WORD_CODE[BRG_code] = word_code
+# COLOR_DICT_WORD_2_BGR_CODE['blue'] = (255, 0, 0) # BGR code
+# COLOR_DICT_WORD_2_BGR_CODE['green'] = (0, 255, 0) # BGR code
+# COLOR_DICT_WORD_2_BGR_CODE['red'] = (0, 0, 255) # BGR code
+
+# COLOR_DICT_WORD_2_BGR_CODE['yellow'] = (0, 255, 255) # BGR code
+# COLOR_DICT_WORD_2_BGR_CODE['magenta'] = (255, 0, 255) # BGR code
+# COLOR_DICT_WORD_2_BGR_CODE['cyan'] = (255, 255, 0) # BGR code
+
+# # BGR code to word dict
+# COLOR_DICT_BGR_2_WORD_CODE = {}
+# for word_code in COLOR_DICT_WORD_2_BGR_CODE:
+#     B,G,R = COLOR_DICT_WORD_2_BGR_CODE[word_code]
+#     BRG_code = str(B) + '-' + str(G) + '-' + str(R) #"B-G-R" code
+#     COLOR_DICT_BGR_2_WORD_CODE[BRG_code] = word_code
 
 class ImagesGenerator:
     def __init__(self, kwargs) -> None:
@@ -104,11 +76,75 @@ class ImagesGenerator:
         with open(self.config_file_full_path) as config_file_handle:
             self.config_data = yaml.load(config_file_handle, Loader=SafeLoader)
         
-        self.file_info_dict = {key:val  for one_info in data['file_info'] \
+        self.file_info_dict = {key:val  for one_info in data['file_info']
                                         for key,val in one_info.items()}
         
+        self.images_info_dict = {key:val  for one_info in data['images_info']
+                                for key,val in one_info.items()}
+        
+        #COOR_BEGIN = (0.1, 0.1)
+        # #1 bit
+        # SHAPE_TYPE_SPACE = ['Ellipse','Parallelogram']
+        # # 2 bits
+        # COLOR_LIST = ['blue', 'green', 'red', 'white']
+        # # 2 bits
+        # Y_CENTER_SPACE = [0., 0.25, 0.5, 0.75] # 0, 1/4, 2/4, 3/4
+        # # 2 bits
+        # X_CENTER_SPACE = [0., 0.25, 0.5, 0.75] # 0, 1/4, 2/4, 3/4
+        # # 2 bits
+        # b_CENTER_SPACE = [0.0625, 0.125 , 0.1875, 0.25] # 1/16, 2/16, 3/16, 4/16
+        # # 2 bits
+        # a_CENTER_SPACE = [0.0625, 0.125 , 0.1875, 0.25] # 1/16, 2/16, 3/16, 4/16
+        # # 2 bits
+        # alpha_CENTER_SPACE = [30, 45, 60, 90]
+        # # 0 bits
+        # FILL_NOFILL = [-1, SHAPE_THICKNESS]
+        # TOTAL_NUMBER_OF_SHAPES = 10
+        
+        
+        self.TOTAL_NUMBER_OF_SHAPES =       data['TOTAL_NUMBER_OF_SHAPES']
+        # parsing yaml config file
+        self.COOR_BEGIN =                   [one_info for one_info in data['COOR_BEGIN']]
+        self.SHAPE_TYPE_SPACE =             [one_info for one_info in data['SHAPE_TYPE_SPACE']]
+        self.COLOR_LIST =                   [one_info for one_info in data['COLOR_LIST']]
+        self.Y_CENTER_SPACE =               [one_info for one_info in data['Y_CENTER_SPACE']]
+        self.X_CENTER_SPACE =               [one_info for one_info in data['X_CENTER_SPACE']]
+        self.b_CENTER_SPACE =               [one_info for one_info in data['b_CENTER_SPACE']]
+        self.a_CENTER_SPACE =               [one_info for one_info in data['a_CENTER_SPACE']]
+        self.alpha_CENTER_SPACE =           [one_info for one_info in data['alpha_CENTER_SPACE']]
+        self.FILL_NOFILL =                  [one_info for one_info in data['FILL_NOFILL']]
+        
+        
+        self.COLOR_DICT_WORD_2_BGR_CODE =   { color_word : tuple(data['COLOR_DICT_WORD_2_BGR_CODE'][color_word])
+                                                for color_word in data['COLOR_DICT_WORD_2_BGR_CODE']}
+        
+        # BGR code to word dict
+        self.COLOR_DICT_BGR_2_WORD_CODE = {}
+        for word_code in self.COLOR_DICT_WORD_2_BGR_CODE:
+            B,G,R = self.COLOR_DICT_WORD_2_BGR_CODE[word_code]
+            BRG_code = str(B) + '-' + str(G) + '-' + str(R) #"B-G-R" code
+            self.COLOR_DICT_BGR_2_WORD_CODE[BRG_code] = word_code
+    
+        # which shape features will be changed
+        # i.e. columns in pandas DF that will show the histograms
+        # of randomly distributed features
+        self.COLUMNS = [ 'shape_name',\
+                    'a',\
+                    'b',\
+                    'shape_center_x',\
+                    'shape_center_y',\
+                    'alpha',\
+                    'shape_color']
+        
+        self.BACKGROUND_COLOR       =data['BACKGROUND_COLOR']
+        self.HIST_Y_TICKS_STEP_SIZE =data['HIST_Y_TICKS_STEP_SIZE']
+        self.DRAW_IMAGINARY_LINES   =data['DRAW_IMAGINARY_LINES']
+        self.DRAW_IMAGINARY_CIRCLES =data['DRAW_IMAGINARY_CIRCLES']
     
     def __str__(self) -> str:
+        pass
+    
+    def generate_images(self) -> None:
         pass
 
 class SuperClassShape:
@@ -336,9 +372,6 @@ class GeneratedImage:
                     image = cv2.circle(cv2.imread(image_path), center_coordinates, radius, color, thickness)
                     cv2.imwrite(image_path, image)
         
-
-
-
 current_working_absoulte_path = '/home/novakovm/iris/MILOS'
 os.chdir(current_working_absoulte_path)
 
@@ -346,6 +379,46 @@ milos_config_path = 'milos_config.yaml'
 # Open the file and load the file
 with open(milos_config_path) as f:
     data = yaml.load(f, Loader=SafeLoader)
+
+COOR_BEGIN =                   [one_info for one_info in data['COOR_BEGIN']]
+SHAPE_TYPE_SPACE =             [one_info for one_info in data['SHAPE_TYPE_SPACE']]
+COLOR_LIST =                   [one_info for one_info in data['COLOR_LIST']]
+Y_CENTER_SPACE =               [one_info for one_info in data['Y_CENTER_SPACE']]
+X_CENTER_SPACE =               [one_info for one_info in data['X_CENTER_SPACE']]
+b_CENTER_SPACE =               [one_info for one_info in data['b_CENTER_SPACE']]
+a_CENTER_SPACE =               [one_info for one_info in data['a_CENTER_SPACE']]
+alpha_CENTER_SPACE =           [one_info for one_info in data['alpha_CENTER_SPACE']]
+FILL_NOFILL =                  [one_info for one_info in data['FILL_NOFILL']]
+TOTAL_NUMBER_OF_SHAPES =   data['TOTAL_NUMBER_OF_SHAPES']
+
+        
+COLOR_DICT_WORD_2_BGR_CODE =   { color_word : tuple(data['COLOR_DICT_WORD_2_BGR_CODE'][color_word])
+                                        for color_word in data['COLOR_DICT_WORD_2_BGR_CODE']}
+
+# BGR code to word dict
+COLOR_DICT_BGR_2_WORD_CODE = {}
+for word_code in COLOR_DICT_WORD_2_BGR_CODE:
+    B,G,R = COLOR_DICT_WORD_2_BGR_CODE[word_code]
+    BRG_code = str(B) + '-' + str(G) + '-' + str(R) #"B-G-R" code
+    COLOR_DICT_BGR_2_WORD_CODE[BRG_code] = word_code
+
+# which shape features will be changed
+# i.e. columns in pandas DF that will show the histograms of randomly distributed features
+COLUMNS = [ #'shape_id',\
+            'shape_name',\
+            'a',\
+            'b',\
+            'shape_center_x',\
+            'shape_center_y',\
+            'alpha',\
+            'shape_color',\
+            #'shape_thickness'\
+            ]
+
+BACKGROUND_COLOR       =data['BACKGROUND_COLOR']
+HIST_Y_TICKS_STEP_SIZE =data['HIST_Y_TICKS_STEP_SIZE']
+DRAW_IMAGINARY_LINES   =data['DRAW_IMAGINARY_LINES']
+DRAW_IMAGINARY_CIRCLES =data['DRAW_IMAGINARY_CIRCLES']
 
 file_info_dict : dict = {key:val for one_info in data['file_info'] for key,val in one_info.items()}
 
@@ -357,15 +430,15 @@ first_generated_image = GeneratedImage(file_info_dict)
 
 first_generated_image.generate_image()
 
-shape_info_dict : dict = {key:val for one_info in data['shape_info'] for key,val in one_info.items()}
+images_info_dict : dict = {key:val for one_info in data['images_info'] for key,val in one_info.items()}
 
-shape_info_dict['shape_ids'] = np.arange(1,TOTAL_NUMBER_OF_SHAPES)
+images_info_dict['shape_ids'] = np.arange(1,TOTAL_NUMBER_OF_SHAPES)
 
 list_of_shapes = ShapeList()
 
 # coordinates of all possible centers of shapes
-Y_CENTER_SPACE_np = np.round(file_info_dict['H']*COOR_BEGIN_Y + np.array(Y_CENTER_SPACE) * file_info_dict['H'], 0).astype(int)
-X_CENTER_SPACE_np = np.round(file_info_dict['W']*COOR_BEGIN_X + np.array(X_CENTER_SPACE) * file_info_dict['W'], 0).astype(int)
+Y_CENTER_SPACE_np = np.round(file_info_dict['H']*COOR_BEGIN[1] + np.array(Y_CENTER_SPACE) * file_info_dict['H'], 0).astype(int)
+X_CENTER_SPACE_np = np.round(file_info_dict['W']*COOR_BEGIN[0] + np.array(X_CENTER_SPACE) * file_info_dict['W'], 0).astype(int)
 
 # lengths of all possible dimensions of shapes
 b_CENTER_SPACE_np = np.round(np.array(b_CENTER_SPACE) * file_info_dict['H'], 0).astype(int)
@@ -528,6 +601,22 @@ plt.savefig(f'DATA/{plot_file_name}')
 # until closed forcefully
 cv2.waitKey(0)
 cv2.destroyAllWindows()
+
+# calculate the number of bits required for exactly one shape
+number_of_bits_required_for_one_shape = sum([np.log2(1.0 * len(space))\
+                                            for space in \
+                                            [SHAPE_TYPE_SPACE,\
+                                            COLOR_LIST,\
+                                            Y_CENTER_SPACE,\
+                                            X_CENTER_SPACE,\
+                                            b_CENTER_SPACE,\
+                                            a_CENTER_SPACE,\
+                                            alpha_CENTER_SPACE,\
+                                            FILL_NOFILL]])
+
+# calculate the number of bits required for all shapes combined
+number_of_bits_required_for_one_image = TOTAL_NUMBER_OF_SHAPES * number_of_bits_required_for_one_shape
+
 
 print(f"Number of bits for one SHAPE = {number_of_bits_required_for_one_shape}b.")
 print(f"Number of SHAPEs = {TOTAL_NUMBER_OF_SHAPES}.")
