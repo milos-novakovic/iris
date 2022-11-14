@@ -1,25 +1,4 @@
-# Python3 program to draw solid-colored
-# image using numpy.zeroes() function
-import numpy as np
-import cv2
-import pandas as pd
-import matplotlib.pyplot as plt
-import torch
-# import pyyaml module
-import yaml
-from yaml.loader import SafeLoader
-import os
-import time
-
-
-START_TIME = time.time()
-
-SEED = 42     
-np.random.seed(SEED)
-INT = np.int64
-FLOAT = np.float64
-UINT  = np.uint8
-
+from  utils import *
 
 # HIST_Y_TICKS_STEP_SIZE = 4
 # BACKGROUND_COLOR = 0 # black = 0 gray = 128 white = 255
@@ -103,6 +82,7 @@ class ImagesGenerator:
         
         
         self.TOTAL_NUMBER_OF_SHAPES =       data['TOTAL_NUMBER_OF_SHAPES']
+        
         # parsing yaml config file
         self.COOR_BEGIN =                   [one_info for one_info in data['COOR_BEGIN']]
         self.SHAPE_TYPE_SPACE =             [one_info for one_info in data['SHAPE_TYPE_SPACE']]
@@ -114,6 +94,9 @@ class ImagesGenerator:
         self.alpha_CENTER_SPACE =           [one_info for one_info in data['alpha_CENTER_SPACE']]
         self.FILL_NOFILL =                  [one_info for one_info in data['FILL_NOFILL']]
         
+        self.TOTAL_NUMBER_OF_SHAPES =       [dict_['TOTAL_NUMBER_OF_SHAPES'] for dict_ in data['file_info'] if 'TOTAL_NUMBER_OF_SHAPES' in dict_][0]
+        self.TOTAL_NUMBER_OF_IMAGES =       [dict_['TOTAL_NUMBER_OF_IMAGES'] for dict_ in data['file_info'] if 'TOTAL_NUMBER_OF_IMAGES' in dict_][0]
+
         
         self.COLOR_DICT_WORD_2_BGR_CODE =   { color_word : tuple(data['COLOR_DICT_WORD_2_BGR_CODE'][color_word])
                                                 for color_word in data['COLOR_DICT_WORD_2_BGR_CODE']}
@@ -128,13 +111,13 @@ class ImagesGenerator:
         # which shape features will be changed
         # i.e. columns in pandas DF that will show the histograms
         # of randomly distributed features
-        self.COLUMNS = [ 'shape_name',\
-                    'a',\
-                    'b',\
-                    'shape_center_x',\
-                    'shape_center_y',\
-                    'alpha',\
-                    'shape_color']
+        self.COLUMNS = [    'shape_name',\
+                            'a',\
+                            'b',\
+                            'shape_center_x',\
+                            'shape_center_y',\
+                            'alpha',\
+                            'shape_color']
         
         self.BACKGROUND_COLOR       =data['BACKGROUND_COLOR']
         self.HIST_Y_TICKS_STEP_SIZE =data['HIST_Y_TICKS_STEP_SIZE']
@@ -273,9 +256,7 @@ class Parallelogram(SuperClassShape): # paralelogram - rectangle
         
 class ShapeList:
     def __init__(self) -> None:
-        self.TOTAL_NUMBER_OF_SHAPES = TOTAL_NUMBER_OF_SHAPES
-        self.shape_list : SuperClassShape = []
-        
+        self.shape_list = []        
     
     def create_and_add_shape(self, kwargs_shape : dict) -> SuperClassShape:
         shape = None
@@ -308,8 +289,10 @@ class GeneratedImage:
         # 'background_color'
         self.image_objects : dict   = kwargs['image_objects'] if "image_objects" in kwargs else {}
 
-        self.TOTAL_NUMBER_OF_SHAPES = TOTAL_NUMBER_OF_SHAPES
+        self.TOTAL_NUMBER_OF_SHAPES = kwargs['TOTAL_NUMBER_OF_SHAPES']
         self.all_shapes_on_image = [None] * self.TOTAL_NUMBER_OF_SHAPES
+        
+        
         
     def generate_image(self, new_file_version = None) -> None:
         assert(self.image_objects['background_color'].dtype == UINT)
@@ -330,7 +313,7 @@ class GeneratedImage:
         shape : SuperClassShape = list_of_shapes.shape_list[index_]
         shape.draw_(self.get_full_path())
         
-    def draw_grid_on_image(self, X_coors, Y_coors, draw_lines = True, draw_circles = True) -> None:
+    def draw_grid_on_image(self, X_coors, Y_coors, X_CENTER_SPACE_np, Y_CENTER_SPACE_np, draw_lines = True, draw_circles = True) -> None:
         #image path
         image_path = self.get_full_path()
 
@@ -371,254 +354,138 @@ class GeneratedImage:
                     # Draw a circle of red color of thickness -1 px
                     image = cv2.circle(cv2.imread(image_path), center_coordinates, radius, color, thickness)
                     cv2.imwrite(image_path, image)
+
+# class HistogramGenerator:
+#     def __init__(   self, 
+#                     DF_all_shapes_variable_data : pd.DataFrame, 
+#                     figure_file_name: str,
+#                     csv_file_name: str,
+#                     columns : list,
+#                     COLOR_DICT_BGR_2_WORD_CODE,
+#                     HIST_Y_TICKS_STEP_SIZE) -> None:
+#         self.DF_all_shapes_variable_data = DF_all_shapes_variable_data
+#         self.figure_file_name = figure_file_name#'stats' + file_info_dict['file_version'] + '.png'
+#         self.csv_file_name = csv_file_name #'all_generated_shapes.csv'
+#         self.columns_of_interest = columns # COLUMNS
+#         self.COLOR_DICT_BGR_2_WORD_CODE = COLOR_DICT_BGR_2_WORD_CODE
+#         self.HIST_Y_TICKS_STEP_SIZE = HIST_Y_TICKS_STEP_SIZE
+
+#     def generate_histogram_of_different_attributes_of_different_shapes(self) -> None:
         
-current_working_absoulte_path = '/home/novakovm/iris/MILOS'
-os.chdir(current_working_absoulte_path)
-
-milos_config_path = 'milos_config.yaml'
-# Open the file and load the file
-with open(milos_config_path) as f:
-    data = yaml.load(f, Loader=SafeLoader)
-
-COOR_BEGIN =                   [one_info for one_info in data['COOR_BEGIN']]
-SHAPE_TYPE_SPACE =             [one_info for one_info in data['SHAPE_TYPE_SPACE']]
-COLOR_LIST =                   [one_info for one_info in data['COLOR_LIST']]
-Y_CENTER_SPACE =               [one_info for one_info in data['Y_CENTER_SPACE']]
-X_CENTER_SPACE =               [one_info for one_info in data['X_CENTER_SPACE']]
-b_CENTER_SPACE =               [one_info for one_info in data['b_CENTER_SPACE']]
-a_CENTER_SPACE =               [one_info for one_info in data['a_CENTER_SPACE']]
-alpha_CENTER_SPACE =           [one_info for one_info in data['alpha_CENTER_SPACE']]
-FILL_NOFILL =                  [one_info for one_info in data['FILL_NOFILL']]
-TOTAL_NUMBER_OF_SHAPES =   data['TOTAL_NUMBER_OF_SHAPES']
-
+#         fig, axs = plt.subplots(3, 3, figsize=(20, 10))
+#         # get the shapes ids
+#         self.DF_all_shapes_variable_data['shape_id'] = self.DF_all_shapes_variable_data.index.values
         
-COLOR_DICT_WORD_2_BGR_CODE =   { color_word : tuple(data['COLOR_DICT_WORD_2_BGR_CODE'][color_word])
-                                        for color_word in data['COLOR_DICT_WORD_2_BGR_CODE']}
+#         # get image ids (one image can have several shapes)
+#         self.DF_all_shapes_variable_data['image_id'] = file_info_dict['file_version'][1:]
+        
+#         # image_id uniquely identifies the image
+#         # image_id, shape_id uniquely identifies the shape on image
+        
+#         # color is 3-tuple = (B, G, R); and we want to have it in human readable 'color word'
+#         # for example (0,0,255) = 'red'
+#         self.DF_all_shapes_variable_data['shape_color_word'] = self.DF_all_shapes_variable_data.apply(\
+#                                                         lambda row:  \
+#                                                         self.COLOR_DICT_BGR_2_WORD_CODE\
+#                                                         ['-'.join([str(x) for x in row['shape_color']])\
+#                                                         ] , axis = 1)
+        
+#         #rearange the order of columns to have more meaningful tabular representation
+#         self.DF_all_shapes_variable_data= self.DF_all_shapes_variable_data\
+#                                         [['image_id', 'shape_id'] + self.columns_of_interest + ['shape_color_word']]
+                                        
+#         # save pd.DataFrame to a CSV file for reproducibility purposes
+#         self.DF_all_shapes_variable_data.to_csv( self.csv_file_name, 
+#                                             mode='a', 
+#                                             index=False,
+#                                             header= not(os.path.isfile(self.csv_file_name)) )
 
-# BGR code to word dict
-COLOR_DICT_BGR_2_WORD_CODE = {}
-for word_code in COLOR_DICT_WORD_2_BGR_CODE:
-    B,G,R = COLOR_DICT_WORD_2_BGR_CODE[word_code]
-    BRG_code = str(B) + '-' + str(G) + '-' + str(R) #"B-G-R" code
-    COLOR_DICT_BGR_2_WORD_CODE[BRG_code] = word_code
+#         # create histograms
+#         for i_col, col in enumerate(self.columns_of_interest):
+            
+#             col_space = None
+#             bar_width = None
+            
+#             if col == 'shape_color':
+#                 # colors (and names) # string values
+#                 df_color_hist = self.DF_all_shapes_variable_data[['shape_color']].apply(pd.value_counts).reset_index()
+#                 df_color_hist['shape_color_word'] = df_color_hist.apply(lambda row:  self.COLOR_DICT_BGR_2_WORD_CODE['-'.join([str(x) for x in row['index']])] , axis = 1)#.to_frame(name = 'shape_color_word')
+#                 df_color_hist.drop(['index'], axis=1, inplace=True)
+#                 df_color_hist.set_index('shape_color_word', inplace=True)
+#                 df_color_hist = df_color_hist.T.reset_index().drop(['index'], axis=1)
 
-# which shape features will be changed
-# i.e. columns in pandas DF that will show the histograms of randomly distributed features
-COLUMNS = [ #'shape_id',\
-            'shape_name',\
-            'a',\
-            'b',\
-            'shape_center_x',\
-            'shape_center_y',\
-            'alpha',\
-            'shape_color',\
-            #'shape_thickness'\
-            ]
+#                 #plt.figure(i_col)
+#                 axs[0, 1].set_title('Histogram of Shape Colors')
+#                 axs[0, 1].bar(np.arange(df_color_hist.shape[1]), df_color_hist.values[0], align='center', width=0.5, color=df_color_hist.columns.values, edgecolor='black')
+#                 axs[0, 1].set_xticks(np.arange(df_color_hist.shape[1]), df_color_hist.columns.values, size='small')
+#                 axs[0, 1].set_yticks(np.arange(1, 1 + np.max(df_color_hist.values[0]), self.HIST_Y_TICKS_STEP_SIZE), np.arange(1, 1 + np.max(df_color_hist.values[0]), self.HIST_Y_TICKS_STEP_SIZE), size='small')
+#                 axs[0, 1].grid(which='both')
+#                 #plt.savefig(f'DATA/{col}_stats.png')
+#                 continue
+#             elif col == 'shape_name':
+#                 col_space = SHAPE_TYPE_SPACE
+#                 bar_width = len(col_space)*5*1e-2
+#                 i,j = 0,0
+#                 xlabel, ylabel, title = f'Possible names', '#', f'Histogram of names'
+#                 color = 'black'
+#             elif col == 'a':
+#                 col_space = a_CENTER_SPACE_np
+#                 bar_width = np.max(col_space)*5*1e-2
+#                 i,j = 1,0
+#                 color = 'blue'
+#                 xlabel, ylabel, title = f'Possible *a*', '#', f'Histogram of *a*'
+#             elif col == 'b':
+#                 col_space = b_CENTER_SPACE_np
+#                 bar_width = np.max(col_space)*5*1e-2
+#                 xlabel, ylabel, title = f'Possible *b*', '#', f'Histogram of *b*'
+#                 i,j = 1,1
+#                 color = 'blue'
+#             elif col == 'alpha':
+#                 col_space = alpha_CENTER_SPACE_np
+#                 bar_width = np.max(col_space)*5*1e-2
+#                 i,j = 1,2
+#                 xlabel, ylabel, title = f'Possible *alpha*', '#', f'Histogram of *alpha*'
+#                 color = 'blue'
+#             elif col == 'shape_center_x':
+#                 col_space = X_CENTER_SPACE_np
+#                 bar_width = np.max(col_space)*5*1e-2
+#                 i,j = 2,0
+#                 xlabel, ylabel, title = f'Possible *x_center*', '#', f'Histogram of *x_center*'
+#                 color = 'orange'
+#             elif col == 'shape_center_y':
+#                 col_space = Y_CENTER_SPACE_np
+#                 bar_width = np.max(col_space)*5*1e-2
+#                 i,j = 2,1
+#                 xlabel, ylabel, title = f'Possible *y_center*', '#', f'Histogram of *y_center*'
+#                 color = 'orange'
+#             else:
+#                 continue
+            
+#             # numerical values
+#             df_column_hist = self.DF_all_shapes_variable_data[[col]].apply(pd.value_counts).reset_index()
+#             df_column_hist.rename({'index':'count_'+col}, axis =1, inplace=True)
+#             df_column_hist.sort_values(by = ['count_'+col], inplace=True)
+#             df_column_hist.set_index('count_'+col, inplace=True)
+#             df_column_hist = df_column_hist.T.reset_index().drop(['index'], axis=1)
 
-BACKGROUND_COLOR       =data['BACKGROUND_COLOR']
-HIST_Y_TICKS_STEP_SIZE =data['HIST_Y_TICKS_STEP_SIZE']
-DRAW_IMAGINARY_LINES   =data['DRAW_IMAGINARY_LINES']
-DRAW_IMAGINARY_CIRCLES =data['DRAW_IMAGINARY_CIRCLES']
+#             #plt.figure(i_col) put everything on one figure, and just have multiple subplots
+#             axs[i, j].set_title(title)
+#             axs[i, j].bar(df_column_hist.columns.values, df_column_hist.values[0], align='center', width=bar_width, color=color, edgecolor='black')
+#             axs[i, j].set_xticks(col_space, col_space, size='small')
+#             axs[i, j].set_yticks(np.arange(1, 1 + np.max(df_column_hist.values[0]), self.HIST_Y_TICKS_STEP_SIZE), np.arange(1, 1 + np.max(df_column_hist.values[0]), self.HIST_Y_TICKS_STEP_SIZE), size='small')
+#             axs[i, j].grid(which='both')
+#             axs[i, j].set_xlabel(xlabel)
+#             axs[i, j].set_ylabel(ylabel)
+#             #plt.savefig(f'DATA/{col}_stats.png') put everything on one figure, and just have multiple subplots
 
-file_info_dict : dict = {key:val for one_info in data['file_info'] for key,val in one_info.items()}
-
-# obj info
-
-file_info_dict['image_objects'] = {'background_color' : np.array([BACKGROUND_COLOR], dtype=UINT)}
-
-first_generated_image = GeneratedImage(file_info_dict)
-
-first_generated_image.generate_image()
-
-images_info_dict : dict = {key:val for one_info in data['images_info'] for key,val in one_info.items()}
-
-images_info_dict['shape_ids'] = np.arange(1,TOTAL_NUMBER_OF_SHAPES)
-
-list_of_shapes = ShapeList()
-
-# coordinates of all possible centers of shapes
-Y_CENTER_SPACE_np = np.round(file_info_dict['H']*COOR_BEGIN[1] + np.array(Y_CENTER_SPACE) * file_info_dict['H'], 0).astype(int)
-X_CENTER_SPACE_np = np.round(file_info_dict['W']*COOR_BEGIN[0] + np.array(X_CENTER_SPACE) * file_info_dict['W'], 0).astype(int)
-
-# lengths of all possible dimensions of shapes
-b_CENTER_SPACE_np = np.round(np.array(b_CENTER_SPACE) * file_info_dict['H'], 0).astype(int)
-a_CENTER_SPACE_np = np.round(np.array(a_CENTER_SPACE) * file_info_dict['W'], 0).astype(int)
-
-# angle of skewness (for Parallelogram) and rotation (for Ellipse)
-alpha_CENTER_SPACE_np = np.array(alpha_CENTER_SPACE).astype(int)
-
-# fills or no fills
-FILL_NOFILL_np = np.array(FILL_NOFILL).astype(int)
-
-all_shapes_variable_data = {}
-for c in COLUMNS:
-    all_shapes_variable_data[c] = []
-
-for i in range(TOTAL_NUMBER_OF_SHAPES):
-    kwargs_shape = {}
+#         # delete unused subplots
+#         fig.delaxes(axs[0,2])
+#         fig.delaxes(axs[2,2])
+        
+#         # mandatory to have normaly showed axis
+#         plt.tight_layout()
+        
+#         #
+#         #plot_file_name = 'stats' + file_info_dict['file_version'] + '.png'
+#         plt.savefig(f'DATA/{self.figure_file_name}')
     
-    # image info (to be implemented)
-    #kwargs_shape['image_handle'] = None
-    
-    # shape info
-    #kwargs_shape['shape_handle'] = None
-    
-    #simple id (i.e. the order of shape creation)
-    kwargs_shape['shape_id'] = i
-    
-    # random parameters to be changed/generated
-    kwargs_shape['shape_center_x'] = np.random.choice(X_CENTER_SPACE_np, size = 1)[0]
-    kwargs_shape['shape_center_y'] = np.random.choice(Y_CENTER_SPACE_np, size = 1)[0]
-    
-    kwargs_shape['shape_rotation_angle'] = None
-    kwargs_shape['shape_scale_size'] = None
-    
-    shape_color : str = np.random.choice( COLOR_LIST, size = 1)[0] # color is in words (e.g. 'red')
-    kwargs_shape['shape_color'] = COLOR_DICT_WORD_2_BGR_CODE[shape_color]
-    kwargs_shape['shape_thickness'] = np.random.choice(FILL_NOFILL_np, size = 1)[0] # 5 = # Line thickness of 5 px
-    kwargs_shape['shape_name'] = np.random.choice(SHAPE_TYPE_SPACE, size=1)[0] # print(np.random.choice(prog_langs, size=10, replace=True, p=[0.3, 0.5, 0.0, 0.2]))
-    
-    
-    if kwargs_shape['shape_name'] == "Ellipse":
-        kwargs_shape['a'] = np.random.choice(a_CENTER_SPACE_np, size = 1)[0]
-        kwargs_shape['b'] = np.random.choice(b_CENTER_SPACE_np, size = 1)[0]
-        kwargs_shape['alpha'] = np.random.choice(alpha_CENTER_SPACE_np, size = 1)[0] # default 0
-    elif kwargs_shape['shape_name'] == "Parallelogram":
-        kwargs_shape['a'] = np.random.choice(a_CENTER_SPACE_np, size = 1)[0]
-        kwargs_shape['b'] = np.random.choice(b_CENTER_SPACE_np, size = 1)[0]
-        kwargs_shape['alpha'] = np.random.choice(alpha_CENTER_SPACE_np, size = 1)[0] # default 90
-    else:
-        assert(False, 'The shape must be Ellipse or Parallelogram!')
-    
-    # fill in pandas df
-    for c in COLUMNS:
-        all_shapes_variable_data[c].append(kwargs_shape[c])
-    
-    new_shape = list_of_shapes.create_and_add_shape(kwargs_shape)
-    first_generated_image.add_shape(shape=new_shape)
-    #first_generated_image.add_shape_from_list(index_=i, list_of_shapes=list_of_shapes)
-
-first_generated_image.draw_grid_on_image(X_coors=X_CENTER_SPACE_np, Y_coors=Y_CENTER_SPACE_np, draw_lines = DRAW_IMAGINARY_LINES, draw_circles = DRAW_IMAGINARY_CIRCLES)
-
-fig, axs = plt.subplots(3, 3, figsize=(20, 10))
-
-# create pandas df
-DF_all_shapes_variable_data = pd.DataFrame.from_dict(all_shapes_variable_data)
-DF_all_shapes_variable_data['shape_id'] = DF_all_shapes_variable_data.index.values
-DF_all_shapes_variable_data['image_id'] = file_info_dict['file_version'][1:]
-DF_all_shapes_variable_data['shape_color_word'] = DF_all_shapes_variable_data.apply(lambda row:  COLOR_DICT_BGR_2_WORD_CODE['-'.join([str(x) for x in row['shape_color']])] , axis = 1)
-DF_all_shapes_variable_data= DF_all_shapes_variable_data[['image_id', 'shape_id'] + COLUMNS + ['shape_color_word']]
-DF_all_shapes_variable_data.to_csv('all_generated_shapes.csv', mode='a', index=False, header= not(os.path.isfile('all_generated_shapes.csv')) )
-
-
-# create histograms
-for i_col, col in enumerate(COLUMNS):
-    
-    col_space = None
-    bar_width = None
-    
-    if col == 'shape_color':
-        # colors (and names) # string values
-        df_color_hist = DF_all_shapes_variable_data[['shape_color']].apply(pd.value_counts).reset_index()
-        df_color_hist['shape_color_word'] = df_color_hist.apply(lambda row:  COLOR_DICT_BGR_2_WORD_CODE['-'.join([str(x) for x in row['index']])] , axis = 1)#.to_frame(name = 'shape_color_word')
-        df_color_hist.drop(['index'], axis=1, inplace=True)
-        df_color_hist.set_index('shape_color_word', inplace=True)
-        df_color_hist = df_color_hist.T.reset_index().drop(['index'], axis=1)
-
-        #plt.figure(i_col)
-        axs[0, 1].set_title('Histogram of Shape Colors')
-        axs[0, 1].bar(np.arange(df_color_hist.shape[1]), df_color_hist.values[0], align='center', width=0.5, color=df_color_hist.columns.values, edgecolor='black')
-        axs[0, 1].set_xticks(np.arange(df_color_hist.shape[1]), df_color_hist.columns.values, size='small')
-        axs[0, 1].set_yticks(np.arange(1, 1 + np.max(df_color_hist.values[0]), HIST_Y_TICKS_STEP_SIZE), np.arange(1, 1 + np.max(df_color_hist.values[0]), HIST_Y_TICKS_STEP_SIZE), size='small')
-        axs[0, 1].grid(which='both')
-        #plt.savefig(f'DATA/{col}_stats.png')
-        continue
-    elif col == 'shape_name':
-        col_space = SHAPE_TYPE_SPACE
-        bar_width = len(col_space)*5*1e-2
-        i,j = 0,0
-        xlabel, ylabel, title = f'Possible names', '#', f'Histogram of names'
-        color = 'black'
-    elif col == 'a':
-        col_space = a_CENTER_SPACE_np
-        bar_width = np.max(col_space)*5*1e-2
-        i,j = 1,0
-        color = 'blue'
-        xlabel, ylabel, title = f'Possible *a*', '#', f'Histogram of *a*'
-    elif col == 'b':
-        col_space = b_CENTER_SPACE_np
-        bar_width = np.max(col_space)*5*1e-2
-        xlabel, ylabel, title = f'Possible *b*', '#', f'Histogram of *b*'
-        i,j = 1,1
-        color = 'blue'
-    elif col == 'alpha':
-        col_space = alpha_CENTER_SPACE_np
-        bar_width = np.max(col_space)*5*1e-2
-        i,j = 1,2
-        xlabel, ylabel, title = f'Possible *alpha*', '#', f'Histogram of *alpha*'
-        color = 'blue'
-    elif col == 'shape_center_x':
-        col_space = X_CENTER_SPACE_np
-        bar_width = np.max(col_space)*5*1e-2
-        i,j = 2,0
-        xlabel, ylabel, title = f'Possible *x_center*', '#', f'Histogram of *x_center*'
-        color = 'orange'
-    elif col == 'shape_center_y':
-        col_space = Y_CENTER_SPACE_np
-        bar_width = np.max(col_space)*5*1e-2
-        i,j = 2,1
-        xlabel, ylabel, title = f'Possible *y_center*', '#', f'Histogram of *y_center*'
-        color = 'orange'
-    else:
-        continue
-    
-    # numerical values
-    df_column_hist = DF_all_shapes_variable_data[[col]].apply(pd.value_counts).reset_index()
-    df_column_hist.rename({'index':'count_'+col}, axis =1, inplace=True)
-    df_column_hist.sort_values(by = ['count_'+col], inplace=True)
-    df_column_hist.set_index('count_'+col, inplace=True)
-    df_column_hist = df_column_hist.T.reset_index().drop(['index'], axis=1)
-
-    #plt.figure(i_col)
-    axs[i, j].set_title(title)
-    axs[i, j].bar(df_column_hist.columns.values, df_column_hist.values[0], align='center', width=bar_width, color=color, edgecolor='black')
-    axs[i, j].set_xticks(col_space, col_space, size='small')
-    axs[i, j].set_yticks(np.arange(1, 1 + np.max(df_column_hist.values[0]), HIST_Y_TICKS_STEP_SIZE), np.arange(1, 1 + np.max(df_column_hist.values[0]), HIST_Y_TICKS_STEP_SIZE), size='small')
-    axs[i, j].grid(which='both')
-    axs[i, j].set_xlabel(xlabel)
-    axs[i, j].set_ylabel(ylabel)
-    #plt.savefig(f'DATA/{col}_stats.png')
-
-# delete unused subplots
-fig.delaxes(axs[0,2])
-fig.delaxes(axs[2,2])
-
-plt.tight_layout()
-plot_file_name = 'stats' + file_info_dict['file_version'] + '.png'
-plt.savefig(f'DATA/{plot_file_name}')
-
-# Allows us to see image
-# until closed forcefully
-cv2.waitKey(0)
-cv2.destroyAllWindows()
-
-# calculate the number of bits required for exactly one shape
-number_of_bits_required_for_one_shape = sum([np.log2(1.0 * len(space))\
-                                            for space in \
-                                            [SHAPE_TYPE_SPACE,\
-                                            COLOR_LIST,\
-                                            Y_CENTER_SPACE,\
-                                            X_CENTER_SPACE,\
-                                            b_CENTER_SPACE,\
-                                            a_CENTER_SPACE,\
-                                            alpha_CENTER_SPACE,\
-                                            FILL_NOFILL]])
-
-# calculate the number of bits required for all shapes combined
-number_of_bits_required_for_one_image = TOTAL_NUMBER_OF_SHAPES * number_of_bits_required_for_one_shape
-
-
-print(f"Number of bits for one SHAPE = {number_of_bits_required_for_one_shape}b.")
-print(f"Number of SHAPEs = {TOTAL_NUMBER_OF_SHAPES}.")
-print(f"Number of bits for one IMAGE = {number_of_bits_required_for_one_image}b.")
-print(f"Total number of seconds that the program runs = {round(time.time() - START_TIME)} sec.")
