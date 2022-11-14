@@ -5,25 +5,114 @@ file_info:
   - file_version: '_003'
   #- begin_file_version: 1
   #- end_file_version: 2
-  - file_extension: '.jpg'
+  - file_extension: '.png'
   - H : 600
   - W : 800
   - C : 3
+
 
 # args of the class SuperClassShape
-shape_info:
+images_info:
   - file_path: '/home/novakovm/iris/MILOS/DATA/'
   - file_name: 'color_img'
-  - file_version: '_001'
-  #- begin_file_version: 1
-  #- end_file_version: 2
-  - file_extension: '.jpg'
+  - file_version: '_000'
+  - begin_file_version: 0
+  - end_file_version: 999
+  - number_of_digits: 3
+  - file_extension: '.png'
   - H : 600
   - W : 800
   - C : 3
 
 
-all_possible_shapes:
+SHAPE_TYPE_SPACE:
   - Ellipse
-  - Polygon
+#  - Polygon
   - Parallelogram
+
+COOR_BEGIN:
+  - 0.1 # * W
+  - 0.1 # * H
+
+COLOR_LIST:
+  - 'blue'
+  - 'green'
+  - 'red'
+  - 'white'
+
+Y_CENTER_SPACE:
+  - 0.0   # * H + coor_begin_y
+  - 0.25  # * H + coor_begin_y
+  - 0.5   # * H + coor_begin_y
+  - 0.75  # * H + coor_begin_y
+
+X_CENTER_SPACE:
+  - 0.0   # * W + coor_begin_x
+  - 0.25  # * W + coor_begin_x
+  - 0.5   # * W + coor_begin_x
+  - 0.75  # * W + coor_begin_x
+
+b_CENTER_SPACE:
+  - 0.0625  # * H
+  - 0.125   # * H
+  - 0.1875  # * H
+  - 0.25    # * H
+
+a_CENTER_SPACE:
+  - 0.0625  # * W
+  - 0.125   # * W
+  - 0.1875  # * W
+  - 0.25    # * W
+
+alpha_CENTER_SPACE:
+  - 30
+  - 45
+  - 60
+  - 90
+
+#SHAPE_THICKNESS: 2
+
+FILL_NOFILL:
+  - -1
+  - 2 # SHAPE_THICKNESS
+
+TOTAL_NUMBER_OF_SHAPES : 20
+
+COLOR_DICT_WORD_2_BGR_CODE:
+  'white' : 
+    - 255
+    - 255
+    - 255
+  'black' : 
+    - 0
+    - 0
+    - 0
+  'blue' : 
+    - 255
+    - 0
+    - 0
+  'green' : 
+    - 0
+    - 255
+    - 0
+  'red' : 
+    - 0
+    - 0
+    - 255
+  'yellow' : 
+    - 0
+    - 255
+    - 255
+  'magenta' : 
+    - 255
+    - 0
+    - 255
+  'cyan' : 
+    - 255
+    - 255
+    - 0
+
+BACKGROUND_COLOR : 0
+HIST_Y_TICKS_STEP_SIZE : 4
+DRAW_IMAGINARY_LINES : False
+DRAW_IMAGINARY_CIRCLES : True
