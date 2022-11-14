@@ -346,7 +346,9 @@ class GeneratedImage:
                     # Center coordinates
                     center_coordinates = (x_coor, y_coor)
                     # Radius of circle
-                    radius = 10
+                    radius = int(0.0125 * max(self.H, self.W)) # 1/80 * max(H,W)
+                    if radius == 0:
+                        radius = 1
                     # CYAN color in BGR 
                     color = (255, 255, 0)# (255, 255, 255)
                     # Line thickness of -1 px

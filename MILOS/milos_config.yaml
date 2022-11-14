@@ -6,11 +6,11 @@ file_info:
   #- begin_file_version: 1
   #- end_file_version: 2
   - file_extension: '.png'
-  - H : 600
-  - W : 800
+  - H : 64
+  - W : 64
   - C : 3
-  - TOTAL_NUMBER_OF_SHAPES : 20
-  - TOTAL_NUMBER_OF_IMAGES : 10
+  - TOTAL_NUMBER_OF_SHAPES : 1
+  - TOTAL_NUMBER_OF_IMAGES : 64
 
 
 # args of the class SuperClassShape

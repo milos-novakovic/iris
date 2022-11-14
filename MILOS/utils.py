@@ -17,7 +17,7 @@ UINT  = np.uint8
 
 CSV_FILE_PATH = './DATA/all_generated_shapes.csv'
 STATS_FILE_PATH = './DATA/stats.png'
-GENERATE_STATS = False
+GENERATE_STATS = True
 
 current_working_absoulte_path = '/home/novakovm/iris/MILOS'
 os.chdir(current_working_absoulte_path)

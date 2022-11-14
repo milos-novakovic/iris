@@ -231,4 +231,4 @@ number_of_bits_required_for_one_image = TOTAL_NUMBER_OF_SHAPES * number_of_bits_
 print(f"Number of bits for one SHAPE = {number_of_bits_required_for_one_shape}b.")
 print(f"Number of SHAPEs = {TOTAL_NUMBER_OF_SHAPES}.")
 print(f"Number of bits for one IMAGE = {number_of_bits_required_for_one_image}b.")
-print(f"Total number of seconds that the program runs = {round(time.time() - START_TIME)} sec.")
+print(f"Total number of seconds that the program runs = {round(time.time() - START_TIME,2)} sec.")
