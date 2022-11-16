@@ -1,48 +1,5 @@
 from  utils import *
 
-# HIST_Y_TICKS_STEP_SIZE = 4
-# BACKGROUND_COLOR = 0 # black = 0 gray = 128 white = 255
-# SHAPE_THICKNESS = 2 #Thickness of -1 px will fill the rectangle shape by the specified color.
-# DRAW_IMAGINARY_LINES, DRAW_IMAGINARY_CIRCLES = False, True
-
-
-
-
-
-# # which shape features will be changed
-# # i.e. columns in pandas DF that will show the histograms of randomly distributed features
-# COLUMNS = [ #'shape_id',\
-#             'shape_name',\
-#             'a',\
-#             'b',\
-#             'shape_center_x',\
-#             'shape_center_y',\
-#             'alpha',\
-#             'shape_color',\
-#             #'shape_thickness'\
-#             ]
-
-
-# word to BGR code dict
-# COLOR_DICT_WORD_2_BGR_CODE = {}
-
-# COLOR_DICT_WORD_2_BGR_CODE['white'] = (255, 255, 255) # BGR code
-# COLOR_DICT_WORD_2_BGR_CODE['black'] = (0, 0, 0) # BGR code
-
-# COLOR_DICT_WORD_2_BGR_CODE['blue'] = (255, 0, 0) # BGR code
-# COLOR_DICT_WORD_2_BGR_CODE['green'] = (0, 255, 0) # BGR code
-# COLOR_DICT_WORD_2_BGR_CODE['red'] = (0, 0, 255) # BGR code
-
-# COLOR_DICT_WORD_2_BGR_CODE['yellow'] = (0, 255, 255) # BGR code
-# COLOR_DICT_WORD_2_BGR_CODE['magenta'] = (255, 0, 255) # BGR code
-# COLOR_DICT_WORD_2_BGR_CODE['cyan'] = (255, 255, 0) # BGR code
-
-# # BGR code to word dict
-# COLOR_DICT_BGR_2_WORD_CODE = {}
-# for word_code in COLOR_DICT_WORD_2_BGR_CODE:
-#     B,G,R = COLOR_DICT_WORD_2_BGR_CODE[word_code]
-#     BRG_code = str(B) + '-' + str(G) + '-' + str(R) #"B-G-R" code
-#     COLOR_DICT_BGR_2_WORD_CODE[BRG_code] = word_code
 
 class ImagesGenerator:
     def __init__(self, kwargs) -> None:

@@ -1,36 +1,20 @@
 from image_generator import *
-
 START_TIME = time.time()
-
-
-
-
 #if __name__ == "__main__":
 
-
 for image_id in range(TOTAL_NUMBER_OF_IMAGES):
-    file_info_dict : dict = {key:val for one_info in data['file_info'] for key,val in one_info.items()}
-
-    # obj info
-
-    file_info_dict['image_objects'] = {'background_color' : np.array([BACKGROUND_COLOR], dtype=UINT)}
-
-
+    # image image_id info
     SEED = image_id#52#42     
     np.random.seed(SEED)
+    file_info_dict : dict = {key:val for one_info in data['file_info'] for key,val in one_info.items()}
+    file_info_dict['image_objects'] = {'background_color' : np.array([BACKGROUND_COLOR], dtype=UINT)}    
     file_info_dict['file_version'] = '_' + str(image_id).zfill(len(str(TOTAL_NUMBER_OF_IMAGES)))
     
-    
-    
+    generated_image = GeneratedImage(file_info_dict)
+    generated_image.generate_image()
 
-    first_generated_image = GeneratedImage(file_info_dict)
-
-    first_generated_image.generate_image()
-
-    images_info_dict : dict = {key:val for one_info in data['images_info'] for key,val in one_info.items()}
-
-    images_info_dict['shape_ids'] = np.arange(1,TOTAL_NUMBER_OF_SHAPES)
-
+    #images_info_dict : dict = {key:val for one_info in data['images_info'] for key,val in one_info.items()}
+    #images_info_dict['shape_ids'] = np.arange(1,TOTAL_NUMBER_OF_SHAPES)
     list_of_shapes = ShapeList()
 
     # coordinates of all possible centers of shapes
@@ -79,11 +63,11 @@ for image_id in range(TOTAL_NUMBER_OF_IMAGES):
         if kwargs_shape['shape_name'] == "Ellipse":
             kwargs_shape['a'] = np.random.choice(a_CENTER_SPACE_np, size = 1)[0]
             kwargs_shape['b'] = np.random.choice(b_CENTER_SPACE_np, size = 1)[0]
-            kwargs_shape['alpha'] = np.random.choice(alpha_CENTER_SPACE_np, size = 1)[0] # default 0
+            kwargs_shape['alpha'] = np.random.choice(alpha_CENTER_SPACE_np, size = 1)[0] # default 0 to form a non-rotated Ellipse
         elif kwargs_shape['shape_name'] == "Parallelogram":
             kwargs_shape['a'] = np.random.choice(a_CENTER_SPACE_np, size = 1)[0]
             kwargs_shape['b'] = np.random.choice(b_CENTER_SPACE_np, size = 1)[0]
-            kwargs_shape['alpha'] = np.random.choice(alpha_CENTER_SPACE_np, size = 1)[0] # default 90
+            kwargs_shape['alpha'] = np.random.choice(alpha_CENTER_SPACE_np, size = 1)[0] # default 90 to form a rectangle
         else:
             assert(False, 'The shape must be Ellipse or Parallelogram!')
         
@@ -92,15 +76,15 @@ for image_id in range(TOTAL_NUMBER_OF_IMAGES):
             all_shapes_variable_data[c].append(kwargs_shape[c])
         
         new_shape = list_of_shapes.create_and_add_shape(kwargs_shape)
-        first_generated_image.add_shape(shape=new_shape)
-        #first_generated_image.add_shape_from_list(index_=i, list_of_shapes=list_of_shapes)
+        generated_image.add_shape(shape=new_shape)
+        #generated_image.add_shape_from_list(index_=i, list_of_shapes=list_of_shapes)
 
-    first_generated_image.draw_grid_on_image(X_coors=X_CENTER_SPACE_np, 
-                                            Y_coors=Y_CENTER_SPACE_np,
-                                            X_CENTER_SPACE_np = X_CENTER_SPACE_np, 
-                                            Y_CENTER_SPACE_np = Y_CENTER_SPACE_np,
-                                            draw_lines = DRAW_IMAGINARY_LINES,
-                                            draw_circles = DRAW_IMAGINARY_CIRCLES)
+    generated_image.draw_grid_on_image( X_coors=X_CENTER_SPACE_np, 
+                                        Y_coors=Y_CENTER_SPACE_np,
+                                        X_CENTER_SPACE_np = X_CENTER_SPACE_np, 
+                                        Y_CENTER_SPACE_np = Y_CENTER_SPACE_np,
+                                        draw_lines = DRAW_IMAGINARY_LINES,
+                                        draw_circles = DRAW_IMAGINARY_CIRCLES)
 
 
     if GENERATE_STATS:

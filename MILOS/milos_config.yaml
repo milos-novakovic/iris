@@ -81,6 +81,7 @@ FILL_NOFILL:
 
 
 COLOR_DICT_WORD_2_BGR_CODE:
+# BGR code (Blue, Green, Red)
   'white' : 
     - 255
     - 255
