@@ -19,8 +19,17 @@ CSV_FILE_PATH = './DATA/all_generated_shapes.csv'
 STATS_FILE_PATH = './DATA/stats.png'
 GENERATE_STATS = True
 
+
+
+
+
 current_working_absoulte_path = '/home/novakovm/iris/MILOS'
 os.chdir(current_working_absoulte_path)
+
+
+#import os
+path = current_working_absoulte_path + '/DATA'
+os.system('rm -rf %s/*' % path)
 
 milos_config_path = 'milos_config.yaml'
 # Open the file and load the file
