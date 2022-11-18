@@ -5,14 +5,6 @@ START_TIME = time.time()
 file_info_dict : dict = {key:val for one_info in data['file_info'] for key,val in one_info.items()}
 H,W = file_info_dict['H'], file_info_dict['W']
 
-#empirical calculation of first centered moment per channel of image
-x_mean_bar_ch2_red, x_mean_bar_ch1_green, x_mean_bar_ch0_blue = \
-np.zeros((H,W), dtype=FLOAT),  np.zeros((H,W), dtype=FLOAT),  np.zeros((H,W), dtype=FLOAT)
-
-#empirical calculation of second centered moment per channel of image
-x2_mean_bar_ch2_red, x2_mean_bar_ch1_green, x2_mean_bar_ch0_blue = \
-    np.zeros((H,W), dtype=FLOAT),  np.zeros((H,W), dtype=FLOAT),  np.zeros((H,W), dtype=FLOAT)
-
 
 for image_id in range(TOTAL_NUMBER_OF_IMAGES):
     # image image_id info
@@ -97,31 +89,6 @@ for image_id in range(TOTAL_NUMBER_OF_IMAGES):
                                         Y_CENTER_SPACE_np = Y_CENTER_SPACE_np,
                                         draw_lines = DRAW_IMAGINARY_LINES,
                                         draw_circles = DRAW_IMAGINARY_CIRCLES)
-    
-    # update empirical estimates for 1st and 2nd centered moments
-    x = cv2.imread(generated_image.get_full_path())
-    #np.float64(x)[:,:,0]
-    
-    #ch0 is blue
-    #np.float64(x)[:,:,0]
-    #4.98046875
-    #ch1 is green
-    #np.float64(x)[:,:,1]
-    #20.54443359375
-    #ch 2 is red
-    #np.float64(x)[:,:,2]
-    #0.0
-    x_mean_bar_ch2_red, x_mean_bar_ch1_green, x_mean_bar_ch0_blue = \
-        x_mean_bar_ch2_red   + (x_mean_bar_ch2_red   - np.float64(x)[:,:,2])/(image_id+1), \
-        x_mean_bar_ch1_green + (x_mean_bar_ch1_green - np.float64(x)[:,:,1])/(image_id+1), \
-        x_mean_bar_ch0_blue  + (x_mean_bar_ch0_blue  - np.float64(x)[:,:,0])/(image_id+1)
-    
-    x2_mean_bar_ch2_red, x2_mean_bar_ch1_green, x2_mean_bar_ch0_blue = \
-        x2_mean_bar_ch2_red     + (x2_mean_bar_ch2_red   - np.float64(x)[:,:,2]**2)/(image_id+1), \
-        x2_mean_bar_ch1_green   + (x2_mean_bar_ch1_green - np.float64(x)[:,:,1]**2)/(image_id+1), \
-        x2_mean_bar_ch0_blue    + (x2_mean_bar_ch0_blue  - np.float64(x)[:,:,0]**2)/(image_id+1)
-    
-    
     
 
     if GENERATE_STATS:
@@ -248,22 +215,6 @@ number_of_bits_required_for_one_shape = sum([np.log2(1.0 * len(space))\
 # calculate the number of bits required for all shapes combined
 number_of_bits_required_for_one_image = TOTAL_NUMBER_OF_SHAPES * number_of_bits_required_for_one_shape
 
-#available
-#x_mean_bar_ch2_red, x_mean_bar_ch1_green, x_mean_bar_ch0_blue
-
-x_std_bar_ch2_red, x_std_bar_ch1_green, x_std_bar_ch0_blue = \
-    np.sqrt((TOTAL_NUMBER_OF_IMAGES*1.) / (TOTAL_NUMBER_OF_IMAGES - 1.) * (x2_mean_bar_ch2_red   - x_mean_bar_ch2_red**2)),  \
-    np.sqrt((TOTAL_NUMBER_OF_IMAGES*1.) / (TOTAL_NUMBER_OF_IMAGES - 1.) * (x2_mean_bar_ch1_green - x_mean_bar_ch1_green**2)),\
-    np.sqrt((TOTAL_NUMBER_OF_IMAGES*1.) / (TOTAL_NUMBER_OF_IMAGES - 1.) * (x2_mean_bar_ch0_blue  - x_mean_bar_ch0_blue**2))  
-
-
-with open('./DATA/mean_and_std_of_training_set.npy', 'wb') as saving_handle:
-    np.save(saving_handle, x_mean_bar_ch2_red)
-    np.save(saving_handle, x_mean_bar_ch1_green)
-    np.save(saving_handle, x_mean_bar_ch0_blue)
-    np.save(saving_handle, x_std_bar_ch2_red)
-    np.save(saving_handle, x_std_bar_ch1_green)
-    np.save(saving_handle, x_std_bar_ch0_blue)
 
 
 
@@ -271,3 +222,4 @@ print(f"Number of bits for one SHAPE = {number_of_bits_required_for_one_shape}b.
 print(f"Number of SHAPEs = {TOTAL_NUMBER_OF_SHAPES}.")
 print(f"Number of bits for one IMAGE = {number_of_bits_required_for_one_image}b.")
 print(f"Total number of seconds that the program runs = {round(time.time() - START_TIME,2)} sec.")
+debug = 0
