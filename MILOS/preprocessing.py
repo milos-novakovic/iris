@@ -14,7 +14,9 @@ import os
 
 from PIL import Image
 
-def find_mean_std(TOTAL_NUMBER_OF_IMAGES, image_ids_numbers = None):
+def find_mean_std(TOTAL_NUMBER_OF_IMAGES, image_ids_numbers = None, method = 'n'):
+    # method = 'n' or method = 'n-1'
+    
     # image_ids_numbers is the list of numbers for what images to produce estimate of mean and variance
     # (so that it works for full batch, i.e. all training images, when image_ids_numbers = None)
     # and for a subset of images when image_ids_numbers has acctually elements
@@ -33,11 +35,19 @@ def find_mean_std(TOTAL_NUMBER_OF_IMAGES, image_ids_numbers = None):
     x2_mean_bar_ch2_red, x2_mean_bar_ch1_green, x2_mean_bar_ch0_blue = \
     0.,0.,0.#np.zeros((H,W), dtype=FLOAT),  np.zeros((H,W), dtype=FLOAT),  np.zeros((H,W), dtype=FLOAT)
 
+    R,G,B = 0.,0.,0.
+    R_imgs,G_imgs,B_imgs = [],[],[]
+    
+
     for i,image_id in enumerate(image_ids):
         # update empirical estimates for 1st and 2nd centered moments
         image_full_path = './DATA/color_img_' + image_id + '.png'
         
         x = cv2.imread(image_full_path)
+        
+        R_imgs.append(np.float64(x)[:,:,2])
+        G_imgs.append(np.float64(x)[:,:,1])
+        B_imgs.append(np.float64(x)[:,:,0])
 
         x_mean_bar_ch2_red, x_mean_bar_ch1_green, x_mean_bar_ch0_blue = \
             x_mean_bar_ch2_red   + (-x_mean_bar_ch2_red   + np.mean(np.float64(x)[:,:,2]))/(i+1), \
@@ -51,12 +61,21 @@ def find_mean_std(TOTAL_NUMBER_OF_IMAGES, image_ids_numbers = None):
 
     #available
     #x_mean_bar_ch2_red, x_mean_bar_ch1_green, x_mean_bar_ch0_blue
-
-    x_std_bar_ch2_red, x_std_bar_ch1_green, x_std_bar_ch0_blue = \
-        np.sqrt((TOTAL_NUMBER_OF_IMAGES*1.) / (TOTAL_NUMBER_OF_IMAGES - 1.) * (x2_mean_bar_ch2_red   - x_mean_bar_ch2_red**2)),  \
-        np.sqrt((TOTAL_NUMBER_OF_IMAGES*1.) / (TOTAL_NUMBER_OF_IMAGES - 1.) * (x2_mean_bar_ch1_green - x_mean_bar_ch1_green**2)),\
-        np.sqrt((TOTAL_NUMBER_OF_IMAGES*1.) / (TOTAL_NUMBER_OF_IMAGES - 1.) * (x2_mean_bar_ch0_blue  - x_mean_bar_ch0_blue**2))  
-
+    x_std_bar_ch2_red, x_std_bar_ch1_green, x_std_bar_ch0_blue = None, None, None
+    
+    if method == 'n-1': # unbiased
+        x_std_bar_ch2_red, x_std_bar_ch1_green, x_std_bar_ch0_blue = \
+            np.sqrt((TOTAL_NUMBER_OF_IMAGES*1.) / (TOTAL_NUMBER_OF_IMAGES - 1.) * (x2_mean_bar_ch2_red   - x_mean_bar_ch2_red**2)),  \
+            np.sqrt((TOTAL_NUMBER_OF_IMAGES*1.) / (TOTAL_NUMBER_OF_IMAGES - 1.) * (x2_mean_bar_ch1_green - x_mean_bar_ch1_green**2)),\
+            np.sqrt((TOTAL_NUMBER_OF_IMAGES*1.) / (TOTAL_NUMBER_OF_IMAGES - 1.) * (x2_mean_bar_ch0_blue  - x_mean_bar_ch0_blue**2))  
+    
+    elif method == 'n': # numpy
+        x_std_bar_ch2_red, x_std_bar_ch1_green, x_std_bar_ch0_blue = \
+            np.sqrt(x2_mean_bar_ch2_red   - x_mean_bar_ch2_red**2),  \
+            np.sqrt(x2_mean_bar_ch1_green - x_mean_bar_ch1_green**2),  \
+            np.sqrt(x2_mean_bar_ch0_blue  - x_mean_bar_ch0_blue**2)
+    else:
+        assert(False)
     # with open('./DATA/mean_and_std_of_training_set.npy', 'wb') as saving_handle:
     #     np.save(saving_handle, x_mean_bar_ch2_red)
     #     np.save(saving_handle, x_mean_bar_ch1_green)
@@ -66,16 +85,21 @@ def find_mean_std(TOTAL_NUMBER_OF_IMAGES, image_ids_numbers = None):
     #     np.save(saving_handle, x_std_bar_ch0_blue)
 
     # two arrays of (3,) size
-    RGB_mean = [x_mean_bar_ch2_red,x_mean_bar_ch1_green,x_mean_bar_ch0_blue]#np.dstack((x_mean_bar_ch2_red,x_mean_bar_ch1_green,x_mean_bar_ch0_blue))
-    RGB_std = [x_std_bar_ch2_red,x_std_bar_ch1_green,x_std_bar_ch0_blue]#np.dstack((x_std_bar_ch2_red,x_std_bar_ch1_green,x_std_bar_ch0_blue))    
-    return RGB_mean, RGB_std
+    RGB_mean = np.array([x_mean_bar_ch2_red,x_mean_bar_ch1_green,x_mean_bar_ch0_blue])#np.dstack((x_mean_bar_ch2_red,x_mean_bar_ch1_green,x_mean_bar_ch0_blue))
+    RGB_std = np.array([x_std_bar_ch2_red,x_std_bar_ch1_green,x_std_bar_ch0_blue])#np.dstack((x_std_bar_ch2_red,x_std_bar_ch1_green,x_std_bar_ch0_blue))    
+    
+    R_imgs,G_imgs,B_imgs = np.array(R_imgs),np.array(G_imgs),np.array(B_imgs)
+    RGB_mean_np = np.array([np.mean(R_imgs),np.mean(G_imgs),np.mean(B_imgs)])
+    RGB_std_np = np.array([np.std(R_imgs),np.std(G_imgs),np.std(B_imgs)])
+    
+    return RGB_mean, RGB_std, RGB_mean_np, RGB_std_np
 
 
 TEST_DATA_PATH = './DATA_TEST/'
 #Step 2 - Take Sample data
 
-img = Image.open("./DATA/color_img_000.png")
-H,W = img.size
+#img = Image.open("./DATA/color_img_000.png")
+#H,W = img.size
 
 #Step 3 - Convert to tensor
 
