@@ -53,6 +53,9 @@ TRANSFORM_IMG = transforms.Compose([
     #transforms.ToTensor(),
     transforms.Normalize(mean=np.load(TRAIN_IMAGES_MEAN_FILE_PATH).tolist(),
                          std=np.load(TRAIN_IMAGES_STD_FILE_PATH).tolist() )
+    # OR
+    # transforms.Normalize(mean = [0., 0., 0.],
+    #                      std  = [255., 255., 255.])
     ])
 
 # Train Data & Train data Loader
