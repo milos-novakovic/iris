@@ -250,10 +250,8 @@ def same_padding(h_in, w_in, s, k):
         pad_along_width = max(k[1] - s[1], 0)
     else:
         pad_along_width = max(k[1] - (w_in % s[1]), 0)
-
-    print(pad_along_height, pad_along_width)
   
-#Finally, the padding on the top, bottom, left and right are:
+    #Finally, the padding on the top, bottom, left and right are:
 
     pad_top = pad_along_height // 2
     pad_bottom = pad_along_height - pad_top
@@ -422,7 +420,7 @@ if TRAIN_FLAG:
             
         train_loss_avg[-1] /= num_batches
         print('Epoch [%d / %d] average reconstruction error: %f' % (epoch+1, NUM_EPOCHS, train_loss_avg[-1]))#2h
-        print(f'{epoch}th epoch took {time.time() - start_time_epoch} seconds. ')
+        print(f'{epoch}th epoch took {int(time.time() - start_time_epoch)} seconds. ')
         # TO DO:
         ### NICE TO SEE IN THE TRAINING LOOP like in tensor flow
         # Epoch 48/50
@@ -457,7 +455,7 @@ if TRAIN_FLAG:
 
 vanilla_autoencoder_loaded = None
 if USE_PRETRAINED_VANILLA_AUTOENCODER:
-    current_time_str = '2022_11_19_20_11_26'
+    current_time_str = '2022_11_20_17_13_14' # 17h 13min 14 sec 20th Nov. 2022
     #autoencoder_loaded_path = '/home/novakovm/iris/MILOS/autoencoder_' + current_time_str + '.py'
     vanilla_autoencoder_loaded_path = '/home/novakovm/iris/MILOS/vanilla_autoencoder_' + current_time_str + '.py'
 

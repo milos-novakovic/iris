@@ -6,11 +6,22 @@ file_info_dict : dict = {key:val for one_info in data['file_info'] for key,val i
 H,W = file_info_dict['H'], file_info_dict['W']
 
 
+TOTAL_NUMBER_OF_IMAGES = TRAIN_TOTAL_NUMBER_OF_IMAGES if TRAIN_MODE else TEST_TOTAL_NUMBER_OF_IMAGES
+
 for image_id in range(TOTAL_NUMBER_OF_IMAGES):
+    if image_id % 1000 == 0 and image_id > 0:
+        print(f"Generated {image_id}-th image!")
     # image image_id info
-    SEED = image_id#52#42     
+    # SEED is set here
+    SEED = image_id#52#42
+    if TEST_MODE:
+        SEED += TRAIN_TOTAL_NUMBER_OF_IMAGES     
     np.random.seed(SEED)
+    
     file_info_dict : dict = {key:val for one_info in data['file_info'] for key,val in one_info.items()}
+    if TEST_MODE:
+        file_info_dict['file_path'] = file_info_dict['TEST_file_path']
+        
     file_info_dict['image_objects'] = {'background_color' : np.array([BACKGROUND_COLOR], dtype=UINT)}    
     file_info_dict['file_version'] = '_' + str(image_id).zfill(len(str(TOTAL_NUMBER_OF_IMAGES)))
     

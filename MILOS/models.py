@@ -291,8 +291,6 @@ class Vanilla_Autoencoder(nn.Module):
     def forward(self, x):
         # encoder part
         
-        p2d = (1, 1, 2, 2) # pad last dim by (1, 1) and 2nd to last by (2, 2)
-        
         # H : pad_top, pad_bottom,
         # W : pad_left, pad_right
         H_pad_top, H_pad_bottom, W_pad_left, W_pad_right = self.conv1_padding
@@ -319,6 +317,7 @@ class Vanilla_Autoencoder(nn.Module):
         #latent_tensor = x
         
         # decoder part
+        x = self.upsample1(x)
         
         H_pad_top, H_pad_bottom, W_pad_left, W_pad_right = self.conv4_padding
         padding_left,padding_right, padding_top, padding_bottom = W_pad_left, W_pad_right,H_pad_top, H_pad_bottom

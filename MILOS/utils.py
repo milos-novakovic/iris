@@ -15,21 +15,35 @@ INT = np.int64
 FLOAT = np.float64
 UINT  = np.uint8
 
-CSV_FILE_PATH = './DATA/all_generated_shapes.csv'
-STATS_FILE_PATH = './DATA/stats.png'
-GENERATE_STATS = True
 
 
+GENERATE_STATS = False
+TRAIN_MODE = False
+TEST_MODE = not(TRAIN_MODE)
 
 
+CSV_FILE_PATH, STATS_FILE_PATH = None, None
+if TRAIN_MODE:
+    CSV_FILE_PATH = './DATA/all_generated_shapes.csv'
+    STATS_FILE_PATH = './DATA/stats.png'
+elif TEST_MODE:
+    CSV_FILE_PATH = './DATA_TEST/all_generated_shapes.csv'
+    STATS_FILE_PATH = './DATA_TEST/stats.png'
 
 current_working_absoulte_path = '/home/novakovm/iris/MILOS'
 os.chdir(current_working_absoulte_path)
 
 
 #import os
-path = current_working_absoulte_path + '/DATA'
-os.system('rm -rf %s/*' % path)
+if TRAIN_MODE:
+    # if training then delete previous dataset
+    path = current_working_absoulte_path + '/DATA'
+    os.system('rm -rf %s/*' % path)
+    
+if TEST_MODE:
+    # if training then delete previous dataset
+    path = current_working_absoulte_path + '/DATA_TEST'
+    os.system('rm -rf %s/*' % path)
 
 milos_config_path = 'milos_config.yaml'
 # Open the file and load the file
@@ -48,6 +62,9 @@ FILL_NOFILL =                  [one_info for one_info in data['FILL_NOFILL']]
 TOTAL_NUMBER_OF_SHAPES =       [dict_['TOTAL_NUMBER_OF_SHAPES'] for dict_ in data['file_info'] if 'TOTAL_NUMBER_OF_SHAPES' in dict_][0]
 TOTAL_NUMBER_OF_IMAGES =       [dict_['TOTAL_NUMBER_OF_IMAGES'] for dict_ in data['file_info'] if 'TOTAL_NUMBER_OF_IMAGES' in dict_][0]
 
+# Test
+TEST_TOTAL_NUMBER_OF_IMAGES = [dict_['TEST_TOTAL_NUMBER_OF_IMAGES'] for dict_ in data['file_info'] if 'TEST_TOTAL_NUMBER_OF_IMAGES' in dict_][0]
+TRAIN_TOTAL_NUMBER_OF_IMAGES = TOTAL_NUMBER_OF_IMAGES
 
 # [-1]['TOTAL_NUMBER_OF_SHAPES']#data['TOTAL_NUMBER_OF_SHAPES']
 # TOTAL_NUMBER_OF_IMAGES =       data['file_info'][-1]['TOTAL_NUMBER_OF_IMAGES']#data['TOTAL_NUMBER_OF_SHAPES']
