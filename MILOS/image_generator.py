@@ -120,7 +120,7 @@ class SuperClassShape:
                 f"fill = {self.shape_thickness}"
     
     def draw_(self, path, image = None) -> None:
-        raise NotImplementedError("This is abstract class.")
+        raise NotImplementedError("This is an abstract class.")
     
 class Ellipse(SuperClassShape): # elipsa
     
@@ -142,6 +142,19 @@ class Ellipse(SuperClassShape): # elipsa
                             rotation_angle, startAngle, endAngle, 
                             color, self.shape_thickness)
         
+        #image = cv2.imread("lenacolor512.tiff", cv2.IMREAD_COLOR)  # uint8 image
+        #norm_image = cv2.normalize(image, None, alpha=0, beta=1, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_32F)
+        #cv2.imwrite(path, norm_image)        
+        
+        # push values of an image to be float and in range (0,1)
+        # get picutre back with
+        # x = cv2.imread('/home/novakovm/iris/MILOS/DATA/color_img_18.png')
+        #x = (np.round(x*255.)).astype(int)
+        
+        
+        # put image from 0 to 255 (int values)
+        # to range from 0. to 1. (float values)
+        #image = image.astype(float) / 255.
         cv2.imwrite(path, image)
 
         
@@ -209,6 +222,20 @@ class Parallelogram(SuperClassShape): # paralelogram - rectangle
                 assert(False, "thickness parameter has to be integer >= -1!" )    
         else:
             assert(False, "Alpha has to be between 0 and 90!" )
+        
+        #image = cv2.imread("lenacolor512.tiff", cv2.IMREAD_COLOR)  # uint8 image
+        #norm_image = cv2.normalize(image, None, alpha=0, beta=1, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_32F)
+        #cv2.imwrite(path, norm_image)
+        
+        # push values of an image to be float and in range (0,1)
+        # get picutre back with
+        # x = cv2.imread('/home/novakovm/iris/MILOS/DATA/color_img_18.png')
+        #x = (np.round(x*255.)).astype(int)
+        
+        
+        # put image from 0 to 255 (int values)
+        # to range from 0. to 1. (float values)
+        #image = image.astype(float) / 255.
         cv2.imwrite(path, image)
         
 class ShapeList:
