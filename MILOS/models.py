@@ -124,7 +124,7 @@ class Decoder(nn.Module):
         #self.conv2 = nn.ConvTranspose2d(in_channels=c*2, out_channels=c, kernel_size=4, stride=2, padding=1)
         
         if params_decoder['conv2_exists']:
-            self.conv2 = nn.Conv2d( in_channels=params_decoder['in_channels_conv2'],  # 2*64
+            self.conv2 = nn.ConvTranspose2d( in_channels=params_decoder['in_channels_conv2'],  # 2*64
                                     out_channels=params_decoder['out_channels_conv2'], # 64
                                     kernel_size=params_decoder['kernel_size_conv2'], # 4
                                     stride=params_decoder['stride_conv2'], # 2
@@ -136,7 +136,7 @@ class Decoder(nn.Module):
         
         #self.conv1 = nn.ConvTranspose2d(in_channels=c, out_channels=1, kernel_size=4, stride=2, padding=1)
         if params_decoder['conv1_exists']:
-            self.conv1 = nn.Conv2d( in_channels=params_decoder['out_channels_conv2'],  # 64 = params_decoder['in_channels_conv1']
+            self.conv1 = nn.ConvTranspose2d( in_channels=params_decoder['out_channels_conv2'],  # 64 = params_decoder['in_channels_conv1']
                                     out_channels=params_decoder['out_channels_conv1'], # 3
                                     kernel_size=params_decoder['kernel_size_conv1'], # 4
                                     stride=params_decoder['stride_conv1'], # 2

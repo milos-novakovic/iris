@@ -38,7 +38,7 @@ TRAIN_FLAG = True
 
 NUM_EPOCHS = 20
 BATCH_SIZE = 128
-LEARNING_RATE = 0.003
+LEARNING_RATE = 3 * 1e-3#0.003
 
 TRAIN_DATA_PATH = './DATA/'
 TEST_DATA_PATH = './DATA_TEST/'
@@ -220,7 +220,7 @@ if TRAIN_FLAG:
             
         train_loss_avg[-1] /= num_batches
         print('Epoch [%d / %d] average reconstruction error: %f' % (epoch+1, NUM_EPOCHS, train_loss_avg[-1]))#2h
-        print(f'{epoch}th epoch took {round((start_time_epoch - time.time())/60,2)} minutes. ')
+        print(f'{epoch}th epoch took {round((time.time() - start_time_epoch),0)} seconds. ')
         
     
     current_time_str = time.strftime("%Y_%m_%d_%H_%M_%S", time.gmtime(time.time())) # 2022_11_19_20_11_26
