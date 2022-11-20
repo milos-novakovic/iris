@@ -163,3 +163,179 @@ class Autoencoder(nn.Module):
         latent = self.encoder(x)
         x_recon = self.decoder(latent)
         return x_recon
+    
+    
+
+class Vanilla_Autoencoder(nn.Module):
+    def __init__(self,params):
+        super(Vanilla_Autoencoder, self).__init__()
+        #self.encoder = Encoder(params_encoder)
+        #self.decoder = Decoder(params_decoder)
+        
+        ### Torch ###
+
+        ### CONV 1 ###
+        #model.add(Conv2D(filters = 32, kernel_size=3, strides=1, padding='same', activation='relu', input_shape=(32, 32, 3)))
+        # model.add(Conv2D(filters = 32, kernel_size=3, strides=2, padding='same', activation='relu'))      # 16x16x32
+        self.conv1 = nn.Conv2d( in_channels=params['in_channels_conv1'], #3
+                                out_channels=params['out_channels_conv1'], #32
+                                 kernel_size=params['kernel_size_conv1'], # 3,3
+                                stride=params['stride_conv1'], # 1,1
+                                #padding=params['padding_conv1'], # calculated
+                                dilation= params['dilation_conv1']) # 1,1 - default
+
+        # calculated= padding order =  pad_top, pad_bottom, pad_left, pad_right
+        self.conv1_padding = params['padding_conv1_calculated']
+        
+        self.conv1_H_out = params['conv1_H_out']	#32
+        self.conv1_W_out = params['conv1_W_out']	#32
+         #activation ReLU
+         #x = F.relu(self.conv1(x))
+
+        #model.add(BatchNormalization())     # 32x32x32
+        self.bn1 = nn.BatchNorm2d(num_features = params['out_channels_conv1'])#nn.BatchNorm2d(num_features = C_out_conv1)
+
+        ### CONV 2 ###
+        #model.add(Conv2D(filters = 32, kernel_size=3, strides=2, padding='same', activation='relu'))      # 16x16x32
+        self.conv2 = nn.Conv2d( in_channels=params['in_channels_conv2'], #32
+                                out_channels=params['out_channels_conv2'], #32
+                                kernel_size=params['kernel_size_conv2'], # 3,3
+                                stride=params['stride_conv2'], # 2,2
+                                #padding=params['padding_conv2'], # calculated
+                                dilation= params['dilation_conv2']) # 1,1 - default
+        
+        # calculated= padding order =  pad_top, pad_bottom, pad_left, pad_right
+        self.conv2_padding = params['padding_conv2_calculated']
+        
+        self.conv2_H_out = params['conv2_H_out']            
+        self.conv2_W_out = params['conv2_W_out']
+
+        #activation ReLU
+        #x = F.relu(self.conv2(x))
+
+        ### CONV 3 ###
+        #model.add(Conv2D(filters = 32, kernel_size=3, strides=1, padding='same', activation='relu'))      # 16x16x32
+        self.conv3 = nn.Conv2d( in_channels=params['in_channels_conv3'], #32
+                                out_channels=params['out_channels_conv3'], #32
+                                kernel_size=params['kernel_size_conv3'], # 3,3
+                                stride=params['stride_conv3'], # 1,1
+                                #padding=params['padding_conv3'], # calculated
+                                dilation= params['dilation_conv3']) # 1,1 - default
+
+        # calculated= padding order =  pad_top, pad_bottom, pad_left, pad_right
+        self.conv3_padding = params['padding_conv3_calculated']
+
+        self.conv3_H_out = params['conv3_H_out']            
+        self.conv3_W_out = params['conv3_W_out']
+
+        #activation ReLU
+        #x = F.relu(self.conv3(x))
+
+        #model.add(BatchNormalization())     # 16x16x32
+        self.bn2 = nn.BatchNorm2d(num_features = params['out_channels_conv3'])#nn.BatchNorm2d(num_features = C_out_conv3)
+        
+        # calculate the dimension of latent space
+        self.latent_dimension = params['latent_dimension']
+        ### UpSampling ###
+        #tf.keras.layers.UpSampling2D(size=(2, 2), data_format=None, interpolation='nearest') # 16x16x32
+        
+        
+        #params['upsample1_mode'] = 'nearest'
+        #params['upsample1_scale_factor'] = (2,2)
+        self.upsample1 = torch.nn.Upsample(size=None, scale_factor=params['upsample1_scale_factor'], mode=params['upsample1_mode'], align_corners=None, recompute_scale_factor=None)
+
+        ### CONV 4 ###
+        #model.add(Conv2D(filters = 32, kernel_size=3, strides=1, padding='same', activation='relu'))      # 32x32x32
+        self.conv4 = nn.Conv2d( in_channels=params['in_channels_conv4'], #32
+                                out_channels=params['out_channels_conv4'], #32
+                                kernel_size=params['kernel_size_conv4'], # 3,3
+                                stride=params['stride_conv4'], # 1,1
+                                #padding=params['padding_conv4'], # calculated
+                                dilation= params['dilation_conv4']) # 1,1 - default
+
+        # calculated= padding order =  pad_top, pad_bottom, pad_left, pad_right
+        self.conv4_padding = params['padding_conv4_calculated']
+
+        self.conv4_H_out = params['conv4_H_out']            
+        self.conv4_W_out = params['conv4_W_out']
+
+        #activation ReLU
+        #x = F.relu(self.conv4(x))
+
+
+        #model.add(BatchNormalization())     # 32x32x32
+        self.bn3 = nn.BatchNorm2d(num_features = params['out_channels_conv4'])#nn.BatchNorm2d(num_features = C_out_conv4)
+
+
+        ### CONV 5 ###
+        #model.add(Conv2D(filters = 3,  kernel_size=1, strides=1, padding='same', activation='sigmoid'))   # 32x32x3
+        self.conv5 = nn.Conv2d( in_channels=params['in_channels_conv5'], #32
+                                out_channels=params['out_channels_conv5'], #3
+                                kernel_size=params['kernel_size_conv5'], # 1,1
+                                stride=params['stride_conv5'], # 1,1
+                                #padding=params['padding_conv5'], # calculated
+                                dilation= params['dilation_conv5']) # 1,1 - default
+
+        # calculated= padding order =  pad_top, pad_bottom, pad_left, pad_right
+        self.conv5_padding = params['padding_conv5_calculated']
+
+        self.conv5_H_out = params['conv5_H_out']            
+        self.conv5_W_out = params['conv5_W_out']
+
+        #activation SIGMOID
+        #x = F.sigmoid(self.conv5(x))
+
+        # Training
+        # model.compile(optimizer='adam', metrics=['accuracy'], loss='mean_squared_error')
+        
+    def forward(self, x):
+        # encoder part
+        
+        p2d = (1, 1, 2, 2) # pad last dim by (1, 1) and 2nd to last by (2, 2)
+        
+        # H : pad_top, pad_bottom,
+        # W : pad_left, pad_right
+        H_pad_top, H_pad_bottom, W_pad_left, W_pad_right = self.conv1_padding
+        padding_left,padding_right, padding_top, padding_bottom = W_pad_left, W_pad_right,H_pad_top, H_pad_bottom
+        padding = (padding_left,padding_right, padding_top, padding_bottom)
+        
+        x = F.pad(x, padding, "constant", 0)
+        x = self.bn1(F.relu(self.conv1(x)))
+        
+        H_pad_top, H_pad_bottom, W_pad_left, W_pad_right = self.conv2_padding
+        padding_left,padding_right, padding_top, padding_bottom = W_pad_left, W_pad_right,H_pad_top, H_pad_bottom
+        padding = (padding_left,padding_right, padding_top, padding_bottom)
+        
+        x = F.pad(x, padding, "constant", 0)
+        x = F.relu(self.conv2(x))
+        
+        H_pad_top, H_pad_bottom, W_pad_left, W_pad_right = self.conv3_padding
+        padding_left,padding_right, padding_top, padding_bottom = W_pad_left, W_pad_right,H_pad_top, H_pad_bottom
+        padding = (padding_left,padding_right, padding_top, padding_bottom)
+        x = F.pad(x, padding, "constant", 0)
+        
+        x = F.relu(self.conv3(x))
+        x = self.bn2(x)
+        #latent_tensor = x
+        
+        # decoder part
+        
+        H_pad_top, H_pad_bottom, W_pad_left, W_pad_right = self.conv4_padding
+        padding_left,padding_right, padding_top, padding_bottom = W_pad_left, W_pad_right,H_pad_top, H_pad_bottom
+        padding = (padding_left,padding_right, padding_top, padding_bottom)
+        x = F.pad(x, padding, "constant", 0)
+        
+        x = F.relu(self.conv4(x))
+        x = self.bn3(x)
+        
+        H_pad_top, H_pad_bottom, W_pad_left, W_pad_right = self.conv5_padding
+        padding_left,padding_right, padding_top, padding_bottom = W_pad_left, W_pad_right,H_pad_top, H_pad_bottom
+        padding = (padding_left,padding_right, padding_top, padding_bottom)
+        x = F.pad(x, padding, "constant", 0)
+        
+        x = torch.sigmoid(self.conv5(x))
+        return x
+        
+        #latent = self.encoder(x)
+        #x_recon = self.decoder(latent)
+        #return x_recon

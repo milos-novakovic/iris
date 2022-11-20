@@ -48,6 +48,22 @@ autoencoder = Model(input_img, decoded)
 autoencoder.compile(optimizer='adam', loss='mse')
 
 
+def same_padding(n_i, s, k):
+    # SAME padding: This is kind of tricky to understand in the first place because we have to consider two conditions separately as mentioned in the official docs.
+
+    # Let's take input as n_i , output as n_o, padding as p_i, stride as s and kernel size as k (only a single dimension is considered)
+
+    # Case 01: n_i \mod s = 0 :p_i = max(k-s ,0)
+
+    # Case 02: n_i \mod s \neq 0 : p_i = max(k - (n_i\mod s)), 0)
+
+    # p_i is calculated such that the minimum value which can be taken for padding. Since value of p_i is known, value of n_0 can be found using this formula (n_i - k + 2p_i)/2 + 1 = n_0.
+    p = None
+    if n_i % s == 0:
+        p = max(k-s ,0)
+    else:
+        p = max((k - (n_i % s)), 0)
+    return p
 ### Good for coloured Image ###
 
 model = Sequential()
