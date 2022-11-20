@@ -23,7 +23,7 @@ H,W,C = 64, 64,3#32,32,3 #64, 64,3
 args_train = {}
 args_train['TOTAL_NUMBER_OF_IMAGES'] = 100000
 args_test = {}
-args_test['TOTAL_NUMBER_OF_IMAGES'] = 100000
+args_test['TOTAL_NUMBER_OF_IMAGES'] = 10000
 
 num_workers = 4
 #learning_rate = 0.001
@@ -36,7 +36,7 @@ LATENT_DIM = 10
 USE_GPU = True
 TRAIN_FLAG = True
 
-NUM_EPOCHS = 20
+NUM_EPOCHS = 10#20
 BATCH_SIZE = 128
 LEARNING_RATE = 1e-3#3 * 1e-3#0.003
 
@@ -470,7 +470,7 @@ if USE_PRETRAINED_VANILLA_AUTOENCODER:
 
 print('Testing ...')
 test_loss_avg, num_batches = 0, 0
-for image_batch, _ in test_data_loader:
+for image_batch in test_data_loader:
     
     with torch.no_grad():
         image_batch = image_batch.to(device)
@@ -513,75 +513,140 @@ else:
 # This function takes as an input the images to reconstruct
 # and the name of the model with which the reconstructions
 # are performed
-def to_img(x):
+def to_img(x, compose_transforms = None):
+    # x dim = (N,C,H,W)
+    if compose_transforms == None:
+        return x
     
     #np.save('./DATA/RGB_mean.npy', RGB_mean) 
-    RGB_mean = np.load('./DATA/RGB_mean.npy')
-    RGB_std = np.load('./DATA/RGB_std.npy')
+    #RGB_mean = np.load('./DATA/RGB_mean.npy')
+    #RGB_std = np.load('./DATA/RGB_std.npy')
+    RGB_mean = compose_transforms.transforms[0].mean
+    RGB_std = compose_transforms.transforms[0].std
+    
     R_mean, G_mean, B_mean = RGB_mean[0], RGB_mean[1], RGB_mean[2]
     R_std, G_std, B_std = RGB_std[0], RGB_std[1], RGB_std[2]
     
     MIN_PIXEL_VALUE, MAX_PIXEL_VALUE = 0,255
     # red chanel of the image
-    x[0, :, :] =  R_std * x[0, :, :] + R_mean
-    x[0, :, :] = x[0, :, :].clamp(MIN_PIXEL_VALUE, MAX_PIXEL_VALUE)
+    x[:, 0, :, :] =  R_std * x[:, 0, :, :] + R_mean
+    x[:, 0, :, :] = x[:, 0, :, :].clamp(MIN_PIXEL_VALUE, MAX_PIXEL_VALUE)
     # green chanel of the image
-    x[1, :, :] =  G_std * x[1, :, :] + G_mean
-    x[1, :, :] = x[1, :, :].clamp(MIN_PIXEL_VALUE, MAX_PIXEL_VALUE)
+    x[:, 1, :, :] =  G_std * x[:, 1, :, :] + G_mean
+    x[:, 1, :, :] = x[:, 1, :, :].clamp(MIN_PIXEL_VALUE, MAX_PIXEL_VALUE)
     # blue chanel of the image
-    x[2, :, :] =  B_std * x[2, :, :] + B_mean
-    x[2, :, :] = x[2, :, :].clamp(MIN_PIXEL_VALUE, MAX_PIXEL_VALUE)
+    x[:, 2, :, :] =  B_std * x[:, 2, :, :] + B_mean
+    x[:, 2, :, :] = x[:, 2, :, :].clamp(MIN_PIXEL_VALUE, MAX_PIXEL_VALUE)
     
     x = np.round(x) #x = np.round(x*255.)
-    x = x.astype(int)
-    
-    #x = 0.5 * (x + 1)
-    #x = x.clamp(0, 1)
+    x = x.int()#astype(int)
     return x
 
-def show_image(img, path = './SHOW_IMAGES/show_image.png'):
-    img = to_img(img) # C = size(0), H = size(1), W = size(2)
-    img_np = img.numpy()
-    plt.plot(np.transpose(img_np, (1, 2, 0))) # H,W,C
-    plt.savefig(path)
-    plt.close()
-    #plt.imshow(np.transpose(npimg, (1, 2, 0))) # (M, N, 3): an image with RGB values (0-1 float or 0-255 int).
-    #cv2.imwrite(path, image) 
+# def show_image(img, compose_transforms, path = './SHOW_IMAGES/show_image.png'):
+    
+#     images = to_img(img, compose_transforms = compose_transforms) # C = size(0), H = size(1), W = size(2)
+#     np_imagegrid = torchvision.utils.make_grid(images, nrow = 10, padding = 5, pad_value = 255).numpy()
+#     plt.imshow(np.transpose(np_imagegrid, (1, 2, 0))) # H,W,C
+#     plt.savefig(path)
+#     plt.close()
 
-def visualise_output(images, model):
+def visualise_output(images, model, compose_transforms):
 
     with torch.no_grad():
-
-        images = images.to(device)
-        images = model(images)
-        images = images.cpu()
-        images = to_img(images)
-        np_imagegrid = torchvision.utils.make_grid(images[1:50], 10, 5).numpy()
-        #plt.imshow(np.transpose(np_imagegrid, (1, 2, 0)))
-        plt.plot(np.transpose(np_imagegrid, (1, 2, 0))) # H,W,C
-        path = './SHOW_IMAGES/visualise_output.png'
-        #plt.show()
-        plt.savefig(path)
+        original_images = images.to('cpu') # torch.Size([128, 3, 64, 64])
+        
+        reconstructed_images = images.to(device)
+        model = model.to(device)
+        reconstructed_images = model(reconstructed_images)
+        reconstructed_images = reconstructed_images.to('cpu') # torch.Size([128, 3, 64, 64])
+        
+        # print statics on test set original (real) images (0.0-1.0 float range)
+        print("The test set original (real) images stats (0.0-1.0 float range):")
+        print(f"Size of tensor = {original_images.size()}")
+        print(f"Mean of tensor = {original_images.mean()}")
+        print(f"Min of tensor = {original_images.min()}")
+        print(f"Max of tensor = {original_images.max()}\n")
+        
+        
+        # print statics on reconstructed images (0.0-1.0 float range)
+        print("The test set reconstructed images stats (0.0-1.0 float range):")
+        print(f"Size of tensor = {reconstructed_images.size()}")
+        print(f"Mean of tensor = {reconstructed_images.mean()}")
+        print(f"Min of tensor = {reconstructed_images.min()}")
+        print(f"Max of tensor = {reconstructed_images.max()}\n")
+        
+        
+        diff_0_1 = (original_images-reconstructed_images)
+        # print statics on difference between original and reconstructed images (0.0-1.0 float range)
+        print("The test set difference between original and reconstructed images stats (0.0-1.0 float range):")
+        print(f"Size of tensor = {diff_0_1.size()}")
+        print(f"Mean of tensor = {diff_0_1.mean()}")
+        print(f"Min of tensor = {diff_0_1.min()}")
+        print(f"Max of tensor = {diff_0_1.max()}\n")
+        
+        
+        original_images = to_img(original_images, compose_transforms)
+        reconstructed_images = to_img(reconstructed_images, compose_transforms)
+        
+        
+        # print statics on test set original (real) images (0-255 int range)
+        print("The test set original (real) images stats (0-255 int range):")
+        print(f"Size of tensor = {original_images.size()}")
+        print(f"Mean of tensor = {original_images.mean()}")
+        print(f"Min of tensor = {original_images.min()}")
+        print(f"Max of tensor = {original_images.max()}\n")
+        
+        
+        # print statics on reconstructed images (0-255 int range)
+        print("The test set reconstructed images stats (0-255 int range):")
+        print(f"Size of tensor = {reconstructed_images.size()}")
+        print(f"Mean of tensor = {reconstructed_images.mean()}")
+        print(f"Min of tensor = {reconstructed_images.min()}")
+        print(f"Max of tensor = {reconstructed_images.max()}\n")
+        
+        
+        diff_0_255 = (original_images-reconstructed_images)
+        # print statics on difference between original and reconstructed images (0-255 int range)
+        print("The test set difference between original and reconstructed images stats (0-255 int range):")
+        print(f"Size of tensor = {diff_0_255.size()}")
+        print(f"Mean of tensor = {diff_0_255.mean()}")
+        print(f"Min of tensor = {diff_0_255.min()}")
+        print(f"Max of tensor = {diff_0_255.max()}\n")
+        
+        #images = to_img(images, compose_transforms = compose_transforms)
+        
+        np_imagegrid_original_images = torchvision.utils.make_grid(tensor = original_images, nrow = 10, padding = 5, pad_value = 255).numpy()
+        np_imagegrid_reconstructed_images = torchvision.utils.make_grid(tensor = reconstructed_images, nrow = 10, padding = 5, pad_value = 255).numpy()
+        
+        plt.imshow(np.transpose(np_imagegrid_original_images, (1, 2, 0))) # H,W,C
+        plt.savefig('./SHOW_IMAGES/original_test_50_images.png')
         plt.close()
         
+        plt.imshow(np.transpose(np_imagegrid_reconstructed_images, (1, 2, 0))) # H,W,C
+        plt.savefig('./SHOW_IMAGES/autoencoder_output_test_50_images.png')
+        plt.close()
+        
+        debug =0
 
-images, labels = iter(test_data_loader).next()
+some_test_images = iter(test_data_loader).next() # torch.Size([128, 3, 64, 64])
 
+PICK_TOP_N_IMAGES = 50
+top_images = some_test_images[:PICK_TOP_N_IMAGES, :, :, :]
 # First visualise the original images
-print('Original images')
-show_image(torchvision.utils.make_grid(images[1:50],10,5))
-plt.show()
+# print('Original images')
+# show_image(top_images,compose_transforms = TRANSFORM_IMG, path = './SHOW_IMAGES/show_image.png')
+#plt.show()
 
 # Reconstruct and visualise the images using the autoencoder
-print('Autoencoder reconstruction:')
-#visualise_output(images, autoencoder)
+# print('Autoencoder reconstruction:')
+#visualise_output(top_images, autoencoder, compose_transforms= )
 
 if USE_PRETRAINED_VANILLA_AUTOENCODER:
     # Pretrained
-    visualise_output(images, vanilla_autoencoder_loaded)
+    visualise_output(top_images, vanilla_autoencoder_loaded, compose_transforms = TRANSFORM_IMG)
 else:
     # Trained just now
-    visualise_output(images, vanilla_autoencoder)
+    visualise_output(top_images, vanilla_autoencoder, compose_transforms = TRANSFORM_IMG)
 
 
 #'./data/MNIST_AE_pretrained/my_autoencoder.pth'
