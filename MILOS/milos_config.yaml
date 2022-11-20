@@ -10,7 +10,7 @@ file_info:
   - W : 64
   - C : 3
   - TOTAL_NUMBER_OF_SHAPES : 1
-  - TOTAL_NUMBER_OF_IMAGES : 64
+  - TOTAL_NUMBER_OF_IMAGES : 100000
 
 
 # args of the class SuperClassShape
@@ -75,8 +75,8 @@ alpha_CENTER_SPACE:
 #SHAPE_THICKNESS: 2
 
 FILL_NOFILL:
-  - -1
-  - 1 # SHAPE_THICKNESS = 1,2,3,4,...
+  - -1  # the object is filled with the desired color
+  - 1   # SHAPE_THICKNESS = 1,2,3,4,...
 
 
 

@@ -1,20 +1,17 @@
 import os
 import numpy as np
-import torch
-import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
 import torch.utils.data as data
-import torchvision
-from torchvision import transforms
+
+
 import cv2
 import numpy as np 
-import os
 ###########
 
-from PIL import Image
 
-def find_mean_std(TOTAL_NUMBER_OF_IMAGES, image_ids_numbers = None, method = 'n'):
+def find_mean_std(TOTAL_NUMBER_OF_IMAGES, image_ids_numbers = None, method = 'n', NUMPY_DOUBLE_CHECK= False):
+    
     # method = 'n' or method = 'n-1'
     
     # image_ids_numbers is the list of numbers for what images to produce estimate of mean and variance
@@ -44,9 +41,10 @@ def find_mean_std(TOTAL_NUMBER_OF_IMAGES, image_ids_numbers = None, method = 'n'
         
         x = cv2.imread(image_full_path)
         
-        R_imgs.append(np.float64(x)[:,:,2])
-        G_imgs.append(np.float64(x)[:,:,1])
-        B_imgs.append(np.float64(x)[:,:,0])
+        if NUMPY_DOUBLE_CHECK:
+            R_imgs.append(np.float64(x)[:,:,2])
+            G_imgs.append(np.float64(x)[:,:,1])
+            B_imgs.append(np.float64(x)[:,:,0])
 
         # empirically and recursively calculate first moment (E[X] = expectation) per chanel (red, green, blue)
         x_mean_bar_ch2_red, x_mean_bar_ch1_green, x_mean_bar_ch0_blue = \
@@ -83,21 +81,32 @@ def find_mean_std(TOTAL_NUMBER_OF_IMAGES, image_ids_numbers = None, method = 'n'
     RGB_mean = np.array([x_mean_bar_ch2_red,x_mean_bar_ch1_green,x_mean_bar_ch0_blue])#np.dstack((x_mean_bar_ch2_red,x_mean_bar_ch1_green,x_mean_bar_ch0_blue))
     RGB_std = np.array([x_std_bar_ch2_red,x_std_bar_ch1_green,x_std_bar_ch0_blue])#np.dstack((x_std_bar_ch2_red,x_std_bar_ch1_green,x_std_bar_ch0_blue))    
     
-    R_imgs,G_imgs,B_imgs = np.array(R_imgs),np.array(G_imgs),np.array(B_imgs)
-    RGB_mean_np = np.array([np.mean(R_imgs),np.mean(G_imgs),np.mean(B_imgs)])
-    RGB_std_np = np.array([np.std(R_imgs),np.std(G_imgs),np.std(B_imgs)])
+    if NUMPY_DOUBLE_CHECK:
+        R_imgs,G_imgs,B_imgs = np.array(R_imgs),np.array(G_imgs),np.array(B_imgs)
+        RGB_mean_np = np.array([np.mean(R_imgs),np.mean(G_imgs),np.mean(B_imgs)])
+        RGB_std_np = np.array([np.std(R_imgs),np.std(G_imgs),np.std(B_imgs)])
     
     # save preprocessing result (i.e. mean and std per changel)
     np.save('./DATA/RGB_mean.npy', RGB_mean) # np.load('./DATA/RGB_mean.npy')
     np.save('./DATA/RGB_std.npy', RGB_std) # np.load('./DATA/RGB_std.npy')
     
-    np.save('./DATA/RGB_mean_np.npy', RGB_mean_np) # np.load('./DATA/RGB_mean_np.npy')
-    np.save('./DATA/RGB_std_np.npy', RGB_std_np) # np.load('./RGB_std_np/RGB_mean.npy')
+    if NUMPY_DOUBLE_CHECK:
+        np.save('./DATA/RGB_mean_np.npy', RGB_mean_np) # np.load('./DATA/RGB_mean_np.npy')
+        np.save('./DATA/RGB_std_np.npy', RGB_std_np) # np.load('./RGB_std_np/RGB_mean.npy')
+    
     
     #np.sum(np.abs(RGB_mean - RGB_mean_np)) < 1e-14 #  True
     #np.sum(np.abs(RGB_std - RGB_std_np)) < 1e-13 #  True
-    return RGB_mean, RGB_std, RGB_mean_np, RGB_std_np
-
+    
+    if NUMPY_DOUBLE_CHECK:
+        return RGB_mean, RGB_std, RGB_mean_np, RGB_std_np
+    else:
+        return RGB_mean, RGB_std
+    
+    
+RGB_mean, RGB_std = find_mean_std(100000)
+print(f"Images Mean = {np.round(RGB_mean,2)}")
+print(f"Images Std = {np.round(RGB_std,2)}")
 
 
 #Step 2 - Take Sample data

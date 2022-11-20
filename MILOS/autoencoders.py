@@ -15,14 +15,19 @@ from torchvision import transforms
 
 from models import *
 # Hyper parameters
+current_working_absoulte_path = '/home/novakovm/iris/MILOS'
+os.chdir(current_working_absoulte_path)
 
 
+H,W = 64, 64
+args_train = {}
+args_train['TOTAL_NUMBER_OF_IMAGES'] = 100000
+args_test = {}
+args_test['TOTAL_NUMBER_OF_IMAGES'] = 100000
 
 num_workers = 4
-learning_rate = 0.001
-
-
-latent_dims = 10
+#learning_rate = 0.001
+#latent_dims = 10
 
 capacity = 64
 
@@ -45,18 +50,22 @@ TRAIN_IMAGES_MEAN_FILE_PATH, TRAIN_IMAGES_STD_FILE_PATH = './DATA/RGB_mean.npy',
 TRANSFORM_IMG = transforms.Compose([
 #    transforms.Resize(256),
 #    transforms.CenterCrop(256),
-    transforms.ToTensor(),
+    #transforms.ToTensor(),
     transforms.Normalize(mean=np.load(TRAIN_IMAGES_MEAN_FILE_PATH).tolist(),
                          std=np.load(TRAIN_IMAGES_STD_FILE_PATH).tolist() )
     ])
 
 # Train Data & Train data Loader
 # Image Folder = A generic data loader where the images are arranged in this way by default
-train_data = torchvision.datasets.ImageFolder(root=TRAIN_DATA_PATH, transform=TRANSFORM_IMG)
+
+
+#train_data = torchvision.datasets.ImageFolder(root=TRAIN_DATA_PATH, transform=TRANSFORM_IMG)
+train_data = CustomImageDataset(args = args_train, root=TRAIN_DATA_PATH, transform=TRANSFORM_IMG)
 train_data_loader = data.DataLoader(dataset = train_data, batch_size=BATCH_SIZE, shuffle=True,  num_workers=num_workers)
 
 # Test Data & Test data Loader
-test_data = torchvision.datasets.ImageFolder(root=TEST_DATA_PATH, transform=TRANSFORM_IMG)
+#test_data = torchvision.datasets.ImageFolder(root=TEST_DATA_PATH, transform=TRANSFORM_IMG)
+test_data = CustomImageDataset(args = args_test, root=TEST_DATA_PATH, transform=TRANSFORM_IMG)
 test_data_loader  = data.DataLoader(dataset = test_data, batch_size=BATCH_SIZE, shuffle=True, num_workers=num_workers) 
 
 # Data Loader (Input Pipeline)
@@ -71,7 +80,7 @@ test_data_loader  = data.DataLoader(dataset = test_data, batch_size=BATCH_SIZE, 
 def conv2d_dims(h_in,w_in,k,s,p,d):
     h_out = np.floor( (h_in + 2 * p[0] - d[0] * (k[0] - 1) - 1 ) / s[0] + 1)
     w_out = np.floor( (w_in + 2 * p[1] - d[1] * (k[1] - 1) - 1 ) / s[1] + 1)
-    return h_out, w_out
+    return int(h_out), int(w_out)
             
 
 
@@ -87,7 +96,7 @@ params_encoder['stride_conv1'] = (2,2) # 2,2
 params_encoder['padding_conv1'] = (1,1) # 1,1
 params_encoder['dilation_conv1']  = (1,1)# 1,1
 
-params_encoder['conv1_H_in'], params_encoder['conv1_W_in'] = 64, 64 # H params_encoder['H_in'] # W params_encoder['W_in']
+params_encoder['conv1_H_in'], params_encoder['conv1_W_in'] = H,W # H params_encoder['H_in'] # W params_encoder['W_in']
 params_encoder['conv1_H_out'], params_encoder['conv1_W_out'] = conv2d_dims(h_in = params_encoder['conv1_H_in'],w_in = params_encoder['conv1_W_in'],k = params_encoder['kernel_size_conv1'],s = params_encoder['stride_conv1'],p = params_encoder['padding_conv1'],d = params_encoder['dilation_conv1'])
         
 # out: c x 14 x 14
@@ -106,12 +115,12 @@ params_encoder['conv2_exists'] = True
 params_encoder['out_channels_conv1'] = 64 # 64 = params_encoder['in_channels_conv2']
 params_encoder['in_channels_conv2'] = params_encoder['out_channels_conv1']#64
 params_encoder['out_channels_conv2'] = 2 * 64 #2 * 64
-params_encoder['kernel_size_conv2'] = (4,4), # 4
-params_encoder['stride_conv2'] = (2,2), # 2
+params_encoder['kernel_size_conv2'] = (4,4) # 4
+params_encoder['stride_conv2'] = (2,2) # 2
 params_encoder['padding_conv2'] = (1,1) # 1
 params_encoder['dilation_conv2']= (1,1)# 1
 
-params_encoder['conv2_H_in'], params_encoder['conv2_W_in'] = params_encoder['conv1_H_in'], params_encoder['conv1_W_in']
+params_encoder['conv2_H_in'], params_encoder['conv2_W_in'] = params_encoder['conv1_H_out'], params_encoder['conv1_W_out']
 params_encoder['conv2_H_out'], params_encoder['conv2_W_out'] = conv2d_dims(h_in = params_encoder['conv2_H_in'],w_in = params_encoder['conv2_W_in'],k = params_encoder['kernel_size_conv2'],s = params_encoder['stride_conv2'],p = params_encoder['padding_conv2'],d = params_encoder['dilation_conv2'])
 
 # out :
@@ -157,6 +166,8 @@ params_decoder['stride_conv1'] = params_encoder['stride_conv1']# 2
 params_decoder['padding_conv1'] = params_encoder['padding_conv1']# 1
 params_decoder['dilation_conv1'] = params_encoder['dilation_conv1']# 1
 
+params_decoder['conv1_H_in'],params_decoder['conv1_W_in'] = params_encoder['conv1_H_out'],params_encoder['conv1_W_out']
+
 params_decoder['conv1_H_out'],params_decoder['conv1_W_out'] = conv2d_dims(h_in = params_decoder['conv1_H_in'],w_in = params_decoder['conv1_W_in'],k = params_decoder['kernel_size_conv1'],s = params_decoder['stride_conv1'],p = params_decoder['padding_conv1'],d = params_decoder['dilation_conv1'])
 
 ### DECODER PARAMS END
@@ -170,7 +181,7 @@ autoencoder = autoencoder.to(device)
 num_params = sum(p.numel() for p in autoencoder.parameters() if p.requires_grad)
 print('Number of parameters: %d' % num_params)
 
-optimizer = torch.optim.Adam(params=autoencoder.parameters(), lr=learning_rate, weight_decay=1e-5)
+optimizer = torch.optim.Adam(params=autoencoder.parameters(), lr=LEARNING_RATE, weight_decay=1e-5)
 
 # set to training mode
 autoencoder.train()
@@ -185,9 +196,11 @@ if TRAIN_FLAG:
         train_loss_avg.append(0)
         num_batches = 0
         
-        for image_batch, _ in train_data_loader:
+        for image_batch in train_data_loader:
             
-            image_batch = image_batch.to(device)
+            #image_batch.size()
+            #torch.Size([128, 3, 64, 64]) = BATCH_SIZE x 3 (RGB) x H x W
+            image_batch = image_batch.to(device) # device = device(type='cuda', index=0)
             
             # autoencoder reconstruction
             image_batch_recon = autoencoder(image_batch)
@@ -255,7 +268,7 @@ print('average reconstruction error: %f' % (test_loss_avg))
 
 
 
-plt.ion()
+#plt.ion()
 
 
 autoencoder.eval()
@@ -277,10 +290,10 @@ def to_img(x):
     x[0, :, :] = x[0, :, :].clamp(MIN_PIXEL_VALUE, MAX_PIXEL_VALUE)
     # green chanel of the image
     x[1, :, :] =  G_std * x[1, :, :] + G_mean
-    x[1, :, :] = x[2, :, :].clamp(MIN_PIXEL_VALUE, MAX_PIXEL_VALUE)
+    x[1, :, :] = x[1, :, :].clamp(MIN_PIXEL_VALUE, MAX_PIXEL_VALUE)
     # blue chanel of the image
     x[2, :, :] =  B_std * x[2, :, :] + B_mean
-    x[2, :, :] = x[1, :, :].clamp(MIN_PIXEL_VALUE, MAX_PIXEL_VALUE)
+    x[2, :, :] = x[2, :, :].clamp(MIN_PIXEL_VALUE, MAX_PIXEL_VALUE)
     
     x = np.round(x) #x = np.round(x*255.)
     x = x.astype(int)

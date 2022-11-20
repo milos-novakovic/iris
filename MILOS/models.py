@@ -8,6 +8,32 @@ import torch.utils.data as data
 import torchvision
 from torchvision import transforms
 
+
+import os
+import pandas as pd
+from torchvision.io import read_image
+
+class CustomImageDataset(torch.utils.data.Dataset):
+    def __init__(self, args, root = False, transform=False, target_transform=False):
+        #self.img_labels = pd.read_csv(annotations_file)
+        self.root = root # './DATA/' = '/home/novakovm/iris/MILOS/DATA/'
+        self.transform = transform
+        self.TOTAL_NUMBER_OF_IMAGES = args['TOTAL_NUMBER_OF_IMAGES']
+        #self.target_transform = target_transform
+
+    def __len__(self):
+        return self.TOTAL_NUMBER_OF_IMAGES
+
+    def __getitem__(self, idx):
+        img_path = self.root + 'color_img_' + str(idx).zfill(len(str(self.TOTAL_NUMBER_OF_IMAGES))) + '.png'#os.path.join(self.root, self.img_labels.iloc[idx, 0])
+        image = torchvision.io.read_image(img_path).float() # .double() = torch.float64 and  .float() = torch.float32
+        #label = self.img_labels.iloc[idx, 1]
+        if self.transform:
+            image = self.transform(image)
+        # if self.target_transform:
+        #     label = self.target_transform(label)
+        return image#, label
+
 class Encoder(nn.Module):
     def __init__(self, params_encoder):
         super(Encoder, self).__init__()
@@ -69,10 +95,15 @@ class Encoder(nn.Module):
                                     out_features= params_encoder['latent_dims'])
             
     def forward(self, x):
+        # x.size() = torch.Size([128, 3, 64, 64])
         x = F.relu(self.conv1(x))
+        # x.size() = torch.Size([128, 64, 32, 32])
         x = F.relu(self.conv2(x))
+        # x.size() = torch.Size([128, 128, 16, 16])
         x = x.view(x.size(0), -1) # flatten batch of multi-channel feature maps to a batch of feature vectors
+        # x.size() = torch.Size([128, 32768])
         x = self.fc1(x)
+        
         return x
 
 class Decoder(nn.Module):
