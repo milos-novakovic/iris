@@ -204,10 +204,10 @@ conv3:
   - C_in : 16
   - H_in : 16
   - W_in : 16
-  - C_out : 16
+  - C_out : 32
   - H_out : 16
   - W_out : 16
-  - Embedding_Dim : 4096
+  - Embedding_Dim : 8192
   - Layer_Name : "conv3"
   - Stride_H : 1
   - Stride_W : 1
@@ -224,7 +224,7 @@ conv3:
 #maxpool3
 maxpool3:
   - Layer_Number : 10
-  - C_in : 16
+  - C_in : 32
   - H_in : 16
   - W_in : 16
   - C_out : 32
@@ -589,8 +589,8 @@ ReLU7:
   - Dilation_H : 
   - Dilation_W : 
 #"
-#bn5
-bn5:
+#bn6
+bn6:
   - Layer_Number : 26
   - C_in : 32
   - H_in : 16
@@ -599,7 +599,7 @@ bn5:
   - H_out : 16
   - W_out : 16
   - Embedding_Dim : 8192
-  - Layer_Name : "bn5"
+  - Layer_Name : "bn6"
   - Stride_H : 
   - Stride_W : 
   - Padding_H_top : 
@@ -681,8 +681,8 @@ ReLU8:
   - Dilation_H : 
   - Dilation_W : 
 #"
-#bn6
-bn6:
+#bn7
+bn7:
   - Layer_Number : 30
   - C_in : 16
   - H_in : 32
@@ -691,7 +691,7 @@ bn6:
   - H_out : 32
   - W_out : 32
   - Embedding_Dim : 16384
-  - Layer_Name : "bn6"
+  - Layer_Name : "bn7"
   - Stride_H : 
   - Stride_W : 
   - Padding_H_top : 
@@ -727,7 +727,6 @@ UpSample4:
   - Dilation_H : 
   - Dilation_W : 
 #"
-#conv9
 #conv9
 conv9:
   - Layer_Number : 32

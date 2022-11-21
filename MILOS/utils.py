@@ -15,23 +15,21 @@ INT = np.int64
 FLOAT = np.float64
 UINT  = np.uint8
 
-
-
 GENERATE_STATS = False
-TRAIN_MODE = True
+TRAIN_MODE = False
 TEST_MODE = not(TRAIN_MODE)
 
 
 CSV_FILE_PATH, STATS_FILE_PATH = None, None
 if TRAIN_MODE:
-    CSV_FILE_PATH = './DATA/all_generated_shapes.csv'
-    STATS_FILE_PATH = './DATA/stats.png'
+    CSV_FILE_PATH = '/home/novakovm/DATA/all_generated_shapes.csv'#'./DATA/all_generated_shapes.csv'
+    STATS_FILE_PATH = '/home/novakovm/DATA/stats.png'#'./DATA/stats.png'
 elif TEST_MODE:
-    CSV_FILE_PATH = './DATA_TEST/all_generated_shapes.csv'
-    STATS_FILE_PATH = './DATA_TEST/stats.png'
+    CSV_FILE_PATH = '/home/novakovm/DATA_TEST/all_generated_shapes.csv'#'./DATA_TEST/all_generated_shapes.csv'
+    STATS_FILE_PATH = '/home/novakovm/DATA_TEST/stats.png'#'./DATA_TEST/stats.png'
 
-current_working_absoulte_path = '/home/novakovm/iris/MILOS'
-os.chdir(current_working_absoulte_path)
+#current_working_absoulte_path = '/home/novakovm/iris/MILOS'
+#os.chdir(current_working_absoulte_path)
 
 
 #rm -rf /home/novakovm/iris/MILOS/DATA/*
@@ -39,15 +37,15 @@ os.chdir(current_working_absoulte_path)
 #import os
 if TRAIN_MODE:
     # if training then delete previous dataset
-    path = current_working_absoulte_path + '/DATA'
+    path = '/home/novakovm/DATA' #current_working_absoulte_path + '/DATA'
     os.system('rm -rf %s/*' % path)
     
 if TEST_MODE:
     # if training then delete previous dataset
-    path = current_working_absoulte_path + '/DATA_TEST'
+    path = '/home/novakovm/DATA_TEST' #current_working_absoulte_path + '/DATA_TEST'
     os.system('rm -rf %s/*' % path)
 
-milos_config_path = 'milos_config.yaml'
+milos_config_path = '/home/novakovm/iris/MILOS/milos_config.yaml'
 # Open the file and load the file
 with open(milos_config_path) as f:
     data = yaml.load(f, Loader=SafeLoader)

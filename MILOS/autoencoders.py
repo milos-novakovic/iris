@@ -26,7 +26,7 @@ H,W,C = 64, 64,3#32,32,3 #64, 64,3
 args_train = {}
 args_train['TOTAL_NUMBER_OF_IMAGES'] = 100000
 args_test = {}
-args_test['TOTAL_NUMBER_OF_IMAGES'] = 10000
+args_test['TOTAL_NUMBER_OF_IMAGES'] = 50
 
 num_workers = 4
 #learning_rate = 0.001
@@ -43,10 +43,10 @@ NUM_EPOCHS = 10#20
 BATCH_SIZE = 128
 LEARNING_RATE = 1e-3#3 * 1e-3#0.003
 
-TRAIN_DATA_PATH = './DATA/'
-TEST_DATA_PATH = './DATA_TEST/'
+TRAIN_DATA_PATH = '/home/novakovm/DATA/'#'./DATA/'
+TEST_DATA_PATH = '/home/novakovm/DATA_TEST/'#'./DATA_TEST/'
 
-TRAIN_IMAGES_MEAN_FILE_PATH, TRAIN_IMAGES_STD_FILE_PATH = './DATA/RGB_mean.npy', './DATA/RGB_std.npy'
+TRAIN_IMAGES_MEAN_FILE_PATH, TRAIN_IMAGES_STD_FILE_PATH = '/home/novakovm/iris/MILOS/RGB_mean.npy', '/home/novakovm/iris/MILOS/RGB_std.npy'
 
 USE_PRETRAINED_VANILLA_AUTOENCODER  = False
 
@@ -435,10 +435,10 @@ autoencoder_config_params_unwrapped_sorted = OrderedDict()
 
 for sorted_Layer_Number in sorted_Layer_Numbers:
     layer_name = [layer_name for layer_name in autoencoder_config_params_wrapped_unsorted if sorted_Layer_Number == autoencoder_config_params_wrapped_unsorted[layer_name]['Layer_Number']][0]
-    autoencoder_config_params_wrapped_sorted[layer_name] = autoencoder_config_params_wrapped_unsorted[layer_name].copy()
+    autoencoder_config_params_wrapped_sorted[layer_name] = autoencoder_config_params_wrapped_unsorted[layer_name]
     
     for feature_name_feature_value in autoencoder_config_params_wrapped_sorted[layer_name]:
-        autoencoder_config_params_unwrapped_sorted[layer_name + '->' +feature_name_feature_value] = autoencoder_config_params_wrapped_sorted[layer_name][feature_name_feature_value].copy()
+        autoencoder_config_params_unwrapped_sorted[layer_name + '->' +feature_name_feature_value] = autoencoder_config_params_wrapped_sorted[layer_name][feature_name_feature_value]
     
 
 

@@ -1,8 +1,8 @@
 # args of the class GeneratedImage
 file_info:
-  - file_path: '/home/novakovm/iris/MILOS/DATA/'
-  - TEST_file_path: '/home/novakovm/iris/MILOS/DATA_TEST/'
-  - TEST_TOTAL_NUMBER_OF_IMAGES : 10
+  - file_path: '/home/novakovm/DATA/' #'/home/novakovm/iris/MILOS/DATA/'
+  - TEST_file_path: '/home/novakovm/DATA_TEST/' #'/home/novakovm/iris/MILOS/DATA_TEST/'
+  - TEST_TOTAL_NUMBER_OF_IMAGES : 50
   - file_name: 'color_img'
   - file_version: '_001'
   #- begin_file_version: 1
@@ -12,12 +12,12 @@ file_info:
   - W : 64
   - C : 3
   - TOTAL_NUMBER_OF_SHAPES : 1
-  - TOTAL_NUMBER_OF_IMAGES : 100
+  - TOTAL_NUMBER_OF_IMAGES : 100000
 
 
 # args of the class SuperClassShape
 images_info:
-  - file_path: '/home/novakovm/iris/MILOS/DATA/'
+  - file_path: '/home/novakovm/DATA/' # '/home/novakovm/iris/MILOS/DATA/'
   - file_name: 'color_img'
   - file_version: '_000'
   - begin_file_version: 0

@@ -366,7 +366,8 @@ class Vanilla_Autoencoder_v02(nn.Module):
         self.latent_space_dim = 0
         #self.conv_paddings = {}
         
-        for param_name, param_value_dict in params:
+        for param_name in params:
+            param_value_dict = params[param_name]
             if param_name == 'vanilla_autoencoder':
                 continue            
             
@@ -447,7 +448,7 @@ class Vanilla_Autoencoder_v02(nn.Module):
                 
             elif param_name[:len('sigmoid')] == 'sigmoid':
                 # Apply Sigmoid as an activation function
-                self.sequential_model.add_module(param_name, torch.nn.Sigmoid(inplace=False))
+                self.sequential_model.add_module(param_name, torch.nn.Sigmoid())
             
             else:
                 assert(False, f'Unknown config parameter name = {param_name}.')

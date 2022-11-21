@@ -37,7 +37,7 @@ def find_mean_std(TOTAL_NUMBER_OF_IMAGES, image_ids_numbers = None, method = 'n'
 
     for i,image_id in enumerate(image_ids):
         # update empirical estimates for 1st and 2nd centered moments
-        image_full_path = './DATA/color_img_' + image_id + '.png'
+        image_full_path = '/home/novakovm/DATA/color_img_' + image_id + '.png'
         
         x = cv2.imread(image_full_path)
         
@@ -87,12 +87,13 @@ def find_mean_std(TOTAL_NUMBER_OF_IMAGES, image_ids_numbers = None, method = 'n'
         RGB_std_np = np.array([np.std(R_imgs),np.std(G_imgs),np.std(B_imgs)])
     
     # save preprocessing result (i.e. mean and std per changel)
-    np.save('./DATA/RGB_mean.npy', RGB_mean) # np.load('./DATA/RGB_mean.npy')
-    np.save('./DATA/RGB_std.npy', RGB_std) # np.load('./DATA/RGB_std.npy')
+    
+    np.save('/home/novakovm/iris/MILOS/RGB_mean.npy', RGB_mean) # np.load('./DATA/RGB_mean.npy')
+    np.save('/home/novakovm/iris/MILOS/RGB_std.npy', RGB_std) # np.load('./DATA/RGB_std.npy')
     
     if NUMPY_DOUBLE_CHECK:
-        np.save('./DATA/RGB_mean_np.npy', RGB_mean_np) # np.load('./DATA/RGB_mean_np.npy')
-        np.save('./DATA/RGB_std_np.npy', RGB_std_np) # np.load('./RGB_std_np/RGB_mean.npy')
+        np.save('/home/novakovm/iris/MILOS/RGB_mean_np.npy', RGB_mean_np) # np.load('./DATA/RGB_mean_np.npy')
+        np.save('/home/novakovm/iris/MILOS/RGB_std_np.npy', RGB_std_np) # np.load('./RGB_std_np/RGB_mean.npy')
     
     
     #np.sum(np.abs(RGB_mean - RGB_mean_np)) < 1e-14 #  True
@@ -103,8 +104,8 @@ def find_mean_std(TOTAL_NUMBER_OF_IMAGES, image_ids_numbers = None, method = 'n'
     else:
         return RGB_mean, RGB_std
     
-    
-RGB_mean, RGB_std = find_mean_std(100000)
+TOTAL_NUMBER_OF_IMAGES = 100000
+RGB_mean, RGB_std = find_mean_std(TOTAL_NUMBER_OF_IMAGES)
 print(f"Images Mean = {np.round(RGB_mean,2)}")
 print(f"Images Std = {np.round(RGB_std,2)}")
 
