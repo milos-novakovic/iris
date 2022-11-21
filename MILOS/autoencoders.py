@@ -32,7 +32,7 @@ num_workers = 4
 #learning_rate = 0.001
 #latent_dims = 10
 
-capacity = 64
+#capacity = 64
 
 LATENT_DIM = 10
 
