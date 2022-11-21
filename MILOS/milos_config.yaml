@@ -2,7 +2,7 @@
 file_info:
   - file_path: '/home/novakovm/iris/MILOS/DATA/'
   - TEST_file_path: '/home/novakovm/iris/MILOS/DATA_TEST/'
-  - TEST_TOTAL_NUMBER_OF_IMAGES : 10000
+  - TEST_TOTAL_NUMBER_OF_IMAGES : 10
   - file_name: 'color_img'
   - file_version: '_001'
   #- begin_file_version: 1
@@ -12,7 +12,7 @@ file_info:
   - W : 64
   - C : 3
   - TOTAL_NUMBER_OF_SHAPES : 1
-  - TOTAL_NUMBER_OF_IMAGES : 100000
+  - TOTAL_NUMBER_OF_IMAGES : 100
 
 
 # args of the class SuperClassShape

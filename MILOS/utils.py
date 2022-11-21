@@ -18,7 +18,7 @@ UINT  = np.uint8
 
 
 GENERATE_STATS = False
-TRAIN_MODE = False
+TRAIN_MODE = True
 TEST_MODE = not(TRAIN_MODE)
 
 
@@ -33,6 +33,8 @@ elif TEST_MODE:
 current_working_absoulte_path = '/home/novakovm/iris/MILOS'
 os.chdir(current_working_absoulte_path)
 
+
+#rm -rf /home/novakovm/iris/MILOS/DATA/*
 
 #import os
 if TRAIN_MODE:
