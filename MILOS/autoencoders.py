@@ -11,7 +11,10 @@ from torch.autograd import Variable
 import torch.utils.data as data
 import torchvision
 from torchvision import transforms
-
+import oyaml as yaml
+from collections import OrderedDict
+#import yaml
+#from yaml.loader import SafeLoader
 
 from models import *
 # Hyper parameters
@@ -72,9 +75,9 @@ zero_min_one_max_transform = transforms.Compose([
 TRANSFORM_IMG = zero_min_one_max_transform#zero_mean_unit_std_transform # zero_min_one_max_transform
 
 
+
 # Train Data & Train data Loader
 # Image Folder = A generic data loader where the images are arranged in this way by default
-
 
 #train_data = torchvision.datasets.ImageFolder(root=TRAIN_DATA_PATH, transform=TRANSFORM_IMG)
 train_data = CustomImageDataset(args = args_train, root=TRAIN_DATA_PATH, transform=TRANSFORM_IMG)
@@ -272,14 +275,19 @@ params['padding_conv1_calculated'] = same_padding(  params['conv1_H_in'],
                                                     params['stride_conv1'],
                                                     params['kernel_size_conv1'])
 params['padding_conv1'] = 'same'
-                            
-
 params['conv1_H_out'],params['conv1_W_out'] = conv2d_dims(h_in = params['conv1_H_in'],
                                                           w_in = params['conv1_W_in'],
                                                           k = params['kernel_size_conv1'],
                                                           s = params['stride_conv1'],
                                                           p = params['padding_conv1_calculated'],
                                                           d = params['dilation_conv1'])
+params['maxpool1_H_in'],params['maxpool1_W_in'],params['in_channels_maxpool1'], params['out_channels_maxpool1'] = \
+    params['conv1_H_in'], params['conv1_W_in'], params['in_channels_conv1'], 8
+params['stride_maxpool1'], params['padding_maxpool1_calculated'], params['kernel_size_maxpool1'],params['dilation_maxpool1'] = \
+    (2,2), (0,0,0,0), (2,2), (1,1)
+
+
+
 # conv2 params
 params['conv2_H_in'], params['conv2_W_in'], params['stride_conv2'], params['kernel_size_conv2'],params['dilation_conv2'] = \
 params['conv1_H_out'],params['conv1_W_out'], (2,2), (3,3), (1,1)
@@ -368,14 +376,91 @@ params['conv5_H_out'],params['conv5_W_out'] = conv2d_dims(h_in = params['conv5_H
 
 ### Vanilla Autoencoder params end
 
+
+### Vanilla_Autoencoder_v02 params begin
+
+autoencoder_config_params = {}
+autoencoder_config_params_file_path = '/home/novakovm/iris/MILOS/autoencoders_config.yaml'
+
+with open(autoencoder_config_params_file_path) as f:
+    autoencoder_config_params = yaml.load(f, Loader=yaml.SafeLoader)
+
+# all of the params wrapped stored in dict where 
+# key is = layer_name
+# value is = list of dictionaries that have strucutre like this {feature_value : feature_name}
+# e.g. {
+#   'conv1':    {'C_in': 3, 'H_in': 64, 'W_in': 64, ...},
+#   'maxpool1': {'C_in': 8, 'H_in': 64, 'W_in': 64, ...},
+#   ...
+#   }
+
+autoencoder_config_params_wrapped_unsorted = {   layer_name:   {
+                                                    list(feature_name_feature_value.keys())[0]:
+                                                    list(feature_name_feature_value.values())[0]
+                                                    for feature_name_feature_value in autoencoder_config_params[layer_name]
+                                                    } 
+                                        for layer_name in autoencoder_config_params} # if a value is missing default value is None
+
+
+model_file_path_info={}
+model_file_path_info['model_dir_path'] = autoencoder_config_params_wrapped_unsorted['vanilla_autoencoder']['vanilla_autoencoder_path']#'/home/novakovm/iris/MILOS/'
+model_file_path_info['model_name'] = autoencoder_config_params_wrapped_unsorted['vanilla_autoencoder']['vanilla_autoencoder_name']#'vanilla_autoencoder'
+model_file_path_info['model_version'] = autoencoder_config_params_wrapped_unsorted['vanilla_autoencoder']['vanilla_autoencoder_version']# '_2022_11_20_17_13_14'
+model_file_path_info['model_extension'] = autoencoder_config_params_wrapped_unsorted['vanilla_autoencoder']['vanilla_autoencoder_extension']#'.py'
+
+autoencoder_config_params_wrapped_unsorted.pop('vanilla_autoencoder')
+
+
+sorted_Layer_Numbers = np.sort([autoencoder_config_params_wrapped_unsorted[layer_name]['Layer_Number'] for layer_name in autoencoder_config_params_wrapped_unsorted]) 
+
+
+# all of the params wrapped stored in ORDERED dict (OrderedDict) where 
+# key is = layer_name
+# value is = list of dictionaries that have strucutre like this {feature_value : feature_name}
+# e.g. {
+#   'conv1':    {'C_in': 3, 'H_in': 64, 'W_in': 64, ...},
+#   'maxpool1': {'C_in': 8, 'H_in': 64, 'W_in': 64, ...},
+#   ...
+#   }
+
+autoencoder_config_params_wrapped_sorted = OrderedDict()
+
+# all of the params unwrapped stored in ORDERED dict (OrderedDict) where 
+# key is = layer_name + "_" + feature_name
+# value is = feature_value
+# e.g. {'conv1->C_in': 3, 'conv1->H_in': 64, 'conv1->W_in': 64, 'conv1->C_out': 8, ...}
+autoencoder_config_params_unwrapped_sorted = OrderedDict()
+
+# fill wrapped sorted and unwrapped sorted Ordered Dicts:
+
+for sorted_Layer_Number in sorted_Layer_Numbers:
+    layer_name = [layer_name for layer_name in autoencoder_config_params_wrapped_unsorted if sorted_Layer_Number == autoencoder_config_params_wrapped_unsorted[layer_name]['Layer_Number']][0]
+    autoencoder_config_params_wrapped_sorted[layer_name] = autoencoder_config_params_wrapped_unsorted[layer_name].copy()
+    
+    for feature_name_feature_value in autoencoder_config_params_wrapped_sorted[layer_name]:
+        autoencoder_config_params_unwrapped_sorted[layer_name + '->' +feature_name_feature_value] = autoencoder_config_params_wrapped_sorted[layer_name][feature_name_feature_value].copy()
+    
+
+
+
+### Vanilla_Autoencoder_v02 params end
 device = torch.device("cuda:0" if USE_GPU and torch.cuda.is_available() else "cpu")
 
-vanilla_autoencoder = Vanilla_Autoencoder(params=params)
-vanilla_autoencoder = vanilla_autoencoder.to(device)
-num_params = sum(p.numel() for p in vanilla_autoencoder.parameters() if p.requires_grad)
+vanilla_autoencoder_v02 = Vanilla_Autoencoder_v02(autoencoder_config_params_wrapped_sorted=autoencoder_config_params_wrapped_sorted)
+vanilla_autoencoder_v02 = vanilla_autoencoder_v02.to(device)
+num_params = sum(p.numel() for p in vanilla_autoencoder_v02.parameters() if p.requires_grad)
 print('Number of parameters in vanilla AE : %d' % num_params)
-optimizer = torch.optim.Adam(params=vanilla_autoencoder.parameters(), lr=LEARNING_RATE)#, weight_decay=1e-5)
-vanilla_autoencoder.train()
+optimizer = torch.optim.Adam(params=vanilla_autoencoder_v02.parameters(), lr=LEARNING_RATE)#, weight_decay=1e-5)
+vanilla_autoencoder_v02.train()
+
+# device = torch.device("cuda:0" if USE_GPU and torch.cuda.is_available() else "cpu")
+
+# vanilla_autoencoder = Vanilla_Autoencoder(params=params)
+# vanilla_autoencoder = vanilla_autoencoder.to(device)
+# num_params = sum(p.numel() for p in vanilla_autoencoder.parameters() if p.requires_grad)
+# print('Number of parameters in vanilla AE : %d' % num_params)
+# optimizer = torch.optim.Adam(params=vanilla_autoencoder.parameters(), lr=LEARNING_RATE)#, weight_decay=1e-5)
+# vanilla_autoencoder.train()
 
 #autoencoder = Autoencoder(params_encoder=params_encoder, params_decoder=params_decoder)
 #autoencoder = autoencoder.to(device)
@@ -386,6 +471,8 @@ vanilla_autoencoder.train()
 # set to training mode
 #autoencoder.train()
 
+loss_fn = nn.MSELoss()
+loss_fn.to(device)
 
 train_loss_avg = []
 if TRAIN_FLAG:
@@ -403,10 +490,13 @@ if TRAIN_FLAG:
             
             # autoencoder reconstruction
             #image_batch_recon = autoencoder(image_batch)
-            image_batch_recon = vanilla_autoencoder(image_batch)
+            #image_batch_recon = vanilla_autoencoder(image_batch)
+            image_batch_recon = vanilla_autoencoder_v02(image_batch)
+            
             
             # reconstruction error
-            loss = F.mse_loss(image_batch_recon, image_batch)
+            #loss = F.mse_loss(image_batch_recon, image_batch)
+            loss = loss_fn(image_batch_recon, image_batch)
             
             # backpropagation
             optimizer.zero_grad()
@@ -436,13 +526,23 @@ if TRAIN_FLAG:
         
     
     current_time_str = time.strftime("%Y_%m_%d_%H_%M_%S", time.gmtime(time.time())) # 2022_11_19_20_11_26
+    
     #train_loss_avg_path = '/home/novakovm/iris/MILOS/autoencoder_train_loss_avg_' + current_time_str + '.npy'
     train_loss_avg_path = '/home/novakovm/iris/MILOS/vanilla_autoencoder_train_loss_avg_' + current_time_str + '.npy'
+    print(f"Autoencoder Training Loss Average = {train_loss_avg}")
     np.save(train_loss_avg_path,np.array(train_loss_avg))
     
     pretrained_autoencoder_path = '/home/novakovm/iris/MILOS/vanilla_autoencoder_' + current_time_str + '.py'
     #torch.save(autoencoder.state_dict(), pretrained_autoencoder_path)
-    torch.save(vanilla_autoencoder.state_dict(), pretrained_autoencoder_path)
+    #torch.save(vanilla_autoencoder.state_dict(), pretrained_autoencoder_path)
+    
+    
+    # SAVING OF vanilla_autoencoder_v02
+    #model_file_path_info['model_dir_path'] #'/home/novakovm/iris/MILOS/'
+    #model_file_path_info['model_name'] #'vanilla_autoencoder'
+    model_file_path_info['model_version']  = current_time_str # '_2022_11_20_17_13_14'
+    #model_file_path_info['model_extension'] #'.py'
+    torch.save(vanilla_autoencoder_v02.state_dict(), model_file_path_info['model_dir_path'] + model_file_path_info['model_name'] + model_file_path_info['model_version'] + model_file_path_info['model_extension'])
 
 # plt.ion()
 
@@ -454,18 +554,29 @@ if TRAIN_FLAG:
 
 
 vanilla_autoencoder_loaded = None
+vanilla_autoencoder_v02_loaded = None
+
 if USE_PRETRAINED_VANILLA_AUTOENCODER:
     current_time_str = '2022_11_20_17_13_14' # 17h 13min 14 sec 20th Nov. 2022
+    
     #autoencoder_loaded_path = '/home/novakovm/iris/MILOS/autoencoder_' + current_time_str + '.py'
-    vanilla_autoencoder_loaded_path = '/home/novakovm/iris/MILOS/vanilla_autoencoder_' + current_time_str + '.py'
+    #vanilla_autoencoder_loaded_path = '/home/novakovm/iris/MILOS/vanilla_autoencoder_' + current_time_str + '.py'
+    vanilla_autoencoder_v02_loaded_path =   model_file_path_info['model_dir_path'] + \
+                                            model_file_path_info['model_name'] + \
+                                            current_time_str + \
+                                            model_file_path_info['model_extension']
 
     # autoencoder_loaded = Autoencoder(params_encoder=params_encoder, params_decoder=params_decoder)
     # autoencoder_loaded.load_state_dict(torch.load(autoencoder_loaded_path))
     # autoencoder_loaded.eval()
 
-    vanilla_autoencoder_loaded = Vanilla_Autoencoder(params)
-    vanilla_autoencoder_loaded.load_state_dict(torch.load(vanilla_autoencoder_loaded_path))
-    vanilla_autoencoder_loaded.eval()
+    # vanilla_autoencoder_loaded = Vanilla_Autoencoder(params)
+    # vanilla_autoencoder_loaded.load_state_dict(torch.load(vanilla_autoencoder_loaded_path))
+    # vanilla_autoencoder_loaded.eval()
+    
+    vanilla_autoencoder_v02_loaded = Vanilla_Autoencoder_v02(autoencoder_config_params_wrapped_sorted=autoencoder_config_params_wrapped_sorted)
+    vanilla_autoencoder_v02_loaded.load_state_dict(torch.load(vanilla_autoencoder_v02_loaded_path))
+    vanilla_autoencoder_v02_loaded.eval()
 
 
 print('Testing ...')
@@ -479,11 +590,13 @@ for image_batch in test_data_loader:
         if USE_PRETRAINED_VANILLA_AUTOENCODER:
             # Pretrained
             #image_batch_recon = vanilla_autoencoder_loaded(image_batch)
-            image_batch_recon = vanilla_autoencoder_loaded(image_batch)
+            #image_batch_recon = vanilla_autoencoder_loaded(image_batch)
+            image_batch_recon = vanilla_autoencoder_v02_loaded(image_batch)
         else:
             # Trained just now
             #image_batch_recon = autoencoder(image_batch)
-            image_batch_recon = vanilla_autoencoder(image_batch)
+            #image_batch_recon = vanilla_autoencoder(image_batch)
+            image_batch_recon = vanilla_autoencoder_v02(image_batch)
 
         # reconstruction error
         loss = F.mse_loss(image_batch_recon, image_batch)
@@ -504,10 +617,13 @@ print('average reconstruction error: %f' % (test_loss_avg))
 
 if USE_PRETRAINED_VANILLA_AUTOENCODER:
     # Pretrained
-    vanilla_autoencoder_loaded.eval()
+    #vanilla_autoencoder_loaded.eval()
+    vanilla_autoencoder_v02_loaded.eval()
 else:
     # Trained just now
-    vanilla_autoencoder.eval()
+    #vanilla_autoencoder.eval()
+    vanilla_autoencoder_v02.eval()
+    
 
 
 # This function takes as an input the images to reconstruct
@@ -553,12 +669,16 @@ def to_img(x, compose_transforms = None):
 def visualise_output(images, model, compose_transforms):
 
     with torch.no_grad():
-        original_images = images.to('cpu') # torch.Size([128, 3, 64, 64])
+        # original images
+        # put original mini-batch of images to cpu
+        original_images = images.to('cpu') # torch.Size([50, 3, 64, 64])
         
+        # reconstructed images
         reconstructed_images = images.to(device)
         model = model.to(device)
         reconstructed_images = model(reconstructed_images)
-        reconstructed_images = reconstructed_images.to('cpu') # torch.Size([128, 3, 64, 64])
+        # put reconstructed mini-batch of images to cpu
+        reconstructed_images = reconstructed_images.to('cpu') # torch.Size([50, 3, 64, 64])
         
         # print statics on test set original (real) images (0.0-1.0 float range)
         print("The test set original (real) images stats (0.0-1.0 float range):")
@@ -592,7 +712,7 @@ def visualise_output(images, model, compose_transforms):
         # print statics on test set original (real) images (0-255 int range)
         print("The test set original (real) images stats (0-255 int range):")
         print(f"Size of tensor = {original_images.size()}")
-        print(f"Mean of tensor = {original_images.mean()}")
+        print(f"Mean of tensor = {original_images.float().mean()}")
         print(f"Min of tensor = {original_images.min()}")
         print(f"Max of tensor = {original_images.max()}\n")
         
@@ -600,7 +720,7 @@ def visualise_output(images, model, compose_transforms):
         # print statics on reconstructed images (0-255 int range)
         print("The test set reconstructed images stats (0-255 int range):")
         print(f"Size of tensor = {reconstructed_images.size()}")
-        print(f"Mean of tensor = {reconstructed_images.mean()}")
+        print(f"Mean of tensor = {reconstructed_images.float().mean()}")
         print(f"Min of tensor = {reconstructed_images.min()}")
         print(f"Max of tensor = {reconstructed_images.max()}\n")
         
@@ -609,7 +729,7 @@ def visualise_output(images, model, compose_transforms):
         # print statics on difference between original and reconstructed images (0-255 int range)
         print("The test set difference between original and reconstructed images stats (0-255 int range):")
         print(f"Size of tensor = {diff_0_255.size()}")
-        print(f"Mean of tensor = {diff_0_255.mean()}")
+        print(f"Mean of tensor = {diff_0_255.float().mean()}")
         print(f"Min of tensor = {diff_0_255.min()}")
         print(f"Max of tensor = {diff_0_255.max()}\n")
         
@@ -643,10 +763,12 @@ top_images = some_test_images[:PICK_TOP_N_IMAGES, :, :, :]
 
 if USE_PRETRAINED_VANILLA_AUTOENCODER:
     # Pretrained
-    visualise_output(top_images, vanilla_autoencoder_loaded, compose_transforms = TRANSFORM_IMG)
+    #visualise_output(top_images, vanilla_autoencoder_loaded, compose_transforms = TRANSFORM_IMG)
+    visualise_output(top_images, vanilla_autoencoder_v02_loaded, compose_transforms = TRANSFORM_IMG)
 else:
     # Trained just now
-    visualise_output(top_images, vanilla_autoencoder, compose_transforms = TRANSFORM_IMG)
+    #visualise_output(top_images, vanilla_autoencoder, compose_transforms = TRANSFORM_IMG)
+    visualise_output(top_images, vanilla_autoencoder_v02, compose_transforms = TRANSFORM_IMG)
 
 
 #'./data/MNIST_AE_pretrained/my_autoencoder.pth'

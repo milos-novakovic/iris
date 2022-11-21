@@ -298,22 +298,27 @@ class Vanilla_Autoencoder(nn.Module):
         padding = (padding_left,padding_right, padding_top, padding_bottom)
         
         x = F.pad(x, padding, "constant", 0)
-        x = self.bn1(F.relu(self.conv1(x)))
+        x = self.conv1(x)
+        x = F.relu(x)
+        x = self.bn1(x)
         
         H_pad_top, H_pad_bottom, W_pad_left, W_pad_right = self.conv2_padding
         padding_left,padding_right, padding_top, padding_bottom = W_pad_left, W_pad_right,H_pad_top, H_pad_bottom
         padding = (padding_left,padding_right, padding_top, padding_bottom)
         
         x = F.pad(x, padding, "constant", 0)
-        x = F.relu(self.conv2(x))
+        x = self.conv2(x)
+        x = F.relu(x)
         
         H_pad_top, H_pad_bottom, W_pad_left, W_pad_right = self.conv3_padding
         padding_left,padding_right, padding_top, padding_bottom = W_pad_left, W_pad_right,H_pad_top, H_pad_bottom
         padding = (padding_left,padding_right, padding_top, padding_bottom)
         x = F.pad(x, padding, "constant", 0)
         
-        x = F.relu(self.conv3(x))
+        x = self.conv3(x)
+        x = F.relu(x)
         x = self.bn2(x)
+        
         #latent_tensor = x
         
         # decoder part
@@ -323,18 +328,136 @@ class Vanilla_Autoencoder(nn.Module):
         padding_left,padding_right, padding_top, padding_bottom = W_pad_left, W_pad_right,H_pad_top, H_pad_bottom
         padding = (padding_left,padding_right, padding_top, padding_bottom)
         x = F.pad(x, padding, "constant", 0)
-        
-        x = F.relu(self.conv4(x))
+
+        x = self.conv4(x)
+        x = F.relu(x)
         x = self.bn3(x)
+        
+
         
         H_pad_top, H_pad_bottom, W_pad_left, W_pad_right = self.conv5_padding
         padding_left,padding_right, padding_top, padding_bottom = W_pad_left, W_pad_right,H_pad_top, H_pad_bottom
         padding = (padding_left,padding_right, padding_top, padding_bottom)
         x = F.pad(x, padding, "constant", 0)
         
-        x = torch.sigmoid(self.conv5(x))
+        x = self.conv5(x)
+        x = torch.sigmoid(x)
         return x
         
         #latent = self.encoder(x)
         #x_recon = self.decoder(latent)
         #return x_recon
+        
+
+class Vanilla_Autoencoder_v02(nn.Module):
+    def __init__(self,autoencoder_config_params_wrapped_sorted):
+        super(Vanilla_Autoencoder_v02, self).__init__()
+        self.autoencoder_config_params_wrapped_sorted = autoencoder_config_params_wrapped_sorted
+        
+        params = autoencoder_config_params_wrapped_sorted
+        self.layers = {}
+        # 'vanilla_autoencoder_vanilla_autoencoder_path': '/home/novakovm/iris/MILOS/',
+        # 'vanilla_autoencoder_vanilla_autoencoder_name': 'vanilla_autoencoder',
+        # 'vanilla_autoencoder_vanilla_autoencoder_version': '_2022_11_20_17_13_14',
+        # 'vanilla_autoencoder_vanilla_autoencoder_extension': '.py'
+        
+        self.sequential_model = torch.nn.Sequential()
+        
+        self.latent_space_dim = 0
+        #self.conv_paddings = {}
+        
+        for param_name, param_value_dict in params:
+            if param_name == 'vanilla_autoencoder':
+                continue            
+            
+            if param_name[:len('conv')] == 'conv':
+                # keys in the param_value_dict =
+                # 'C_in'
+                # 'H_in'
+                # 'W_in'
+                # 'C_out'
+                # 'H_out'
+                # 'W_out'
+                # 'Embedding_Dim'
+                # 'Layer_Name'
+                # 'conv1'
+                # 'Stride_H'
+                # 'Stride_W'
+                # 'Padding_H_top'
+                # 'Padding_H_bottom'
+                # 'Padding_W_left'
+                # 'Padding_W_right'
+                # 'kernel_num'
+                # 'Kernel_H'
+                # 'Kernel_W'
+                # 'Dilation_H'
+                # 'Dilation_W'
+                
+                # First we calculate the padding
+                padding = ( param_value_dict['Padding_W_left'],
+                            param_value_dict['Padding_W_right'],
+                            param_value_dict['Padding_H_top'],
+                            param_value_dict['Padding_H_bottom'])
+                self.sequential_model.add_module(param_name + '_padding', nn.ZeroPad2d(padding))
+                
+                # Second we do 2D convolution
+                self.sequential_model.add_module(param_name, torch.nn.Conv2d(
+                                                                in_channels = param_value_dict['C_in'],
+                                                                out_channels= param_value_dict['C_out'],
+                                                                kernel_size = (param_value_dict['Kernel_H'], param_value_dict['Kernel_W']),
+                                                                stride      = (param_value_dict['Stride_H'], param_value_dict['Stride_W']),
+                                                                #padding = calculated already!
+                                                                dilation    = (param_value_dict['Dilation_H'], param_value_dict['Dilation_W'])
+                                                                ))                
+            elif param_name[:len('maxpool')] == 'maxpool':
+                # First we calculate the padding
+                padding = ( param_value_dict['Padding_W_left'],
+                            param_value_dict['Padding_W_right'],
+                            param_value_dict['Padding_H_top'],
+                            param_value_dict['Padding_H_bottom'])
+                self.sequential_model.add_module(param_name + '_padding', nn.ZeroPad2d(padding))
+                
+                # Second we do 2D maxpooling
+                self.sequential_model.add_module(param_name, torch.nn.MaxPool2d(
+                                                                kernel_size = (param_value_dict['Kernel_H'], param_value_dict['Kernel_W']),
+                                                                stride      = (param_value_dict['Stride_H'], param_value_dict['Stride_W']),
+                                                                #padding = calculated already!
+                                                                dilation    = (param_value_dict['Dilation_H'], param_value_dict['Dilation_W']),
+                                                                return_indices=False,
+                                                                ceil_mode=False
+                                                                ))
+                
+            elif param_name[:len('ReLU')] == 'ReLU':
+                # Apply ReLU as an activation function
+                self.sequential_model.add_module(param_name, torch.nn.ReLU(inplace=False))
+                
+            elif param_name[:len('bn')] == 'bn':
+                # Apply Batch Normalization
+                self.sequential_model.add_module(param_name, torch.nn.BatchNorm2d(num_features = param_value_dict['C_in']))
+                
+            elif param_name[:len('UpSample')] == 'UpSample':
+                # Apply UpSampling to restore the original size of an image
+                self.sequential_model.add_module(param_name, torch.nn.Upsample(
+                                                                            size=None, 
+                                                                            scale_factor=(param_value_dict['Stride_H'], param_value_dict['Stride_W']), 
+                                                                            mode='nearest', # NEAREST MODE IS HARD-CODED # TO DO (MAKE IT SUPPORT OTHER MODES OF UPSAMPLING)
+                                                                            align_corners=None,
+                                                                            recompute_scale_factor=None
+                                                                        ))
+                
+            elif param_name[:len('sigmoid')] == 'sigmoid':
+                # Apply Sigmoid as an activation function
+                self.sequential_model.add_module(param_name, torch.nn.Sigmoid(inplace=False))
+            
+            else:
+                assert(False, f'Unknown config parameter name = {param_name}.')
+            
+            # update latent space dimension
+            self.latent_space_dim = min(self.latent_space_dim , param_value_dict['Embedding_Dim'])
+            
+        
+    def forward(self, x):
+        #latent = self.encoder(x)
+        #x_recon = self.decoder(latent)
+        x_recon = self.sequential_model(x)
+        return x_recon
