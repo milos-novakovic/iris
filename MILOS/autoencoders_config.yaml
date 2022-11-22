@@ -20,8 +20,8 @@ training_hyperparams:
   - USE_PRETRAINED_VANILLA_AUTOENCODER: False
   - USE_GPU: True
   - TRAIN_FLAG: True
-  - NUM_EPOCHS: 3 #10 #20
-  - BATCH_SIZE: 32 #64 #128
+  - NUM_EPOCHS: 200 #10 #20
+  - BATCH_SIZE: 256 #32 #64 #128
   - LEARNING_RATE: 0.001 #1e-3
   - TRAIN_DATA_PATH: '/home/novakovm/DATA/' #'./DATA/'
   - TEST_DATA_PATH: '/home/novakovm/DATA_TEST/' #'./DATA_TEST/'
@@ -38,7 +38,7 @@ conv1:
   - C_out : 8
   - H_out : 64
   - W_out : 64
-  - Embedding_Dim : 32768
+  - Embedding_Dim : 12288
   - Layer_Name : "conv1"
   - Stride_H : 1
   - Stride_W : 1
@@ -61,7 +61,7 @@ maxpool1:
   - C_out : 8
   - H_out : 32
   - W_out : 32
-  - Embedding_Dim : 8192
+  - Embedding_Dim : 32768
   - Layer_Name : "maxpool1"
   - Stride_H : 2
   - Stride_W : 2
@@ -130,7 +130,7 @@ conv2:
   - C_out : 16
   - H_out : 32
   - W_out : 32
-  - Embedding_Dim : 16384
+  - Embedding_Dim : 8192
   - Layer_Name : "conv2"
   - Stride_H : 1
   - Stride_W : 1
@@ -153,7 +153,7 @@ maxpool2:
   - C_out : 16
   - H_out : 16
   - W_out : 16
-  - Embedding_Dim : 4096
+  - Embedding_Dim : 16384
   - Layer_Name : "maxpool2"
   - Stride_H : 2
   - Stride_W : 2
@@ -222,7 +222,7 @@ conv3:
   - C_out : 32
   - H_out : 16
   - W_out : 16
-  - Embedding_Dim : 8192
+  - Embedding_Dim : 4096
   - Layer_Name : "conv3"
   - Stride_H : 1
   - Stride_W : 1
@@ -245,7 +245,7 @@ maxpool3:
   - C_out : 32
   - H_out : 8
   - W_out : 8
-  - Embedding_Dim : 2048
+  - Embedding_Dim : 8192
   - Layer_Name : "maxpool3"
   - Stride_H : 2
   - Stride_W : 2
@@ -314,7 +314,7 @@ conv4:
   - C_out : 64
   - H_out : 8
   - W_out : 8
-  - Embedding_Dim : 4096
+  - Embedding_Dim : 2048
   - Layer_Name : "conv4"
   - Stride_H : 1
   - Stride_W : 1
@@ -337,7 +337,7 @@ maxpool4:
   - C_out : 64
   - H_out : 4
   - W_out : 4
-  - Embedding_Dim : 1024
+  - Embedding_Dim : 4096
   - Layer_Name : "maxpool4"
   - Stride_H : 2
   - Stride_W : 2
@@ -406,7 +406,7 @@ conv5:
   - C_out : 32
   - H_out : 4
   - W_out : 4
-  - Embedding_Dim : 512
+  - Embedding_Dim : 1024
   - Layer_Name : "conv5"
   - Stride_H : 1
   - Stride_W : 1
@@ -452,7 +452,7 @@ UpSample1:
   - C_out : 32
   - H_out : 8
   - W_out : 8
-  - Embedding_Dim : 2048
+  - Embedding_Dim : 512
   - Layer_Name : "UpSample1"
   - Stride_H : 2
   - Stride_W : 2
@@ -475,7 +475,7 @@ conv6:
   - C_out : 64
   - H_out : 8
   - W_out : 8
-  - Embedding_Dim : 4096
+  - Embedding_Dim : 2048
   - Layer_Name : "conv6"
   - Stride_H : 1
   - Stride_W : 1
@@ -544,7 +544,7 @@ UpSample2:
   - C_out : 64
   - H_out : 16
   - W_out : 16
-  - Embedding_Dim : 16384
+  - Embedding_Dim : 4096
   - Layer_Name : "UpSample2"
   - Stride_H : 2
   - Stride_W : 2
@@ -567,7 +567,7 @@ conv7:
   - C_out : 32
   - H_out : 16
   - W_out : 16
-  - Embedding_Dim : 8192
+  - Embedding_Dim : 16384
   - Layer_Name : "conv7"
   - Stride_H : 1
   - Stride_W : 1
@@ -636,7 +636,7 @@ UpSample3:
   - C_out : 32
   - H_out : 32
   - W_out : 32
-  - Embedding_Dim : 32768
+  - Embedding_Dim : 8192
   - Layer_Name : "UpSample3"
   - Stride_H : 2
   - Stride_W : 2
@@ -659,7 +659,7 @@ conv8:
   - C_out : 16
   - H_out : 32
   - W_out : 32
-  - Embedding_Dim : 16384
+  - Embedding_Dim : 32768
   - Layer_Name : "conv8"
   - Stride_H : 1
   - Stride_W : 1
@@ -728,7 +728,7 @@ UpSample4:
   - C_out : 16
   - H_out : 64
   - W_out : 64
-  - Embedding_Dim : 65536
+  - Embedding_Dim : 16384
   - Layer_Name : "UpSample4"
   - Stride_H : 2
   - Stride_W : 2
@@ -751,7 +751,7 @@ conv9:
   - C_out : 3
   - H_out : 64
   - W_out : 64
-  - Embedding_Dim : 12288
+  - Embedding_Dim : 65536
   - Layer_Name : "conv9"
   - Stride_H : 1
   - Stride_W : 1

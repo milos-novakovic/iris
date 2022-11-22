@@ -11,9 +11,9 @@ from torch.autograd import Variable
 import torch.utils.data as data
 import torchvision
 from torchvision import transforms
-import oyaml as yaml
+#import oyaml as yaml
 from collections import OrderedDict
-#import yaml
+import yaml
 #from yaml.loader import SafeLoader
 
 from models import *
@@ -27,12 +27,15 @@ get_images_hyperparam_value = lambda data_dict, hyperparam_name : [dict_[hyperpa
 images_hyperparam_path = '/home/novakovm/iris/MILOS/milos_config.yaml'
 with open(images_hyperparam_path) as f:
     images_hyperparam_dict = yaml.load(f, Loader=yaml.SafeLoader)
+
+# number of images for training and testing datasets
 TOTAL_NUMBER_OF_IMAGES = get_images_hyperparam_value(images_hyperparam_dict, 'TOTAL_NUMBER_OF_IMAGES')
 TEST_TOTAL_NUMBER_OF_IMAGES = get_images_hyperparam_value(images_hyperparam_dict, 'TEST_TOTAL_NUMBER_OF_IMAGES')
 args_train = {}
 args_train['TOTAL_NUMBER_OF_IMAGES'] = TOTAL_NUMBER_OF_IMAGES
 args_test = {}
 args_test['TOTAL_NUMBER_OF_IMAGES'] = TEST_TOTAL_NUMBER_OF_IMAGES
+
 # Height, Width, Channel number
 H=get_images_hyperparam_value(images_hyperparam_dict, 'H')
 W=get_images_hyperparam_value(images_hyperparam_dict, 'W')
@@ -45,25 +48,24 @@ with open(models_hyperparam_path) as f:
 
 #models_hyperparam_dict['training_hyperparams']
 
-get_models_hyperparam_value = lambda hyper_param_list, hyper_param_name : [hyper_param for hyper_param in hyper_param_list if hyper_param_name in hyper_param][0]
-get_models_hyperparam_value(models_hyperparam_dict['training_hyperparams'], 'USE_GPU') # returns {'USE_GPU': True}
+get_models_hyperparam_value = lambda hyper_param_list, hyper_param_name : [hyper_param for hyper_param in hyper_param_list if hyper_param_name in hyper_param][0][hyper_param_name]
+#get_models_hyperparam_value(models_hyperparam_dict['training_hyperparams'], 'USE_GPU') #True
 
-NUM_WORKERS = 4# see what this represents exactly!
-LATENT_DIM = 10# TO DO
+NUM_WORKERS = get_models_hyperparam_value(models_hyperparam_dict['training_hyperparams'], 'NUM_WORKERS') # see what this represents exactly!
+LATENT_DIM = get_models_hyperparam_value(models_hyperparam_dict['training_hyperparams'], 'LATENT_DIM')# TO DO
+USE_PRETRAINED_VANILLA_AUTOENCODER  = get_models_hyperparam_value(models_hyperparam_dict['training_hyperparams'], 'USE_PRETRAINED_VANILLA_AUTOENCODER')
+USE_GPU = get_models_hyperparam_value(models_hyperparam_dict['training_hyperparams'], 'USE_GPU')
+TRAIN_FLAG = get_models_hyperparam_value(models_hyperparam_dict['training_hyperparams'], 'TRAIN_FLAG')
 
-USE_PRETRAINED_VANILLA_AUTOENCODER  = False
-USE_GPU = True
-TRAIN_FLAG = True
+NUM_EPOCHS = get_models_hyperparam_value(models_hyperparam_dict['training_hyperparams'], 'NUM_EPOCHS')
+BATCH_SIZE = get_models_hyperparam_value(models_hyperparam_dict['training_hyperparams'], 'BATCH_SIZE')
+LEARNING_RATE = get_models_hyperparam_value(models_hyperparam_dict['training_hyperparams'], 'LEARNING_RATE')
 
-NUM_EPOCHS = 3#10#20
-BATCH_SIZE = 32#64#128
-LEARNING_RATE = 1e-3#3 * 1e-3#0.003
+TRAIN_DATA_PATH = get_models_hyperparam_value(models_hyperparam_dict['training_hyperparams'], 'TRAIN_DATA_PATH')
+TEST_DATA_PATH = get_models_hyperparam_value(models_hyperparam_dict['training_hyperparams'], 'TEST_DATA_PATH')
 
-TRAIN_DATA_PATH = '/home/novakovm/DATA/'#'./DATA/'
-TEST_DATA_PATH = '/home/novakovm/DATA_TEST/'#'./DATA_TEST/'
-
-TRAIN_IMAGES_MEAN_FILE_PATH = '/home/novakovm/iris/MILOS/RGB_mean.npy'
-TRAIN_IMAGES_STD_FILE_PATH  = '/home/novakovm/iris/MILOS/RGB_std.npy'
+TRAIN_IMAGES_MEAN_FILE_PATH = get_models_hyperparam_value(models_hyperparam_dict['training_hyperparams'], 'TRAIN_IMAGES_MEAN_FILE_PATH')
+TRAIN_IMAGES_STD_FILE_PATH  = get_models_hyperparam_value(models_hyperparam_dict['training_hyperparams'], 'TRAIN_IMAGES_STD_FILE_PATH')
 
 
 
@@ -401,7 +403,7 @@ autoencoder_config_params_wrapped_unsorted = {   layer_name:   {
                                                     list(feature_name_feature_value.values())[0]
                                                     for feature_name_feature_value in autoencoder_config_params[layer_name]
                                                     } 
-                                        for layer_name in autoencoder_config_params} # if a value is missing default value is None
+                                                for layer_name in autoencoder_config_params} # if a value is missing default value is None
 
 
 model_file_path_info={}
@@ -413,10 +415,7 @@ model_file_path_info['model_extension'] = autoencoder_config_params_wrapped_unso
 autoencoder_config_params_wrapped_unsorted.pop('vanilla_autoencoder')
 autoencoder_config_params_wrapped_unsorted.pop('training_hyperparams')
 
-
-
 sorted_Layer_Numbers = np.sort([autoencoder_config_params_wrapped_unsorted[layer_name]['Layer_Number'] for layer_name in autoencoder_config_params_wrapped_unsorted]) 
-
 
 # all of the params wrapped stored in ORDERED dict (OrderedDict) where 
 # key is = layer_name
@@ -426,7 +425,6 @@ sorted_Layer_Numbers = np.sort([autoencoder_config_params_wrapped_unsorted[layer
 #   'maxpool1': {'C_in': 8, 'H_in': 64, 'W_in': 64, ...},
 #   ...
 #   }
-
 autoencoder_config_params_wrapped_sorted = OrderedDict()
 
 # all of the params unwrapped stored in ORDERED dict (OrderedDict) where 
@@ -436,16 +434,13 @@ autoencoder_config_params_wrapped_sorted = OrderedDict()
 autoencoder_config_params_unwrapped_sorted = OrderedDict()
 
 # fill wrapped sorted and unwrapped sorted Ordered Dicts:
-
 for sorted_Layer_Number in sorted_Layer_Numbers:
     layer_name = [layer_name for layer_name in autoencoder_config_params_wrapped_unsorted if sorted_Layer_Number == autoencoder_config_params_wrapped_unsorted[layer_name]['Layer_Number']][0]
+    # update AE config params with wrapped structure in sorted manner
     autoencoder_config_params_wrapped_sorted[layer_name] = autoencoder_config_params_wrapped_unsorted[layer_name]
-    
+    # update AE config params with unwrapped structure in sorted manner
     for feature_name_feature_value in autoencoder_config_params_wrapped_sorted[layer_name]:
         autoencoder_config_params_unwrapped_sorted[layer_name + '->' +feature_name_feature_value] = autoencoder_config_params_wrapped_sorted[layer_name][feature_name_feature_value]
-    
-
-
 
 ### Vanilla_Autoencoder_v02 params end
 device = torch.device("cuda:0" if USE_GPU and torch.cuda.is_available() else "cpu")
@@ -503,8 +498,10 @@ if TRAIN_FLAG:
             #loss = F.mse_loss(image_batch_recon, image_batch)
             loss = loss_fn(image_batch_recon, image_batch)
             
-            # backpropagation
+            # init grad params
             optimizer.zero_grad()
+            
+            # backpropagation
             loss.backward()
             
             # one step of the optmizer (using the gradients from backpropagation)
@@ -776,8 +773,6 @@ def visualise_output(images, model, compose_transforms):
         plt.imshow(np.transpose(np_imagegrid_reconstructed_images, (1, 2, 0))) # H,W,C
         plt.savefig('./SHOW_IMAGES/autoencoder_output_test_50_images.png')
         plt.close()
-        
-        debug =0
 
 some_test_images = iter(test_data_loader).next() # torch.Size([128, 3, 64, 64])
 
