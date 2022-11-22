@@ -3,10 +3,9 @@ import numpy as np
 import torch.nn.functional as F
 from torch.autograd import Variable
 import torch.utils.data as data
-
+import yaml
 
 import cv2
-import numpy as np 
 ###########
 
 
@@ -104,7 +103,12 @@ def find_mean_std(TOTAL_NUMBER_OF_IMAGES, image_ids_numbers = None, method = 'n'
     else:
         return RGB_mean, RGB_std
     
-TOTAL_NUMBER_OF_IMAGES = 100000
+milos_config_path = '/home/novakovm/iris/MILOS/milos_config.yaml'
+# Open the file and load the file
+with open(milos_config_path) as f:
+    data = yaml.load(f, Loader=yaml.SafeLoader)
+
+TOTAL_NUMBER_OF_IMAGES = [dict_['TOTAL_NUMBER_OF_IMAGES'] for dict_ in data['file_info'] if 'TOTAL_NUMBER_OF_IMAGES' in dict_][0]
 RGB_mean, RGB_std = find_mean_std(TOTAL_NUMBER_OF_IMAGES)
 print(f"Images Mean = {np.round(RGB_mean,2)}")
 print(f"Images Std = {np.round(RGB_std,2)}")

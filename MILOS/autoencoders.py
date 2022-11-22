@@ -21,34 +21,51 @@ from models import *
 current_working_absoulte_path = '/home/novakovm/iris/MILOS'
 os.chdir(current_working_absoulte_path)
 
+# hyperparameters related to images
+get_images_hyperparam_value = lambda data_dict, hyperparam_name : [dict_[hyperparam_name] for dict_ in data_dict['file_info'] if hyperparam_name in dict_][0]
 
-H,W,C = 64, 64,3#32,32,3 #64, 64,3
+images_hyperparam_path = '/home/novakovm/iris/MILOS/milos_config.yaml'
+with open(images_hyperparam_path) as f:
+    images_hyperparam_dict = yaml.load(f, Loader=yaml.SafeLoader)
+TOTAL_NUMBER_OF_IMAGES = get_images_hyperparam_value(images_hyperparam_dict, 'TOTAL_NUMBER_OF_IMAGES')
+TEST_TOTAL_NUMBER_OF_IMAGES = get_images_hyperparam_value(images_hyperparam_dict, 'TEST_TOTAL_NUMBER_OF_IMAGES')
 args_train = {}
-args_train['TOTAL_NUMBER_OF_IMAGES'] = 100000
+args_train['TOTAL_NUMBER_OF_IMAGES'] = TOTAL_NUMBER_OF_IMAGES
 args_test = {}
-args_test['TOTAL_NUMBER_OF_IMAGES'] = 50
+args_test['TOTAL_NUMBER_OF_IMAGES'] = TEST_TOTAL_NUMBER_OF_IMAGES
+# Height, Width, Channel number
+H=get_images_hyperparam_value(images_hyperparam_dict, 'H')
+W=get_images_hyperparam_value(images_hyperparam_dict, 'W')
+C=get_images_hyperparam_value(images_hyperparam_dict, 'C')
 
-num_workers = 4
-#learning_rate = 0.001
-#latent_dims = 10
+# hyperparameters related to training of autoencoder
+models_hyperparam_path = '/home/novakovm/iris/MILOS/autoencoders_config.yaml'
+with open(models_hyperparam_path) as f:
+    models_hyperparam_dict = yaml.load(f, Loader=yaml.SafeLoader)
 
-#capacity = 64
+#models_hyperparam_dict['training_hyperparams']
 
-LATENT_DIM = 10
+get_models_hyperparam_value = lambda hyper_param_list, hyper_param_name : [hyper_param for hyper_param in hyper_param_list if hyper_param_name in hyper_param][0]
+get_models_hyperparam_value(models_hyperparam_dict['training_hyperparams'], 'USE_GPU') # returns {'USE_GPU': True}
 
+NUM_WORKERS = 4# see what this represents exactly!
+LATENT_DIM = 10# TO DO
+
+USE_PRETRAINED_VANILLA_AUTOENCODER  = False
 USE_GPU = True
 TRAIN_FLAG = True
 
-NUM_EPOCHS = 10#20
-BATCH_SIZE = 128
+NUM_EPOCHS = 3#10#20
+BATCH_SIZE = 32#64#128
 LEARNING_RATE = 1e-3#3 * 1e-3#0.003
 
 TRAIN_DATA_PATH = '/home/novakovm/DATA/'#'./DATA/'
 TEST_DATA_PATH = '/home/novakovm/DATA_TEST/'#'./DATA_TEST/'
 
-TRAIN_IMAGES_MEAN_FILE_PATH, TRAIN_IMAGES_STD_FILE_PATH = '/home/novakovm/iris/MILOS/RGB_mean.npy', '/home/novakovm/iris/MILOS/RGB_std.npy'
+TRAIN_IMAGES_MEAN_FILE_PATH = '/home/novakovm/iris/MILOS/RGB_mean.npy'
+TRAIN_IMAGES_STD_FILE_PATH  = '/home/novakovm/iris/MILOS/RGB_std.npy'
 
-USE_PRETRAINED_VANILLA_AUTOENCODER  = False
+
 
 zero_mean_unit_std_transform = transforms.Compose([
 #    transforms.Resize(256),
@@ -56,37 +73,30 @@ zero_mean_unit_std_transform = transforms.Compose([
     #transforms.ToTensor(),
     transforms.Normalize(mean=np.load(TRAIN_IMAGES_MEAN_FILE_PATH).tolist(),
                          std=np.load(TRAIN_IMAGES_STD_FILE_PATH).tolist() )
-    # OR
-    # transforms.Normalize(mean = [0., 0., 0.],
-    #                      std  = [255., 255., 255.])
     ])
 
 zero_min_one_max_transform = transforms.Compose([
 #    transforms.Resize(256),
 #    transforms.CenterCrop(256),
     #transforms.ToTensor(),
-    # transforms.Normalize(mean=np.load(TRAIN_IMAGES_MEAN_FILE_PATH).tolist(),
-    #                      std=np.load(TRAIN_IMAGES_STD_FILE_PATH).tolist() )
-    # OR
     transforms.Normalize(mean = [0., 0., 0.],
                           std  = [255., 255., 255.])
     ])
 
+# Pick one transform that is applied
 TRANSFORM_IMG = zero_min_one_max_transform#zero_mean_unit_std_transform # zero_min_one_max_transform
-
-
 
 # Train Data & Train data Loader
 # Image Folder = A generic data loader where the images are arranged in this way by default
 
 #train_data = torchvision.datasets.ImageFolder(root=TRAIN_DATA_PATH, transform=TRANSFORM_IMG)
 train_data = CustomImageDataset(args = args_train, root=TRAIN_DATA_PATH, transform=TRANSFORM_IMG)
-train_data_loader = data.DataLoader(dataset = train_data, batch_size=BATCH_SIZE, shuffle=True,  num_workers=num_workers)
+train_data_loader = torch.utils.data.DataLoader(dataset = train_data, batch_size=BATCH_SIZE, shuffle=True,  num_workers=NUM_WORKERS)
 
 # Test Data & Test data Loader
 #test_data = torchvision.datasets.ImageFolder(root=TEST_DATA_PATH, transform=TRANSFORM_IMG)
 test_data = CustomImageDataset(args = args_test, root=TEST_DATA_PATH, transform=TRANSFORM_IMG)
-test_data_loader  = data.DataLoader(dataset = test_data, batch_size=BATCH_SIZE, shuffle=True, num_workers=num_workers) 
+test_data_loader  = torch.utils.data.DataLoader(dataset = test_data, batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKERS) 
 
 # Data Loader (Input Pipeline)
 # train_loader = torch.utils.data.DataLoader(dataset=TRAIN_DATA_PATH,
@@ -110,7 +120,7 @@ def conv2d_dims(h_in,w_in,k,s,p,d):
             
 
 
-
+"""
 ### ENCODER PARAMS BEGIN
 params_encoder= {}
 
@@ -162,7 +172,8 @@ params_encoder['latent_dims'] = LATENT_DIM
 
 
 ### ENCODER PARAMS END
-
+"""
+"""
 ### DECODER PARAMS BEGIN
 params_decoder = {}
 params_decoder['fc1_exists'] = True
@@ -197,8 +208,8 @@ params_decoder['conv1_H_in'],params_decoder['conv1_W_in'] = params_encoder['conv
 params_decoder['conv1_H_out'],params_decoder['conv1_W_out'] = conv2d_dims(h_in = params_decoder['conv1_H_in'],w_in = params_decoder['conv1_W_in'],k = params_decoder['kernel_size_conv1'],s = params_decoder['stride_conv1'],p = params_decoder['padding_conv1'],d = params_decoder['dilation_conv1'])
 
 ### DECODER PARAMS END
-
-
+"""
+"""
 ### Vanilla Autoencoder params begin
 def same_padding(h_in, w_in, s, k):
     # SAME padding: This is kind of tricky to understand in the first place because we have to consider two conditions separately as mentioned in the official docs.
@@ -218,11 +229,7 @@ def same_padding(h_in, w_in, s, k):
     # else:
     #     p = max((k - (n_i % s)), 0)
     # return p
-    
-    
-    
-    
-    
+
     # n_out = np.ceil(float(n_in) / float(s))
     # p = None#int(max((n_out - 1) * s + k - n_in, 0) // 2)
     
@@ -233,12 +240,7 @@ def same_padding(h_in, w_in, s, k):
     #     p = max(k - (n_in % s), 0)
     # #(2*(output-1) - input - kernel) / stride
     # p = int(p // 2)
-    
-    
-    
-    
-    
-    
+
     #out_height = np.ceil(float(h_in) / float(s[0]))
     #out_width  = np.ceil(float(h_in) / float(s[1]))
 
@@ -375,7 +377,7 @@ params['conv5_H_out'],params['conv5_W_out'] = conv2d_dims(h_in = params['conv5_H
                                                           d = params['dilation_conv5'])
 
 ### Vanilla Autoencoder params end
-
+"""
 
 ### Vanilla_Autoencoder_v02 params begin
 
@@ -409,6 +411,8 @@ model_file_path_info['model_version'] = autoencoder_config_params_wrapped_unsort
 model_file_path_info['model_extension'] = autoencoder_config_params_wrapped_unsorted['vanilla_autoencoder']['vanilla_autoencoder_extension']#'.py'
 
 autoencoder_config_params_wrapped_unsorted.pop('vanilla_autoencoder')
+autoencoder_config_params_wrapped_unsorted.pop('training_hyperparams')
+
 
 
 sorted_Layer_Numbers = np.sort([autoencoder_config_params_wrapped_unsorted[layer_name]['Layer_Number'] for layer_name in autoencoder_config_params_wrapped_unsorted]) 
@@ -452,6 +456,7 @@ num_params = sum(p.numel() for p in vanilla_autoencoder_v02.parameters() if p.re
 print('Number of parameters in vanilla AE : %d' % num_params)
 optimizer = torch.optim.Adam(params=vanilla_autoencoder_v02.parameters(), lr=LEARNING_RATE)#, weight_decay=1e-5)
 vanilla_autoencoder_v02.train()
+print("Vanilla AE v02 model summary is as follows:\n",vanilla_autoencoder_v02)
 
 # device = torch.device("cuda:0" if USE_GPU and torch.cuda.is_available() else "cpu")
 
@@ -530,7 +535,10 @@ if TRAIN_FLAG:
     #train_loss_avg_path = '/home/novakovm/iris/MILOS/autoencoder_train_loss_avg_' + current_time_str + '.npy'
     train_loss_avg_path = '/home/novakovm/iris/MILOS/vanilla_autoencoder_train_loss_avg_' + current_time_str + '.npy'
     print(f"Autoencoder Training Loss Average = {train_loss_avg}")
-    np.save(train_loss_avg_path,np.array(train_loss_avg))
+    
+    train_loss_avg = np.array(train_loss_avg)
+    np.save(train_loss_avg_path,train_loss_avg)
+ 
     
     pretrained_autoencoder_path = '/home/novakovm/iris/MILOS/vanilla_autoencoder_' + current_time_str + '.py'
     #torch.save(autoencoder.state_dict(), pretrained_autoencoder_path)
@@ -581,6 +589,7 @@ if USE_PRETRAINED_VANILLA_AUTOENCODER:
 
 print('Testing ...')
 test_loss_avg, num_batches = 0, 0
+test_loss = []
 for image_batch in test_data_loader:
     
     with torch.no_grad():
@@ -601,13 +610,35 @@ for image_batch in test_data_loader:
         # reconstruction error
         loss = F.mse_loss(image_batch_recon, image_batch)
 
+        
+        test_loss.append(loss.item())
         test_loss_avg += loss.item()
         num_batches += 1
     
 test_loss_avg /= num_batches
+test_loss = np.array(test_loss)
 print('average reconstruction error: %f' % (test_loss_avg))
 
 
+
+plt.figure()
+plt.plot(train_loss_avg)
+#plt.savefig('/home/novakovm/iris/MILOS/training_loss_per_epoch_'+current_time_str+'.png')
+
+plt.title(f'Training Loss Avg. per epoch (Min. = {train_loss_avg.min()*1e3 : .2f}e-3)')
+plt.xlabel('Epochs')
+plt.ylabel('Avg. Training Loss')
+plt.savefig('/home/novakovm/iris/MILOS/training_loss_per_epoch.png')
+plt.close()
+
+plt.figure()
+plt.plot(test_loss)
+#plt.savefig('/home/novakovm/iris/MILOS/training_loss_per_epoch_'+current_time_str+'.png')
+plt.title(f'Test Loss per minibatch (Avg. = {test_loss.mean()*1e3 : .2f}e-3)')
+plt.xlabel('Mini-batch')
+plt.ylabel('Testing Loss')
+plt.savefig('/home/novakovm/iris/MILOS/testing_loss_per_image_in_minibatch.png')
+plt.close()
 
 #plt.ion()
 
@@ -769,7 +800,7 @@ else:
     # Trained just now
     #visualise_output(top_images, vanilla_autoencoder, compose_transforms = TRANSFORM_IMG)
     visualise_output(top_images, vanilla_autoencoder_v02, compose_transforms = TRANSFORM_IMG)
-
+debug =0
 
 #'./data/MNIST_AE_pretrained/my_autoencoder.pth'
 

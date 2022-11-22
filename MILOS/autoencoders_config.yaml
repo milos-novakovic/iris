@@ -13,6 +13,21 @@ vanilla_autoencoder:
   - vanilla_autoencoder_name: 'vanilla_autoencoder'
   - vanilla_autoencoder_version: '_2022_11_20_17_13_14' #!!! TAKING ALWAYS THE CURRENT TIME!!! model_file_path_info['model_version']  = current_time_str # current_time_str = time.strftime("%Y_%m_%d_%H_%M_%S", time.gmtime(time.time())) # 2022_11_19_20_11_26
   - vanilla_autoencoder_extension: '.py'
+
+training_hyperparams:
+  - NUM_WORKERS: 4 #NUM_WORKERS = 4# see what this represents exactly!
+  - LATENT_DIM: 10 #TO DO
+  - USE_PRETRAINED_VANILLA_AUTOENCODER: False
+  - USE_GPU: True
+  - TRAIN_FLAG: True
+  - NUM_EPOCHS: 3 #10 #20
+  - BATCH_SIZE: 32 #64 #128
+  - LEARNING_RATE: 0.001 #1e-3
+  - TRAIN_DATA_PATH: '/home/novakovm/DATA/' #'./DATA/'
+  - TEST_DATA_PATH: '/home/novakovm/DATA_TEST/' #'./DATA_TEST/'
+  - TRAIN_IMAGES_MEAN_FILE_PATH: '/home/novakovm/iris/MILOS/RGB_mean.npy'
+  - TRAIN_IMAGES_STD_FILE_PATH: '/home/novakovm/iris/MILOS/RGB_std.npy'
+
 ###
 #conv1
 conv1:

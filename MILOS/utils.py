@@ -15,7 +15,7 @@ INT = np.int64
 FLOAT = np.float64
 UINT  = np.uint8
 
-GENERATE_STATS = False
+GENERATE_STATS = True
 TRAIN_MODE = False
 TEST_MODE = not(TRAIN_MODE)
 
@@ -38,12 +38,20 @@ elif TEST_MODE:
 if TRAIN_MODE:
     # if training then delete previous dataset
     path = '/home/novakovm/DATA' #current_working_absoulte_path + '/DATA'
-    os.system('rm -rf %s/*' % path)
+    #os.system('rm -rf %s/*' % path)
+    os.chdir(path)
+    if os.getcwd() == path:
+        os.system("find . -name \"*.png\" -delete")
+        os.system("find . -name \"*.csv\" -delete")
     
 if TEST_MODE:
     # if training then delete previous dataset
     path = '/home/novakovm/DATA_TEST' #current_working_absoulte_path + '/DATA_TEST'
     os.system('rm -rf %s/*' % path)
+    os.chdir(path)
+    if os.getcwd() == path:
+        os.system("find . -name \"*.png\" -delete")
+        os.system("find . -name \"*.csv\" -delete")
 
 milos_config_path = '/home/novakovm/iris/MILOS/milos_config.yaml'
 # Open the file and load the file
