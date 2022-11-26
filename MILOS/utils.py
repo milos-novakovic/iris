@@ -59,14 +59,40 @@ with open(milos_config_path) as f:
     data = yaml.load(f, Loader=SafeLoader)
 
 COOR_BEGIN =                   [one_info for one_info in data['COOR_BEGIN']]
+
+
+THEORETICAL_MAX_NUMBER_OF_DIFFERENT_IMAGES = 1
+# 1 bits
 SHAPE_TYPE_SPACE =             [one_info for one_info in data['SHAPE_TYPE_SPACE']]
+THEORETICAL_MAX_NUMBER_OF_DIFFERENT_IMAGES *= len(SHAPE_TYPE_SPACE)
+# 2 bits
 COLOR_LIST =                   [one_info for one_info in data['COLOR_LIST']]
+THEORETICAL_MAX_NUMBER_OF_DIFFERENT_IMAGES *= len(COLOR_LIST)
+# 2 bits
 Y_CENTER_SPACE =               [one_info for one_info in data['Y_CENTER_SPACE']]
+THEORETICAL_MAX_NUMBER_OF_DIFFERENT_IMAGES *= len(Y_CENTER_SPACE)
+# 2 bits
 X_CENTER_SPACE =               [one_info for one_info in data['X_CENTER_SPACE']]
+THEORETICAL_MAX_NUMBER_OF_DIFFERENT_IMAGES *= len(X_CENTER_SPACE)
+# 2 bits
 b_CENTER_SPACE =               [one_info for one_info in data['b_CENTER_SPACE']]
+THEORETICAL_MAX_NUMBER_OF_DIFFERENT_IMAGES *= len(b_CENTER_SPACE)
+# 2 bits
 a_CENTER_SPACE =               [one_info for one_info in data['a_CENTER_SPACE']]
+THEORETICAL_MAX_NUMBER_OF_DIFFERENT_IMAGES *= len(a_CENTER_SPACE)
+# 2 bits
 alpha_CENTER_SPACE =           [one_info for one_info in data['alpha_CENTER_SPACE']]
+THEORETICAL_MAX_NUMBER_OF_DIFFERENT_IMAGES *= len(alpha_CENTER_SPACE)
+# 1 bit
 FILL_NOFILL =                  [one_info for one_info in data['FILL_NOFILL']]
+THEORETICAL_MAX_NUMBER_OF_DIFFERENT_IMAGES *= len(FILL_NOFILL)
+
+#THEORETICAL_MAX_NUMBER_OF_BITS_TO_ENCODER_AN_IMAGE = np.int64(np.ceil(np.log2(np.float64(THEORETICAL_MAX_NUMBER_OF_DIFFERENT_IMAGES))))
+THEORETICAL_MAX_NUMBER_OF_BITS_TO_ENCODER_AN_IMAGE = np.int64(np.log2(np.float64(THEORETICAL_MAX_NUMBER_OF_DIFFERENT_IMAGES)))
+assert(2** THEORETICAL_MAX_NUMBER_OF_BITS_TO_ENCODER_AN_IMAGE == THEORETICAL_MAX_NUMBER_OF_DIFFERENT_IMAGES, f"{2** THEORETICAL_MAX_NUMBER_OF_BITS_TO_ENCODER_AN_IMAGE} is not equal to {THEORETICAL_MAX_NUMBER_OF_DIFFERENT_IMAGES} ; Number of bits has to be a positive integer!")
+
+
+
 TOTAL_NUMBER_OF_SHAPES =       [dict_['TOTAL_NUMBER_OF_SHAPES'] for dict_ in data['file_info'] if 'TOTAL_NUMBER_OF_SHAPES' in dict_][0]
 TOTAL_NUMBER_OF_IMAGES =       [dict_['TOTAL_NUMBER_OF_IMAGES'] for dict_ in data['file_info'] if 'TOTAL_NUMBER_OF_IMAGES' in dict_][0]
 

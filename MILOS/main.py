@@ -1,4 +1,75 @@
 from image_generator import *
+
+def get_image_binary_code(image_id : int, THEORETICAL_MAX_NUMBER_OF_BITS_TO_ENCODER_AN_IMAGE:int) -> list:
+    # 0 <= image_id <= (2**THEORETICAL_MAX_NUMBER_OF_BITS_TO_ENCODER_AN_IMAGE)-1
+    
+    
+    # if image_id = 3
+    # and THEORETICAL_MAX_NUMBER_OF_BITS_TO_ENCODER_AN_IMAGE = 4
+    # output is  reverse([0,0,1,1]) = [1,1,0,0]
+    
+    image_id_binary_str = format(image_id, f'0{THEORETICAL_MAX_NUMBER_OF_BITS_TO_ENCODER_AN_IMAGE}b')
+    image_id_binary_list_int = [int(x) for x in image_id_binary_str]
+    
+    return image_id_binary_list_int[::-1]
+
+
+def get_shape_specific_stats(image_binary_code : list, shape_generic_stats : dict, COLOR_DICT_WORD_2_BGR_CODE):
+    # dict shape_generic_stats that has
+    # key as the string named (shape_stat_name)
+    # value is the array of all the possible values that particual shape_stat_name can take
+    # e.g.  key shape_stat_name is equal to 'shape_name'
+    #       and the values are ["Ellipse", "Parallelogram"]
+    
+    shape_specific_stats = {}
+    
+    bit_counter = 0
+    
+    #for shape_stat_name in shape_generic_stats:
+    # THIS IS THE CODING ORDER
+    # LSB 1 bit = 'shape_thickness'
+    # next SecondLSB 1 bit = 'shape_name'
+    # 2 bits = 'shape_center_x'
+    # 2 bits = 'shape_center_y'
+    # 2 bits = 'shape_color'
+    # 2 bits = 'a'
+    # 2 bits = 'b'
+    # 2 bits = 'alpha'
+    for shape_stat_name in ['shape_thickness', 'shape_name', 'shape_center_x', 'shape_center_y', 'shape_color', 'a', 'b', 'alpha']:
+        if 'shape_id' == shape_stat_name:
+            continue
+        
+        shape_stat_bit_number = np.int64(np.log2(len(shape_generic_stats[shape_stat_name])))
+        
+        # ['0', '1', '1']
+        shape_stat_binary_code = image_binary_code[bit_counter: bit_counter + shape_stat_bit_number]
+        # '011'
+        shape_stat_binary_code = ''.join([str(bit_) for bit_ in shape_stat_binary_code])
+        # 6
+        shape_stat_binary_code = int(shape_stat_binary_code[::-1],2)
+        
+        # select the specific shape according to the shape_stat_binary_code
+        shape_specific_stats[shape_stat_name] = shape_generic_stats[shape_stat_name][shape_stat_binary_code]
+        
+        if shape_stat_name == 'shape_color':
+            shape_specific_stats[shape_stat_name] = COLOR_DICT_WORD_2_BGR_CODE[shape_specific_stats[shape_stat_name]]
+            
+        
+        # increment the coutner by the number of bits requested for the shape_stat_name
+        bit_counter += shape_stat_bit_number
+    
+    return shape_specific_stats
+    
+    
+    
+
+
+
+
+
+
+################
+
 START_TIME = time.time()
 #if __name__ == "__main__":
 
@@ -47,12 +118,39 @@ for image_id in range(TOTAL_NUMBER_OF_IMAGES):
     FILL_NOFILL_np = np.array(FILL_NOFILL).astype(int)
 
     all_shapes_variable_data = {c : [] for c in COLUMNS}
-    # for c in COLUMNS:
-    #     all_shapes_variable_data[c] = []
-
-    for i in range(TOTAL_NUMBER_OF_SHAPES):
-        kwargs_shape = {}
+    
+    ## Shape Generic stats
         
+    shape_generic_stats  = {}
+    #shape_generic_stats['shape_id'] = 0
+    shape_generic_stats['shape_center_x'] = X_CENTER_SPACE_np
+    shape_generic_stats['shape_center_y'] = Y_CENTER_SPACE_np
+    shape_generic_stats['shape_color'] = COLOR_LIST# color is in words (e.g. 'red')
+    #kwargs_shape['shape_color'] = COLOR_DICT_WORD_2_BGR_CODE[shape_color] 
+    shape_generic_stats['shape_thickness'] = FILL_NOFILL_np # 5 = # Line thickness of 5 px
+    shape_generic_stats['shape_name'] = SHAPE_TYPE_SPACE
+    shape_generic_stats['shape_center_x'] = X_CENTER_SPACE_np
+    shape_generic_stats['a'] = a_CENTER_SPACE_np
+    shape_generic_stats['b'] = b_CENTER_SPACE_np
+    shape_generic_stats['alpha'] = alpha_CENTER_SPACE_np    
+    #TO DO: shape_generic_stats['shape_rotation_angle']
+    #TO DO: shape_generic_stats['shape_scale_size']
+
+    image_binary_code = get_image_binary_code(image_id=image_id,
+                                              THEORETICAL_MAX_NUMBER_OF_BITS_TO_ENCODER_AN_IMAGE=THEORETICAL_MAX_NUMBER_OF_BITS_TO_ENCODER_AN_IMAGE)
+
+    shape_specific_stats = get_shape_specific_stats(image_binary_code=image_binary_code,
+                                                    shape_generic_stats=shape_generic_stats,
+                                                    COLOR_DICT_WORD_2_BGR_CODE=COLOR_DICT_WORD_2_BGR_CODE)
+    # TODO
+    shape_specific_stats['shape_rotation_angle'] = None
+    shape_specific_stats['shape_scale_size']= None
+    
+    for i in range(TOTAL_NUMBER_OF_SHAPES):
+        #simple id (i.e. the order of shape creation)
+        shape_specific_stats['shape_id'] = i
+        
+        kwargs_shape = {}
         # image info (to be implemented)
         #kwargs_shape['image_handle'] = None
         
@@ -85,6 +183,11 @@ for image_id in range(TOTAL_NUMBER_OF_IMAGES):
             kwargs_shape['alpha'] = np.random.choice(alpha_CENTER_SPACE_np, size = 1)[0] # default 90 to form a rectangle
         else:
             assert(False, 'The shape must be Ellipse or Parallelogram!')
+        
+        ### SWAP kwargs_shape with deterministicaly generated shape stats
+        kwargs_shape = shape_specific_stats 
+        ### SWAP kwargs_shape with deterministicaly generated shape stats
+        
         
         # fill in pandas df
         for c in COLUMNS:
