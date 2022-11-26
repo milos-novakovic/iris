@@ -12,7 +12,7 @@ file_info:
   - W : 64
   - C : 3
   - TOTAL_NUMBER_OF_SHAPES : 1
-  - TOTAL_NUMBER_OF_IMAGES : 16384 #= 2^14
+  - TOTAL_NUMBER_OF_IMAGES : 10000 #16384 #= 2^14
 
 
 # args of the class SuperClassShape

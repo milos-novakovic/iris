@@ -16,7 +16,7 @@ FLOAT = np.float64
 UINT  = np.uint8
 
 GENERATE_STATS = True
-TRAIN_MODE = False
+TRAIN_MODE = True
 TEST_MODE = not(TRAIN_MODE)
 
 

@@ -124,6 +124,7 @@ if GENERATE_STATS:
         bar_width = None
         
         if col == 'shape_color':
+            i,j = 0,1
             # colors (and names) # string values
             df_color_hist = DF_all_shapes_variable_data[['shape_color_word']].apply(pd.value_counts).reset_index()
             #df_color_hist['shape_color_word'] = df_color_hist.apply(lambda row:  COLOR_DICT_BGR_2_WORD_CODE['-'.join([str(x) for x in row['index']])] , axis = 1)#.to_frame(name = 'shape_color_word')
@@ -134,14 +135,20 @@ if GENERATE_STATS:
             colors_count = df_color_hist.columns
             colors_names = df_color_hist.values[0]
             colors_number = df_color_hist.shape[1]
+            y_values  = np.array(list(colors_count))
             
 
             #plt.figure(i_col)
-            axs[0, 1].set_title('Histogram of Shape Colors')
-            axs[0, 1].bar(np.arange(colors_number), colors_count, align='center', width=0.5, color=colors_names, edgecolor='black')
-            axs[0, 1].set_xticks(np.arange(colors_number), colors_names, size='small')
-            axs[0, 1].set_yticks(np.arange(1, 1 + np.max(colors_count), HIST_Y_TICKS_STEP_SIZE), np.arange(1, 1 + np.max(colors_count), HIST_Y_TICKS_STEP_SIZE), size='small')
-            axs[0, 1].grid(which='both')
+            axs[i, j].set_title('Histogram of Shape Colors')
+            axs[i, j].bar(np.arange(colors_number), colors_count, align='center', width=0.5, color=colors_names, edgecolor='black')
+            axs[i, j].set_xticks(np.arange(colors_number), colors_names, size='small')
+            #axs[i, j].set_yticks(np.arange(1, 1 + np.max(colors_count), HIST_Y_TICKS_STEP_SIZE), np.arange(1, 1 + np.max(colors_count), HIST_Y_TICKS_STEP_SIZE), size='small')
+            #axs[i, j].set_yticks(y_values,y_values, size='small')
+            axs[i, j].grid(which='both')
+            
+            for x_value, y_value in zip(np.arange(colors_number), y_values):
+                axs[i, j].text(x=x_value, y=y_value, s = y_value, ha="center", va="bottom")
+            
             #plt.savefig(f'DATA/{col}_stats.png')
             continue
         elif col == 'shape_name':
@@ -194,10 +201,18 @@ if GENERATE_STATS:
         axs[i, j].set_title(title)
         axs[i, j].bar(df_column_hist.columns.values, df_column_hist.values[0], align='center', width=bar_width, color=color, edgecolor='black')
         axs[i, j].set_xticks(col_space, col_space, size='small')
-        axs[i, j].set_yticks(np.arange(1, 1 + np.max(df_column_hist.values[0]), HIST_Y_TICKS_STEP_SIZE), np.arange(1, 1 + np.max(df_column_hist.values[0]), HIST_Y_TICKS_STEP_SIZE), size='small')
+        #axs[i, j].set_yticks(df_column_hist.values[0], df_column_hist.values[0], size='small')
+        #axs[i, j].set_yticks(np.arange(1, 1 + np.max(df_column_hist.values[0]), HIST_Y_TICKS_STEP_SIZE), np.arange(1, 1 + np.max(df_column_hist.values[0]), HIST_Y_TICKS_STEP_SIZE), size='small')
         axs[i, j].grid(which='both')
         axs[i, j].set_xlabel(xlabel)
         axs[i, j].set_ylabel(ylabel)
+        
+        for x_value, y_value in zip(col_space, df_column_hist.values[0]):
+            axs[i, j].text(x=x_value, y=y_value, s = y_value, ha="center", va="bottom")
+            #axs[i, j].text(rect.get_x() + rect.get_width() / 2, height + 5, label, ha="center", va="bottom")
+        # for bar in bars:
+        #     yval = bar.get_height()
+        #     plt.text(bar.get_x(), yval + .005, yval)
         #plt.savefig(f'DATA/{col}_stats.png')
 
     # delete unused subplots
