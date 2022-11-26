@@ -324,6 +324,9 @@ if GENERATE_STATS:
     plt.tight_layout()
     plt.savefig(STATS_FILE_PATH)
 
+
+if GENERATE_STATS:
+    os.system('cp /home/novakovm/DATA/stats.png /home/novakovm/iris/MILOS')
 # Allows us to see image
 # until closed forcefully
 cv2.waitKey(0)
