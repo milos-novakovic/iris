@@ -35,6 +35,7 @@ def get_shape_specific_stats(image_binary_code : list, shape_generic_stats : dic
     # 2 bits = 'a'
     # 2 bits = 'b'
     # 2 bits = 'alpha'
+        
     for shape_stat_name in ['shape_thickness', 'shape_name', 'shape_center_x', 'shape_center_y', 'shape_color', 'a', 'b', 'alpha']:
         if 'shape_id' == shape_stat_name:
             continue
@@ -52,21 +53,85 @@ def get_shape_specific_stats(image_binary_code : list, shape_generic_stats : dic
         shape_specific_stats[shape_stat_name] = shape_generic_stats[shape_stat_name][shape_stat_binary_code]
         
         if shape_stat_name == 'shape_color':
-            shape_specific_stats[shape_stat_name] = COLOR_DICT_WORD_2_BGR_CODE[shape_specific_stats[shape_stat_name]]
-            
+            shape_specific_stats[shape_stat_name] = COLOR_DICT_WORD_2_BGR_CODE[shape_specific_stats[shape_stat_name]]        
         
         # increment the coutner by the number of bits requested for the shape_stat_name
         bit_counter += shape_stat_bit_number
     
+    # # one example of encoding a determionistic image generation
+    # if [
+    #     0,      #code for -> 'shape_thickness':  -1
+    #     1,      #code for -> 'shape_name': 'Parallelogram'
+    #     1, 1,   #code for -> 'shape_center_x': 54 # = 0.75 * W + coor_begin_x
+    #     1, 0,   #code for -> 'shape_center_y': 22 # = 0.5 * H + coor_begin_y
+    #     0, 0,   #code for -> 'shape_color': (255, 0, 0)
+    #     0, 1,   #code for -> 'a': 12 # = 0.125 * W
+    #     1, 1,   #code for -> 'b': 16 # = 0.25 * H
+    #     0, 1    #code for -> 'alpha':60
+    #     ] == image_binary_code:
+    #     ## image_id = 11806 = = '0b10111000011110' = reverse('01111000011101') = reverse([0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 0, 1]) = reverse(image_binary_code)
+    #     print(image_binary_code)
+    #     print(shape_specific_stats)
     return shape_specific_stats
     
     
+def train_val_test_split(data_folder_path : str, # = '/home/novakovm/DATA'
+                        train_folder_path : str, # = '/home/novakovm/DATA_TRAIN'
+                        val_folder_path : str,   # = '/home/novakovm/DATA_VALIDATE'
+                        test_folder_path : str,  # = '/home/novakovm/DATA_TEST'
+                        train_val_test_split_indices:dict, # {'train':(6/8)*2**L,'val':(7/8)*2**L,'test':(8/8)*2**L}
+                        image_ids : np.array,
+                        SEED : int):
+    np.random.seed(SEED)
+    np.random.shuffle(image_ids)
+    shuffled_image_ids = image_ids
+    N = len(shuffled_image_ids)
     
-
-
-
-
-
+    # secure no overlap with train, validation and test datasets
+    
+    train_shuffled_image_ids = shuffled_image_ids[  0
+                                                    :train_val_test_split_indices['train']]
+    
+    val_shuffled_image_ids = shuffled_image_ids[    train_val_test_split_indices['train']
+                                                    :train_val_test_split_indices['val']]
+    
+    test_shuffled_image_ids = shuffled_image_ids[   train_val_test_split_indices['val']
+                                                    :train_val_test_split_indices['test']]
+    
+    #path = '/home/novakovm/DATA_TEST' #current_working_absoulte_path + '/DATA_TEST'
+    
+    # clear train, validation and test folders
+    os.system('rm -rf %s/*' % train_folder_path)
+    os.system('rm -rf %s/*' % val_folder_path)
+    os.system('rm -rf %s/*' % test_folder_path)
+        
+    # copy from DATA to DATA_TRAIN
+    img_dsc_path = train_folder_path
+    for train_image_id in train_shuffled_image_ids:
+        img_name = 'color_img_' + str(train_image_id).zfill(len(str(N))) + '.png'
+        img_src_path =  data_folder_path + '/' + img_name        
+        os.system('cp ' + img_src_path + ' ' + img_dsc_path)
+        os.system('rm ' + img_src_path)
+        
+    # copy from DATA to DATA_VAL
+    img_dsc_path = val_folder_path
+    for val_image_id in val_shuffled_image_ids:
+        img_name = 'color_img_' + str(val_image_id).zfill(len(str(N))) + '.png'
+        img_src_path =  data_folder_path + '/' + img_name        
+        os.system('cp ' + img_src_path + ' ' + img_dsc_path)
+        os.system('rm ' + img_src_path)
+        
+    # copy from DATA to DATA_TEST
+    img_dsc_path = test_folder_path
+    for test_image_id in test_shuffled_image_ids:
+        img_name = 'color_img_' + str(test_image_id).zfill(len(str(N))) + '.png'
+        img_src_path =  data_folder_path + '/' + img_name        
+        os.system('cp ' + img_src_path + ' ' + img_dsc_path)
+        os.system('rm ' + img_src_path)
+        
+    # Only files left in folder '/home/novakovm/DATA' are:
+    # all_generated_shapes.csv
+    # stats.png
 
 ################
 
@@ -151,38 +216,38 @@ for image_id in range(TOTAL_NUMBER_OF_IMAGES):
         shape_specific_stats['shape_id'] = i
         
         kwargs_shape = {}
-        # image info (to be implemented)
-        #kwargs_shape['image_handle'] = None
+        # # image info (to be implemented)
+        # #kwargs_shape['image_handle'] = None
         
-        # shape info
-        #kwargs_shape['shape_handle'] = None
+        # # shape info
+        # #kwargs_shape['shape_handle'] = None
         
-        #simple id (i.e. the order of shape creation)
-        kwargs_shape['shape_id'] = i
+        # #simple id (i.e. the order of shape creation)
+        # kwargs_shape['shape_id'] = i
         
-        # random parameters to be changed/generated
-        kwargs_shape['shape_center_x'] = np.random.choice(X_CENTER_SPACE_np, size = 1)[0]
-        kwargs_shape['shape_center_y'] = np.random.choice(Y_CENTER_SPACE_np, size = 1)[0]
+        # # random parameters to be changed/generated
+        # kwargs_shape['shape_center_x'] = np.random.choice(X_CENTER_SPACE_np, size = 1)[0]
+        # kwargs_shape['shape_center_y'] = np.random.choice(Y_CENTER_SPACE_np, size = 1)[0]
         
-        kwargs_shape['shape_rotation_angle'] = None
-        kwargs_shape['shape_scale_size'] = None
+        # kwargs_shape['shape_rotation_angle'] = None
+        # kwargs_shape['shape_scale_size'] = None
         
-        shape_color : str = np.random.choice( COLOR_LIST, size = 1)[0] # color is in words (e.g. 'red')
-        kwargs_shape['shape_color'] = COLOR_DICT_WORD_2_BGR_CODE[shape_color]
-        kwargs_shape['shape_thickness'] = np.random.choice(FILL_NOFILL_np, size = 1)[0] # 5 = # Line thickness of 5 px
-        kwargs_shape['shape_name'] = np.random.choice(SHAPE_TYPE_SPACE, size=1)[0] # print(np.random.choice(prog_langs, size=10, replace=True, p=[0.3, 0.5, 0.0, 0.2]))
+        # shape_color : str = np.random.choice( COLOR_LIST, size = 1)[0] # color is in words (e.g. 'red')
+        # kwargs_shape['shape_color'] = COLOR_DICT_WORD_2_BGR_CODE[shape_color]
+        # kwargs_shape['shape_thickness'] = np.random.choice(FILL_NOFILL_np, size = 1)[0] # 5 = # Line thickness of 5 px
+        # kwargs_shape['shape_name'] = np.random.choice(SHAPE_TYPE_SPACE, size=1)[0] # print(np.random.choice(prog_langs, size=10, replace=True, p=[0.3, 0.5, 0.0, 0.2]))
         
         
-        if kwargs_shape['shape_name'] == "Ellipse":
-            kwargs_shape['a'] = np.random.choice(a_CENTER_SPACE_np, size = 1)[0]
-            kwargs_shape['b'] = np.random.choice(b_CENTER_SPACE_np, size = 1)[0]
-            kwargs_shape['alpha'] = np.random.choice(alpha_CENTER_SPACE_np, size = 1)[0] # default 0 to form a non-rotated Ellipse
-        elif kwargs_shape['shape_name'] == "Parallelogram":
-            kwargs_shape['a'] = np.random.choice(a_CENTER_SPACE_np, size = 1)[0]
-            kwargs_shape['b'] = np.random.choice(b_CENTER_SPACE_np, size = 1)[0]
-            kwargs_shape['alpha'] = np.random.choice(alpha_CENTER_SPACE_np, size = 1)[0] # default 90 to form a rectangle
-        else:
-            assert(False, 'The shape must be Ellipse or Parallelogram!')
+        # if kwargs_shape['shape_name'] == "Ellipse":
+        #     kwargs_shape['a'] = np.random.choice(a_CENTER_SPACE_np, size = 1)[0]
+        #     kwargs_shape['b'] = np.random.choice(b_CENTER_SPACE_np, size = 1)[0]
+        #     kwargs_shape['alpha'] = np.random.choice(alpha_CENTER_SPACE_np, size = 1)[0] # default 0 to form a non-rotated Ellipse
+        # elif kwargs_shape['shape_name'] == "Parallelogram":
+        #     kwargs_shape['a'] = np.random.choice(a_CENTER_SPACE_np, size = 1)[0]
+        #     kwargs_shape['b'] = np.random.choice(b_CENTER_SPACE_np, size = 1)[0]
+        #     kwargs_shape['alpha'] = np.random.choice(alpha_CENTER_SPACE_np, size = 1)[0] # default 90 to form a rectangle
+        # else:
+        #     assert(False, 'The shape must be Ellipse or Parallelogram!')
         
         ### SWAP kwargs_shape with deterministicaly generated shape stats
         kwargs_shape = shape_specific_stats 
@@ -323,14 +388,27 @@ if GENERATE_STATS:
     fig.delaxes(axs[2,2])
     plt.tight_layout()
     plt.savefig(STATS_FILE_PATH)
+    os.system('cp ' + STATS_FILE_PATH + ' /home/novakovm/iris/MILOS')
 
 
-if GENERATE_STATS:
-    os.system('cp /home/novakovm/DATA/stats.png /home/novakovm/iris/MILOS')
+    
 # Allows us to see image
 # until closed forcefully
 cv2.waitKey(0)
 cv2.destroyAllWindows()
+
+### TRAIN, VALIDATION, TEST Split
+train_val_test_split(   data_folder_path = '/home/novakovm/DATA',
+                        train_folder_path = '/home/novakovm/DATA_TRAIN',
+                        val_folder_path = '/home/novakovm/DATA_VALIDATE',
+                        test_folder_path = '/home/novakovm/DATA_TEST',
+                        train_val_test_split_indices =  {'train':int((6/8)*TOTAL_NUMBER_OF_IMAGES),
+                                                         'val':int((7/8)*TOTAL_NUMBER_OF_IMAGES),
+                                                         'test':int((8/8)*TOTAL_NUMBER_OF_IMAGES)},
+                        image_ids = np.arange(0, TOTAL_NUMBER_OF_IMAGES),
+                        SEED = 0)
+###
+
 
 # calculate the number of bits required for exactly one shape
 number_of_bits_required_for_one_shape = sum([np.log2(1.0 * len(space))\
@@ -354,6 +432,12 @@ print(f"Number of bits for one SHAPE = {number_of_bits_required_for_one_shape}b.
 print(f"Number of SHAPEs = {TOTAL_NUMBER_OF_SHAPES}.")
 print(f"Number of bits for one IMAGE = {number_of_bits_required_for_one_image}b.")
 print(f"Total number of seconds that the program runs = {round(time.time() - START_TIME,2)} sec.")
+
+
+
+
+
+
 debug = 0
 
 
