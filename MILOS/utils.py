@@ -16,42 +16,50 @@ FLOAT = np.float64
 UINT  = np.uint8
 
 GENERATE_STATS = True
-TRAIN_MODE = True
-TEST_MODE = not(TRAIN_MODE)
+# TRAIN_MODE = True
+# TEST_MODE = not(TRAIN_MODE)
 
 
 CSV_FILE_PATH, STATS_FILE_PATH = None, None
-if TRAIN_MODE:
-    CSV_FILE_PATH = '/home/novakovm/DATA/all_generated_shapes.csv'#'./DATA/all_generated_shapes.csv'
-    STATS_FILE_PATH = '/home/novakovm/DATA/stats.png'#'./DATA/stats.png'
-elif TEST_MODE:
-    CSV_FILE_PATH = '/home/novakovm/DATA_TEST/all_generated_shapes.csv'#'./DATA_TEST/all_generated_shapes.csv'
-    STATS_FILE_PATH = '/home/novakovm/DATA_TEST/stats.png'#'./DATA_TEST/stats.png'
-
-#current_working_absoulte_path = '/home/novakovm/iris/MILOS'
-#os.chdir(current_working_absoulte_path)
+# if TRAIN_MODE:
+#     CSV_FILE_PATH = '/home/novakovm/DATA/all_generated_shapes.csv'#'./DATA/all_generated_shapes.csv'
+#     STATS_FILE_PATH = '/home/novakovm/DATA/stats.png'#'./DATA/stats.png'
+# elif TEST_MODE:
+#     CSV_FILE_PATH = '/home/novakovm/DATA_TEST/all_generated_shapes.csv'#'./DATA_TEST/all_generated_shapes.csv'
+#     STATS_FILE_PATH = '/home/novakovm/DATA_TEST/stats.png'#'./DATA_TEST/stats.png'
 
 
-#rm -rf /home/novakovm/iris/MILOS/DATA/*
+CSV_FILE_PATH = '/home/novakovm/DATA/all_generated_shapes.csv'#'./DATA/all_generated_shapes.csv'
+STATS_FILE_PATH = '/home/novakovm/DATA/stats.png'#'./DATA/stats.png'
 
-#import os
-if TRAIN_MODE:
-    # if training then delete previous dataset
-    path = '/home/novakovm/DATA' #current_working_absoulte_path + '/DATA'
-    #os.system('rm -rf %s/*' % path)
-    os.chdir(path)
-    if os.getcwd() == path:
-        os.system("find . -name \"*.png\" -delete")
-        os.system("find . -name \"*.csv\" -delete")
+
+# if TRAIN_MODE:
+#     # if training then delete previous dataset
+#     path = '/home/novakovm/DATA' #current_working_absoulte_path + '/DATA'
+#     #os.system('rm -rf %s/*' % path)
+#     os.chdir(path)
+#     if os.getcwd() == path:
+#         os.system("find . -name \"*.png\" -delete")
+#         os.system("find . -name \"*.csv\" -delete")
     
-if TEST_MODE:
-    # if training then delete previous dataset
-    path = '/home/novakovm/DATA_TEST' #current_working_absoulte_path + '/DATA_TEST'
-    os.system('rm -rf %s/*' % path)
-    os.chdir(path)
-    if os.getcwd() == path:
-        os.system("find . -name \"*.png\" -delete")
-        os.system("find . -name \"*.csv\" -delete")
+# if TEST_MODE:
+#     # if training then delete previous dataset
+#     path = '/home/novakovm/DATA_TEST' #current_working_absoulte_path + '/DATA_TEST'
+#     os.system('rm -rf %s/*' % path)
+#     os.chdir(path)
+#     if os.getcwd() == path:
+#         os.system("find . -name \"*.png\" -delete")
+#         os.system("find . -name \"*.csv\" -delete")
+        
+        
+        
+# if training then delete previous dataset
+path = '/home/novakovm/DATA' #current_working_absoulte_path + '/DATA'
+#os.system('rm -rf %s/*' % path)
+os.chdir(path)
+if os.getcwd() == path:
+    os.system("find . -name \"*.png\" -delete")
+    os.system("find . -name \"*.csv\" -delete")
 
 milos_config_path = '/home/novakovm/iris/MILOS/milos_config.yaml'
 # Open the file and load the file

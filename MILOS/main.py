@@ -2,15 +2,11 @@ from image_generator import *
 
 def get_image_binary_code(image_id : int, THEORETICAL_MAX_NUMBER_OF_BITS_TO_ENCODER_AN_IMAGE:int) -> list:
     # 0 <= image_id <= (2**THEORETICAL_MAX_NUMBER_OF_BITS_TO_ENCODER_AN_IMAGE)-1
-    
-    
     # if image_id = 3
     # and THEORETICAL_MAX_NUMBER_OF_BITS_TO_ENCODER_AN_IMAGE = 4
     # output is  reverse([0,0,1,1]) = [1,1,0,0]
-    
     image_id_binary_str = format(image_id, f'0{THEORETICAL_MAX_NUMBER_OF_BITS_TO_ENCODER_AN_IMAGE}b')
     image_id_binary_list_int = [int(x) for x in image_id_binary_str]
-    
     return image_id_binary_list_int[::-1]
 
 
@@ -22,7 +18,6 @@ def get_shape_specific_stats(image_binary_code : list, shape_generic_stats : dic
     #       and the values are ["Ellipse", "Parallelogram"]
     
     shape_specific_stats = {}
-    
     bit_counter = 0
     
     #for shape_stat_name in shape_generic_stats:
@@ -105,7 +100,7 @@ def train_val_test_split(data_folder_path : str, # = '/home/novakovm/DATA'
     os.system('rm -rf %s/*' % val_folder_path)
     os.system('rm -rf %s/*' % test_folder_path)
         
-    # copy from DATA to DATA_TRAIN
+    # cut training data from from DATA to DATA_TRAIN
     img_dsc_path = train_folder_path
     for train_image_id in train_shuffled_image_ids:
         img_name = 'color_img_' + str(train_image_id).zfill(len(str(N))) + '.png'
@@ -113,7 +108,7 @@ def train_val_test_split(data_folder_path : str, # = '/home/novakovm/DATA'
         os.system('cp ' + img_src_path + ' ' + img_dsc_path)
         os.system('rm ' + img_src_path)
         
-    # copy from DATA to DATA_VAL
+    # cut validation data from from DATA to DATA_VALIDATE
     img_dsc_path = val_folder_path
     for val_image_id in val_shuffled_image_ids:
         img_name = 'color_img_' + str(val_image_id).zfill(len(str(N))) + '.png'
@@ -121,7 +116,7 @@ def train_val_test_split(data_folder_path : str, # = '/home/novakovm/DATA'
         os.system('cp ' + img_src_path + ' ' + img_dsc_path)
         os.system('rm ' + img_src_path)
         
-    # copy from DATA to DATA_TEST
+    # cut test data from from DATA to DATA_TEST
     img_dsc_path = test_folder_path
     for test_image_id in test_shuffled_image_ids:
         img_name = 'color_img_' + str(test_image_id).zfill(len(str(N))) + '.png'
@@ -142,21 +137,21 @@ file_info_dict : dict = {key:val for one_info in data['file_info'] for key,val i
 H,W = file_info_dict['H'], file_info_dict['W']
 
 
-TOTAL_NUMBER_OF_IMAGES = TRAIN_TOTAL_NUMBER_OF_IMAGES if TRAIN_MODE else TEST_TOTAL_NUMBER_OF_IMAGES
+TOTAL_NUMBER_OF_IMAGES = TRAIN_TOTAL_NUMBER_OF_IMAGES# if TRAIN_MODE else TEST_TOTAL_NUMBER_OF_IMAGES
 
 for image_id in range(TOTAL_NUMBER_OF_IMAGES):
     if image_id % 1000 == 0 and image_id > 0:
         print(f"Generated {image_id}-th image!")
     # image image_id info
     # SEED is set here
-    SEED = image_id#52#42
-    if TEST_MODE:
-        SEED += TRAIN_TOTAL_NUMBER_OF_IMAGES     
-    np.random.seed(SEED)
+    # SEED = image_id#52#42
+    # if TEST_MODE:
+    #     SEED += TRAIN_TOTAL_NUMBER_OF_IMAGES     
+    # np.random.seed(SEED)
     
     file_info_dict : dict = {key:val for one_info in data['file_info'] for key,val in one_info.items()}
-    if TEST_MODE:
-        file_info_dict['file_path'] = file_info_dict['TEST_file_path']
+    # if TEST_MODE:
+    #     file_info_dict['file_path'] = file_info_dict['TEST_file_path']
         
     file_info_dict['image_objects'] = {'background_color' : np.array([BACKGROUND_COLOR], dtype=UINT)}    
     file_info_dict['file_version'] = '_' + str(image_id).zfill(len(str(TOTAL_NUMBER_OF_IMAGES)))
@@ -425,20 +420,8 @@ number_of_bits_required_for_one_shape = sum([np.log2(1.0 * len(space))\
 # calculate the number of bits required for all shapes combined
 number_of_bits_required_for_one_image = TOTAL_NUMBER_OF_SHAPES * number_of_bits_required_for_one_shape
 
-
-
-
 print(f"Number of bits for one SHAPE = {number_of_bits_required_for_one_shape}b.")
 print(f"Number of SHAPEs = {TOTAL_NUMBER_OF_SHAPES}.")
 print(f"Number of bits for one IMAGE = {number_of_bits_required_for_one_image}b.")
 print(f"Total number of seconds that the program runs = {round(time.time() - START_TIME,2)} sec.")
-
-
-
-
-
-
 debug = 0
-
-
-
