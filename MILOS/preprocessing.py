@@ -9,7 +9,7 @@ import cv2
 ###########
 
 
-def find_mean_std(TOTAL_NUMBER_OF_IMAGES, image_ids_numbers = None, method = 'n', NUMPY_DOUBLE_CHECK= False):
+def find_mean_std(TOTAL_NUMBER_OF_IMAGES, image_ids_numbers = None, method = 'n', NUMPY_DOUBLE_CHECK= False, training_images_folder_path = '/home/novakovm/DATA_TRAIN/'):
     
     # method = 'n' or method = 'n-1'
     
@@ -35,8 +35,8 @@ def find_mean_std(TOTAL_NUMBER_OF_IMAGES, image_ids_numbers = None, method = 'n'
     R_imgs,G_imgs,B_imgs = [],[],[]
 
     for i,image_id in enumerate(image_ids):
-        # update empirical estimates for 1st and 2nd centered moments
-        image_full_path = '/home/novakovm/DATA/color_img_' + image_id + '.png'
+        # update empirical estimates for 1st and 2nd centered moments        
+        image_full_path = training_images_folder_path + 'color_img_' + image_id + '.png'
         
         x = cv2.imread(image_full_path)
         
@@ -102,14 +102,15 @@ def find_mean_std(TOTAL_NUMBER_OF_IMAGES, image_ids_numbers = None, method = 'n'
         return RGB_mean, RGB_std, RGB_mean_np, RGB_std_np
     else:
         return RGB_mean, RGB_std
-    
+
+training_images_folder_path = '/home/novakovm/DATA_TRAIN/'
 milos_config_path = '/home/novakovm/iris/MILOS/milos_config.yaml'
 # Open the file and load the file
 with open(milos_config_path) as f:
     data = yaml.load(f, Loader=yaml.SafeLoader)
 
 TOTAL_NUMBER_OF_IMAGES = [dict_['TOTAL_NUMBER_OF_IMAGES'] for dict_ in data['file_info'] if 'TOTAL_NUMBER_OF_IMAGES' in dict_][0]
-RGB_mean, RGB_std = find_mean_std(TOTAL_NUMBER_OF_IMAGES)
+RGB_mean, RGB_std = find_mean_std(TOTAL_NUMBER_OF_IMAGES, training_images_folder_path=training_images_folder_path)
 print(f"Images Mean = {np.round(RGB_mean,2)}")
 print(f"Images Std = {np.round(RGB_std,2)}")
 

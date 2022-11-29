@@ -13,6 +13,14 @@ file_info:
   - C : 3
   - TOTAL_NUMBER_OF_SHAPES : 1
   - TOTAL_NUMBER_OF_IMAGES : 16384 #16384 #= 2^14
+  - train_dataset_percentage: 75.0  # 6/8
+  - val_dataset_percentage: 12.5    # 1/8
+  - test_dataset_percentage: 12.5   # 1/8
+  - data_folder_path: '/home/novakovm/DATA'
+  - train_folder_path : '/home/novakovm/DATA_TRAIN'
+  - val_folder_path : '/home/novakovm/DATA_VALIDATE'
+  - test_folder_path : '/home/novakovm/DATA_TEST'
+  - main_folder_path : '/home/novakovm/iris/MILOS'
 
 
 # args of the class SuperClassShape
