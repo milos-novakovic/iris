@@ -18,8 +18,7 @@ import yaml
 
 from models import *
 # Hyper parameters
-current_working_absoulte_path = '/home/novakovm/iris/MILOS'
-os.chdir(current_working_absoulte_path)
+
 
 # hyperparameters related to images
 get_images_hyperparam_value = lambda data_dict, hyperparam_name : [dict_[hyperparam_name] for dict_ in data_dict['file_info'] if hyperparam_name in dict_][0]
@@ -27,14 +26,27 @@ get_images_hyperparam_value = lambda data_dict, hyperparam_name : [dict_[hyperpa
 images_hyperparam_path = '/home/novakovm/iris/MILOS/milos_config.yaml'
 with open(images_hyperparam_path) as f:
     images_hyperparam_dict = yaml.load(f, Loader=yaml.SafeLoader)
+    
+main_folder_path = get_images_hyperparam_value(images_hyperparam_dict, 'main_folder_path')    
+#current_working_absoulte_path = '/home/novakovm/iris/MILOS'
+os.chdir(main_folder_path)
 
 # number of images for training and testing datasets
 TOTAL_NUMBER_OF_IMAGES = get_images_hyperparam_value(images_hyperparam_dict, 'TOTAL_NUMBER_OF_IMAGES')
 TEST_TOTAL_NUMBER_OF_IMAGES = get_images_hyperparam_value(images_hyperparam_dict, 'TEST_TOTAL_NUMBER_OF_IMAGES')
+
+
+train_dataset_percentage = get_images_hyperparam_value(images_hyperparam_dict, 'train_dataset_percentage')
+val_dataset_percentage = get_images_hyperparam_value(images_hyperparam_dict, 'val_dataset_percentage')
+test_dataset_percentage = get_images_hyperparam_value(images_hyperparam_dict, 'test_dataset_percentage')
+
 args_train = {}
-args_train['TOTAL_NUMBER_OF_IMAGES'] = TOTAL_NUMBER_OF_IMAGES
+args_train['TOTAL_NUMBER_OF_IMAGES'] = int(train_dataset_percentage / 100. * TOTAL_NUMBER_OF_IMAGES)
+args_val = {}
+args_val['TOTAL_NUMBER_OF_IMAGES'] = int(val_dataset_percentage / 100. * TOTAL_NUMBER_OF_IMAGES)
 args_test = {}
-args_test['TOTAL_NUMBER_OF_IMAGES'] = TEST_TOTAL_NUMBER_OF_IMAGES
+args_test['TOTAL_NUMBER_OF_IMAGES'] = int(test_dataset_percentage / 100. * TOTAL_NUMBER_OF_IMAGES)
+assert(TOTAL_NUMBER_OF_IMAGES == args_train['TOTAL_NUMBER_OF_IMAGES'] + args_val['TOTAL_NUMBER_OF_IMAGES'] + args_test['TOTAL_NUMBER_OF_IMAGES'])
 
 # Height, Width, Channel number
 H=get_images_hyperparam_value(images_hyperparam_dict, 'H')
@@ -42,7 +54,7 @@ W=get_images_hyperparam_value(images_hyperparam_dict, 'W')
 C=get_images_hyperparam_value(images_hyperparam_dict, 'C')
 
 # hyperparameters related to training of autoencoder
-models_hyperparam_path = '/home/novakovm/iris/MILOS/autoencoders_config.yaml'
+models_hyperparam_path = main_folder_path + '/autoencoders_config.yaml'
 with open(models_hyperparam_path) as f:
     models_hyperparam_dict = yaml.load(f, Loader=yaml.SafeLoader)
 
@@ -62,6 +74,7 @@ BATCH_SIZE = get_models_hyperparam_value(models_hyperparam_dict['training_hyperp
 LEARNING_RATE = get_models_hyperparam_value(models_hyperparam_dict['training_hyperparams'], 'LEARNING_RATE')
 
 TRAIN_DATA_PATH = get_models_hyperparam_value(models_hyperparam_dict['training_hyperparams'], 'TRAIN_DATA_PATH')
+VAL_DATA_PATH = get_models_hyperparam_value(models_hyperparam_dict['training_hyperparams'], 'VAL_DATA_PATH')
 TEST_DATA_PATH = get_models_hyperparam_value(models_hyperparam_dict['training_hyperparams'], 'TEST_DATA_PATH')
 
 TRAIN_IMAGES_MEAN_FILE_PATH = get_models_hyperparam_value(models_hyperparam_dict['training_hyperparams'], 'TRAIN_IMAGES_MEAN_FILE_PATH')
@@ -94,6 +107,10 @@ TRANSFORM_IMG = zero_min_one_max_transform#zero_mean_unit_std_transform # zero_m
 #train_data = torchvision.datasets.ImageFolder(root=TRAIN_DATA_PATH, transform=TRANSFORM_IMG)
 train_data = CustomImageDataset(args = args_train, root=TRAIN_DATA_PATH, transform=TRANSFORM_IMG)
 train_data_loader = torch.utils.data.DataLoader(dataset = train_data, batch_size=BATCH_SIZE, shuffle=True,  num_workers=NUM_WORKERS)
+
+# Validation Data & Validation data Loader
+val_data = CustomImageDataset(args = args_val, root=VAL_DATA_PATH, transform=TRANSFORM_IMG)
+val_data_loader = torch.utils.data.DataLoader(dataset = val_data, batch_size=BATCH_SIZE, shuffle=True,  num_workers=NUM_WORKERS)
 
 # Test Data & Test data Loader
 #test_data = torchvision.datasets.ImageFolder(root=TEST_DATA_PATH, transform=TRANSFORM_IMG)
@@ -384,7 +401,7 @@ params['conv5_H_out'],params['conv5_W_out'] = conv2d_dims(h_in = params['conv5_H
 ### Vanilla_Autoencoder_v02 params begin
 
 autoencoder_config_params = {}
-autoencoder_config_params_file_path = '/home/novakovm/iris/MILOS/autoencoders_config.yaml'
+autoencoder_config_params_file_path = main_folder_path + '/autoencoders_config.yaml'
 
 with open(autoencoder_config_params_file_path) as f:
     autoencoder_config_params = yaml.load(f, Loader=yaml.SafeLoader)
@@ -471,7 +488,8 @@ print("Vanilla AE v02 model summary is as follows:\n",vanilla_autoencoder_v02)
 # set to training mode
 #autoencoder.train()
 
-loss_fn = nn.MSELoss()
+MSELoss = nn.MSELoss()
+loss_fn = MSELoss
 loss_fn.to(device)
 
 train_loss_avg = []
@@ -530,14 +548,14 @@ if TRAIN_FLAG:
     current_time_str = time.strftime("%Y_%m_%d_%H_%M_%S", time.gmtime(time.time())) # 2022_11_19_20_11_26
     
     #train_loss_avg_path = '/home/novakovm/iris/MILOS/autoencoder_train_loss_avg_' + current_time_str + '.npy'
-    train_loss_avg_path = '/home/novakovm/iris/MILOS/vanilla_autoencoder_train_loss_avg_' + current_time_str + '.npy'
+    train_loss_avg_path = main_folder_path + '/vanilla_autoencoder_train_loss_avg_' + current_time_str + '.npy'
     print(f"Autoencoder Training Loss Average = {train_loss_avg}")
     
     train_loss_avg = np.array(train_loss_avg)
     np.save(train_loss_avg_path,train_loss_avg)
  
     
-    pretrained_autoencoder_path = '/home/novakovm/iris/MILOS/vanilla_autoencoder_' + current_time_str + '.py'
+    pretrained_autoencoder_path = main_folder_path + '/vanilla_autoencoder_' + current_time_str + '.py'
     #torch.save(autoencoder.state_dict(), pretrained_autoencoder_path)
     #torch.save(vanilla_autoencoder.state_dict(), pretrained_autoencoder_path)
     
@@ -625,7 +643,7 @@ plt.plot(train_loss_avg)
 plt.title(f'Training Loss Avg. per epoch (Min. = {train_loss_avg.min()*1e3 : .2f}e-3)')
 plt.xlabel('Epochs')
 plt.ylabel('Avg. Training Loss')
-plt.savefig('/home/novakovm/iris/MILOS/training_loss_per_epoch.png')
+plt.savefig(main_folder_path + '/training_loss_per_epoch.png')
 plt.close()
 
 plt.figure()
@@ -634,7 +652,7 @@ plt.plot(test_loss)
 plt.title(f'Test Loss per minibatch (Avg. = {test_loss.mean()*1e3 : .2f}e-3)')
 plt.xlabel('Mini-batch')
 plt.ylabel('Testing Loss')
-plt.savefig('/home/novakovm/iris/MILOS/testing_loss_per_image_in_minibatch.png')
+plt.savefig(main_folder_path + '/testing_loss_per_image_in_minibatch.png')
 plt.close()
 
 #plt.ion()

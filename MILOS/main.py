@@ -291,6 +291,11 @@ train_val_test_split(   data_folder_path = data_folder_path,
                         train_val_test_split_indices = train_val_test_split_indices,
                         image_ids = image_ids,
                         SEED = SEED)
+
+np.save(main_folder_path+'/train_shuffled_image_ids.npy', train_shuffled_image_ids)
+np.save(main_folder_path+'/val_shuffled_image_ids.npy', val_shuffled_image_ids)
+np.save(main_folder_path+'/test_shuffled_image_ids.npy', test_shuffled_image_ids)
+
 df_train_image_ids = pd.DataFrame(data={'image_id':train_shuffled_image_ids})
 df_val_image_ids = pd.DataFrame(data={'image_id':val_shuffled_image_ids})
 df_test_image_ids = pd.DataFrame(data={'image_id':test_shuffled_image_ids})
@@ -456,4 +461,5 @@ print(f"Number of bits for one SHAPE = {number_of_bits_required_for_one_shape}b.
 print(f"Number of SHAPEs = {TOTAL_NUMBER_OF_SHAPES}.")
 print(f"Number of bits for one IMAGE = {number_of_bits_required_for_one_image}b.")
 print(f"Total number of seconds that the program runs = {round(time.time() - START_TIME,2)} sec.")
+
 debug = 0
