@@ -15,7 +15,6 @@ from torchvision import transforms
 from collections import OrderedDict
 import yaml
 #from yaml.loader import SafeLoader
-
 from models import *
 # Hyper parameters
 
@@ -35,18 +34,28 @@ os.chdir(main_folder_path)
 TOTAL_NUMBER_OF_IMAGES = get_images_hyperparam_value(images_hyperparam_dict, 'TOTAL_NUMBER_OF_IMAGES')
 TEST_TOTAL_NUMBER_OF_IMAGES = get_images_hyperparam_value(images_hyperparam_dict, 'TEST_TOTAL_NUMBER_OF_IMAGES')
 
-
 train_dataset_percentage = get_images_hyperparam_value(images_hyperparam_dict, 'train_dataset_percentage')
 val_dataset_percentage = get_images_hyperparam_value(images_hyperparam_dict, 'val_dataset_percentage')
 test_dataset_percentage = get_images_hyperparam_value(images_hyperparam_dict, 'test_dataset_percentage')
+assert(100 ==train_dataset_percentage+val_dataset_percentage+test_dataset_percentage)
+
+train_shuffled_image_ids = np.load(main_folder_path+'/train_shuffled_image_ids.npy')
+val_shuffled_image_ids = np.load(main_folder_path+'/val_shuffled_image_ids.npy')
+test_shuffled_image_ids = np.load(main_folder_path+'/test_shuffled_image_ids.npy')
+assert(set(np.concatenate((train_shuffled_image_ids,val_shuffled_image_ids,test_shuffled_image_ids))) == set(np.arange(TOTAL_NUMBER_OF_IMAGES)))
 
 args_train = {}
-args_train['TOTAL_NUMBER_OF_IMAGES'] = int(train_dataset_percentage / 100. * TOTAL_NUMBER_OF_IMAGES)
+args_train['TOTAL_NUMBER_OF_IMAGES'] = TOTAL_NUMBER_OF_IMAGES
+args_train['image_ids'] = train_shuffled_image_ids
+
 args_val = {}
-args_val['TOTAL_NUMBER_OF_IMAGES'] = int(val_dataset_percentage / 100. * TOTAL_NUMBER_OF_IMAGES)
+args_val['TOTAL_NUMBER_OF_IMAGES'] = TOTAL_NUMBER_OF_IMAGES
+args_val['image_ids'] = val_shuffled_image_ids
+
 args_test = {}
-args_test['TOTAL_NUMBER_OF_IMAGES'] = int(test_dataset_percentage / 100. * TOTAL_NUMBER_OF_IMAGES)
-assert(TOTAL_NUMBER_OF_IMAGES == args_train['TOTAL_NUMBER_OF_IMAGES'] + args_val['TOTAL_NUMBER_OF_IMAGES'] + args_test['TOTAL_NUMBER_OF_IMAGES'])
+args_test['TOTAL_NUMBER_OF_IMAGES'] = TOTAL_NUMBER_OF_IMAGES
+args_test['image_ids'] = test_shuffled_image_ids
+
 
 # Height, Width, Channel number
 H=get_images_hyperparam_value(images_hyperparam_dict, 'H')
@@ -79,8 +88,6 @@ TEST_DATA_PATH = get_models_hyperparam_value(models_hyperparam_dict['training_hy
 
 TRAIN_IMAGES_MEAN_FILE_PATH = get_models_hyperparam_value(models_hyperparam_dict['training_hyperparams'], 'TRAIN_IMAGES_MEAN_FILE_PATH')
 TRAIN_IMAGES_STD_FILE_PATH  = get_models_hyperparam_value(models_hyperparam_dict['training_hyperparams'], 'TRAIN_IMAGES_STD_FILE_PATH')
-
-
 
 zero_mean_unit_std_transform = transforms.Compose([
 #    transforms.Resize(256),
@@ -117,6 +124,15 @@ val_data_loader = torch.utils.data.DataLoader(dataset = val_data, batch_size=BAT
 test_data = CustomImageDataset(args = args_test, root=TEST_DATA_PATH, transform=TRANSFORM_IMG)
 test_data_loader  = torch.utils.data.DataLoader(dataset = test_data, batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKERS) 
 
+# put all loaders into dict
+loaders = {
+    'train' : train_data_loader,
+    'val' : val_data_loader,
+    'test' : test_data_loader
+}
+
+
+
 # Data Loader (Input Pipeline)
 # train_loader = torch.utils.data.DataLoader(dataset=TRAIN_DATA_PATH,
 #                                            batch_size=batchsize,
@@ -124,7 +140,6 @@ test_data_loader  = torch.utils.data.DataLoader(dataset = test_data, batch_size=
 # test_loader = torch.utils.data.DataLoader(dataset=TEST_DATA_PATH,
 #                                           batch_size=batchsize,
 #                                           shuffle=False)
-
 
 def conv2d_dims(h_in,w_in,k,s,p,d):
     h_out, w_out = None, None
@@ -136,8 +151,6 @@ def conv2d_dims(h_in,w_in,k,s,p,d):
         h_out = np.floor( (h_in + pad_top + pad_bottom - d[0] * (k[0] - 1) - 1 ) / s[0] + 1)
         w_out = np.floor( (w_in + pad_left + pad_right - d[1] * (k[1] - 1) - 1 ) / s[1] + 1)
     return int(h_out), int(w_out)
-            
-
 
 """
 ### ENCODER PARAMS BEGIN
@@ -489,7 +502,7 @@ print("Vanilla AE v02 model summary is as follows:\n",vanilla_autoencoder_v02)
 #autoencoder.train()
 
 MSELoss = nn.MSELoss()
-loss_fn = MSELoss
+loss_fn = MSELoss #lambda predicted_outputs, outputs: MSELoss(predicted_outputs, outputs)
 loss_fn.to(device)
 
 train_loss_avg = []
@@ -510,7 +523,6 @@ if TRAIN_FLAG:
             #image_batch_recon = autoencoder(image_batch)
             #image_batch_recon = vanilla_autoencoder(image_batch)
             image_batch_recon = vanilla_autoencoder_v02(image_batch)
-            
             
             # reconstruction error
             #loss = F.mse_loss(image_batch_recon, image_batch)
@@ -541,10 +553,7 @@ if TRAIN_FLAG:
         # 196/196 [==============================] - 32s 166ms/step - loss: 2.4793e-04 - accuracy: 0.9034 - val_loss: 4.8787e-04 - val_accuracy: 0.8481
         # 313/313 [==============================] - 1s 3ms/step
         ###
-        
-        
-        
-    
+
     current_time_str = time.strftime("%Y_%m_%d_%H_%M_%S", time.gmtime(time.time())) # 2022_11_19_20_11_26
     
     #train_loss_avg_path = '/home/novakovm/iris/MILOS/autoencoder_train_loss_avg_' + current_time_str + '.npy'

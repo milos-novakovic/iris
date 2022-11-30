@@ -18,14 +18,18 @@ class CustomImageDataset(torch.utils.data.Dataset):
         #self.img_labels = pd.read_csv(annotations_file)
         self.root = root # './DATA/' = '/home/novakovm/iris/MILOS/DATA/'
         self.transform = transform
-        self.TOTAL_NUMBER_OF_IMAGES = args['TOTAL_NUMBER_OF_IMAGES']
+        self.TOTAL_NUMBER_OF_IMAGES = args['TOTAL_NUMBER_OF_IMAGES'] # 2048 for test and val; 12'288 for train
+        self.image_ids = args['image_ids']# 3314, 2151, 12030, 32, ...
+        
+        
         #self.target_transform = target_transform
 
     def __len__(self):
-        return self.TOTAL_NUMBER_OF_IMAGES
+        return len(self.image_ids)#self.TOTAL_NUMBER_OF_IMAGES
 
     def __getitem__(self, idx):
-        img_path = self.root + 'color_img_' + str(idx).zfill(len(str(self.TOTAL_NUMBER_OF_IMAGES))) + '.png'#os.path.join(self.root, self.img_labels.iloc[idx, 0])
+        image_id = self.image_ids[idx]
+        img_path = self.root + 'color_img_' + str(image_id).zfill(len(str(self.TOTAL_NUMBER_OF_IMAGES))) + '.png'#os.path.join(self.root, self.img_labels.iloc[idx, 0])
         image = torchvision.io.read_image(img_path).float() # .double() = torch.float64 and  .float() = torch.float32
         #label = self.img_labels.iloc[idx, 1]
         if self.transform:
