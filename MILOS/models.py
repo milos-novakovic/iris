@@ -36,7 +36,7 @@ class CustomImageDataset(torch.utils.data.Dataset):
             image = self.transform(image)
         # if self.target_transform:
         #     label = self.target_transform(label)
-        return image#, label
+        return image, image_id#, label
 
 class Encoder(nn.Module):
     def __init__(self, params_encoder):
