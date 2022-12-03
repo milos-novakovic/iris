@@ -517,19 +517,20 @@ val_loss_avg = []
 training_message_format = lambda current_epoch, \
                                 total_nb_epochs, \
                                 duration_sec, \
-                                batch_size, \
+                                batch_size_train,\
+                                batch_size_val,\
                                 current_avg_train_loss,\
                                 current_avg_val_loss, \
                                 min_avg_train_loss, \
                                 min_avg_val_loss:\
-                            f"\
-                            Epoch {current_epoch+1}/{total_nb_epochs};\n\
-                            Samples {batch_size}/{batch_size};\n\
-                            Total time elapsed from beginning of training = {duration_sec};\n\
-                            Curr. Avg. Train Loss across mini-batch = {current_avg_train_loss *1e6 : .1f} e-6;\n\
-                            Curr. Avg. Val   Loss across mini-batch = {current_avg_val_loss *1e6 : .1f} e-6;\n\
-                            Min.  Avg. Train Loss across mini-batch = {min_avg_train_loss *1e6 : .1f} e-6;\n\
-                            Min.  Avg. Val   Loss across mini-batch = {min_avg_val_loss *1e6 : .1f} e-6;\n"
+                            f"Epoch {current_epoch+1}/{total_nb_epochs};\n"\
+                            +f"Training   Samples Mini-Batch size = {batch_size_train};\n"\
+                            +f"Validation Samples Mini-Batch size = {batch_size_val};\n"\
+                            +f"Total time elapsed from beginning of training = {duration_sec};\n"\
+                            +f"Curr. Avg. Train Loss across mini-batch = {current_avg_train_loss *1e6 : .1f} e-6;\n"\
+                            +f"Curr. Avg. Val   Loss across mini-batch = {current_avg_val_loss *1e6 : .1f} e-6;\n"\
+                            +f"Min.  Avg. Train Loss across mini-batch = {min_avg_train_loss *1e6 : .1f} e-6;\n"\
+                            +f"Min.  Avg. Val   Loss across mini-batch = {min_avg_val_loss *1e6 : .1f} e-6;\n"
 
 
 
@@ -637,7 +638,8 @@ if TRAIN_FLAG and not(USE_PRETRAINED_VANILLA_AUTOENCODER):
             print(training_message_format(current_epoch=epoch, 
                                         total_nb_epochs = NUM_EPOCHS,
                                         duration_sec = f"{h}:{m}:{s} hours/mins/secs", 
-                                        batch_size = BATCH_SIZE_TRAIN,
+                                        batch_size_train = BATCH_SIZE_TRAIN,
+                                        batch_size_val = BATCH_SIZE_VAL,
                                         current_avg_train_loss = train_loss_avg[-1],
                                         current_avg_val_loss = val_loss_avg[-1],
                                         min_avg_train_loss = min_train_loss,
@@ -670,22 +672,15 @@ if TRAIN_FLAG and not(USE_PRETRAINED_VANILLA_AUTOENCODER):
     #model_file_path_info['model_name'] #'vanilla_autoencoder'
     model_file_path_info['model_version']  = current_time_str # '_2022_11_20_17_13_14'
     #model_file_path_info['model_extension'] #'.py'
-    torch.save(vanilla_autoencoder_v02.state_dict(), model_file_path_info['model_dir_path'] + model_file_path_info['model_name'] + model_file_path_info['model_version'] + model_file_path_info['model_extension'])
-
-# plt.ion()
-
-# fig = plt.figure()
-# plt.plot(train_loss_avg)
-# plt.xlabel('Epochs')
-# plt.ylabel('Reconstruction error')
-# plt.show()
-
+    model_path = model_file_path_info['model_dir_path'] + model_file_path_info['model_name'] + model_file_path_info['model_version'] + model_file_path_info['model_extension']
+    torch.save(vanilla_autoencoder_v02.state_dict(),model_path)
+    print(f"Current Trained Model saved at = {model_path}")
 
 vanilla_autoencoder_loaded = None
 vanilla_autoencoder_v02_loaded = None
 
 if USE_PRETRAINED_VANILLA_AUTOENCODER:
-    current_time_str = '2022_12_02_17_59_16' # 17h 13min 14 sec 20th Nov. 2022
+    current_time_str = "2022_12_03_19_39_08"#'2022_12_02_17_59_16' # 17h 13min 14 sec 20th Nov. 2022
     
     #autoencoder_loaded_path = '/home/novakovm/iris/MILOS/autoencoder_' + current_time_str + '.py'
     #vanilla_autoencoder_loaded_path = '/home/novakovm/iris/MILOS/vanilla_autoencoder_' + current_time_str + '.py'
