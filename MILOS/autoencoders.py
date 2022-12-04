@@ -138,15 +138,6 @@ loaders = {
 }
 
 
-
-# Data Loader (Input Pipeline)
-# train_loader = torch.utils.data.DataLoader(dataset=TRAIN_DATA_PATH,
-#                                            batch_size=batchsize,
-#                                            shuffle=True)
-# test_loader = torch.utils.data.DataLoader(dataset=TEST_DATA_PATH,
-#                                           batch_size=batchsize,
-#                                           shuffle=False)
-
 def conv2d_dims(h_in,w_in,k,s,p,d):
     h_out, w_out = None, None
     if len(p) == 2:
@@ -581,21 +572,7 @@ if TRAIN_FLAG and not(USE_PRETRAINED_VANILLA_AUTOENCODER):
         train_loss_avg[-1] /= num_batches
         min_train_loss = np.min([min_train_loss, train_loss_avg[-1]])
         elapsed_time = round(time.time() - start_time_epoch,1)
-        #print(f'In Epoch [{epoch+1} / {NUM_EPOCHS}] that took {elapsed_time} sec; Avg. Training Rec. Error in the {BATCH_SIZE_TRAIN}-mini-batch: {train_loss_avg[-1]}')#2h
-        
-        #print('Epoch [%d / %d] average train reconstruction error: %f' % (epoch+1, NUM_EPOCHS, train_loss_avg[-1]))#2h
-        #print(f'{epoch}th epoch took {int(time.time() - start_time_epoch)} seconds. ')
-        # TO DO:
-        ### NICE TO SEE IN THE TRAINING LOOP like in tensor flow
-        # Epoch 48/50
-        # 196/196 [==============================] - 32s 164ms/step - loss: 2.3840e-04 - accuracy: 0.9044 - val_loss: 2.6590e-04 - val_accuracy: 0.8891
-        # Epoch 49/50
-        # 196/196 [==============================] - 32s 164ms/step - loss: 2.3283e-04 - accuracy: 0.9032 - val_loss: 3.2471e-04 - val_accuracy: 0.9093
-        # Epoch 50/50
-        # 196/196 [==============================] - 32s 166ms/step - loss: 2.4793e-04 - accuracy: 0.9034 - val_loss: 4.8787e-04 - val_accuracy: 0.8481
-        # 313/313 [==============================] - 1s 3ms/step
-        ###
-        
+
         
         ######################    
         # validate the model #
@@ -628,8 +605,6 @@ if TRAIN_FLAG and not(USE_PRETRAINED_VANILLA_AUTOENCODER):
         val_loss_avg[-1] /= num_batches
         min_val_loss = np.min([min_val_loss, val_loss_avg[-1]])
         elapsed_time = round(time.time() - start_time_epoch,1)
-        #print(f'In Epoch [{epoch+1} / {NUM_EPOCHS}] thath took {elapsed_time} sec; Avg. Validation Rec. Error in the {BATCH_SIZE_VAL}-mini-batch: {val_loss_avg[-1]}')#2h
-        #print(f'{epoch}th epoch took {} seconds. ')
         
         if (epoch+1) % 10 == 0:
             total_elapsed_time_seconds = int(time.time() - START_TIME_TRAINING)
@@ -653,14 +628,13 @@ if TRAIN_FLAG and not(USE_PRETRAINED_VANILLA_AUTOENCODER):
     #train_loss_avg_path = '/home/novakovm/iris/MILOS/autoencoder_train_loss_avg_' + current_time_str + '.npy'
     train_loss_avg_path = main_folder_path + '/vanilla_autoencoder_train_loss_avg_' + current_time_str + '.npy'
     val_loss_avg_path = main_folder_path + '/vanilla_autoencoder_val_loss_avg_' + current_time_str + '.npy'
-    #print(f"Autoencoder Training Loss Average = {train_loss_avg}")
-    #print(f"Autoencoder Validation Loss Average = {val_loss_avg}")
+    
     train_loss_avg = np.array(train_loss_avg)
     val_loss_avg = np.array(val_loss_avg)
     np.save(train_loss_avg_path,train_loss_avg)
     np.save(val_loss_avg_path,val_loss_avg)
-    print(f"Autoencoder Training Loss Average saved.")
-    print(f"Autoencoder Validation Loss Average saved.")
+    print(f"Autoencoder Training Loss Average saved here\n{train_loss_avg_path}")
+    print(f"Autoencoder Validation Loss Average savedhere\n{val_loss_avg_path}")
     
     pretrained_autoencoder_path = main_folder_path + '/vanilla_autoencoder_' + current_time_str + '.py'
     #torch.save(autoencoder.state_dict(), pretrained_autoencoder_path)
@@ -672,7 +646,10 @@ if TRAIN_FLAG and not(USE_PRETRAINED_VANILLA_AUTOENCODER):
     #model_file_path_info['model_name'] #'vanilla_autoencoder'
     model_file_path_info['model_version']  = current_time_str # '_2022_11_20_17_13_14'
     #model_file_path_info['model_extension'] #'.py'
-    model_path = model_file_path_info['model_dir_path'] + model_file_path_info['model_name'] + model_file_path_info['model_version'] + model_file_path_info['model_extension']
+    model_path =    model_file_path_info['model_dir_path']\
+                    + model_file_path_info['model_name'] \
+                    + model_file_path_info['model_version'] \
+                    + model_file_path_info['model_extension']
     torch.save(vanilla_autoencoder_v02.state_dict(),model_path)
     print(f"Current Trained Model saved at = {model_path}")
 
@@ -737,10 +714,9 @@ for image_batch, image_id_batch in test_data_loader:
             image_batch_recon = vanilla_autoencoder_v02(image_batch)
 
         # reconstruction error
-        loss = F.mse_loss(image_batch_recon, image_batch)
+        loss = loss_fn(image_batch_recon, image_batch)
 
         test_samples_loss['test_image_rec_loss'].append(loss.item())
-        
         test_loss.append(loss.item())
         test_loss_avg += loss.item()
         num_batches += 1
@@ -750,43 +726,20 @@ test_loss = np.array(test_loss)
 print('average reconstruction error: %f' % (test_loss_avg))
 
 
-
-
-# plt.figure()
-# plt.plot(train_loss_avg)
-# plt.title(f'Training Loss Avg. per epoch (Min. = {train_loss_avg.min()*1e6 : .2f}e-6)')
-# plt.xlabel('Epochs')
-# plt.ylabel('Avg. Training Loss')
-# plt.savefig(main_folder_path + '/training_loss_per_epoch.png')
-# plt.close()
-
-# plt.figure()
-# plt.plot(val_loss_avg)
-# plt.title(f'Validation Loss Avg. per epoch (Min. = {val_loss_avg.min()*1e6 : .2f}e-6)')
-# plt.xlabel('Epochs')
-# plt.ylabel('Avg. Validation Loss')
-# plt.savefig(main_folder_path + '/val_loss_per_epoch.png')
-# plt.close()
+# Plot Training and Validation Average Loss per Epoch
 if TRAIN_FLAG and not(USE_PRETRAINED_VANILLA_AUTOENCODER):
     plt.figure()
     plt.semilogy(val_loss_avg)
     plt.semilogy(train_loss_avg)
     plt.title(f'Train (Min. = {train_loss_avg.min() *1e3: .2f} e-3) & Validation (Min. = {val_loss_avg.min() *1e3: .2f} e-3) \n Log Loss Avg. per epoch')
     plt.xlabel('Epochs')
-    plt.ylabel('Log Avg. Train&Validation Loss')
+    plt.ylabel('Avg. Train & Validation Loss')
     plt.legend(['validation','training'])
     plt.grid()
     plt.savefig(main_folder_path + '/semilog_train_val_loss_per_epoch.png')
     plt.close()
 
-# plt.figure()
-# plt.stem(test_loss)
-# plt.title(f'Test Loss per minibatch (Avg. = {test_loss.mean()*1e6 : .2f}e-6)')
-# plt.xlabel('Mini-batch')
-# plt.ylabel('Testing Loss')
-# plt.savefig(main_folder_path + '/testing_loss_per_image_in_minibatch.png')
-# plt.close()
-
+# Plot Test Loss for every sample in the Test set
 plt.figure()
 plt.stem(test_loss)
 plt.title(f'Test Loss per minibatch (Avg. = {test_loss.mean()*1e3 : .2f} e-3)')
@@ -802,36 +755,31 @@ df_test_samples_loss = df_test_samples_loss.sort_values('test_image_rec_loss',as
 #pick top 50 worst reconstructed images
 TOP_WORST_RECONSTRUCTED_TEST_IMAGES = 100
 df_worst_reconstructed_test_images = df_test_samples_loss.head(TOP_WORST_RECONSTRUCTED_TEST_IMAGES)
-print(f"pick top {TOP_WORST_RECONSTRUCTED_TEST_IMAGES} worst reconstructed images\n",df_worst_reconstructed_test_images)
+print(f"pick top {TOP_WORST_RECONSTRUCTED_TEST_IMAGES} worst reconstructed images\n", df_worst_reconstructed_test_images.to_string())
 
-some_test_images = []
-
-
+top_images = []
 imgs_ids , imgs_losses = [], []
 for worst_reconstructed_test_image_id, worst_reconstructed_test_image_loss in zip(df_worst_reconstructed_test_images['test_image_id'], df_worst_reconstructed_test_images['test_image_rec_loss']):
-    
+    # find the test image index when you have test image id in the test_data.image_ids tha
     worst_reconstructed_test_image_id_index = np.where(test_data.image_ids == worst_reconstructed_test_image_id)[0][0]
     
+    # get the actual image as well as the image_id
     image, image_id = test_data[worst_reconstructed_test_image_id_index]
     
-    some_test_images.append(image)
+    # save the test image (tensor)
+    top_images.append(image)
     
-    
+    # save the test image id
     imgs_ids.append(image_id)
-    imgs_losses.append(worst_reconstructed_test_image_loss)
     
-#some_test_images, _ = iter(test_data_loader).next() # torch.Size([128, 3, 64, 64])
+    # save the test image reconstruction error (i.e. loss value)
+    imgs_losses.append(worst_reconstructed_test_image_loss)
 
-#PICK_TOP_N_IMAGES = 50
-top_images = torch.stack(some_test_images)#[:PICK_TOP_N_IMAGES, :, :, :]#torch.Size([50, 3, 64, 64])
-# First visualise the original images
-# print('Original images')
-# show_image(top_images,compose_transforms = TRANSFORM_IMG, path = './SHOW_IMAGES/show_image.png')
-#plt.show()
+# saved top_images are list of tensor, so cast to a tensor with torch.stack() function
+#torch.Size(TOP_WORST_RECONSTRUCTED_TEST_IMAGES, C, H, W)
+top_images = torch.stack(top_images) 
 
 # Put model into evaluation mode
-#autoencoder.eval()
-
 if USE_PRETRAINED_VANILLA_AUTOENCODER:
     # Pretrained
     #vanilla_autoencoder_loaded.eval()
@@ -840,8 +788,6 @@ else:
     # Trained just now
     #vanilla_autoencoder.eval()
     vanilla_autoencoder_v02.eval()
-    
-
 
 # This function takes as an input the images to reconstruct
 # and the name of the model with which the reconstructions
@@ -875,95 +821,35 @@ def to_img(x, compose_transforms = None):
     x = x.int()#astype(int)
     return x
 
-# def show_image(img, compose_transforms, path = './SHOW_IMAGES/show_image.png'):
-    
-#     images = to_img(img, compose_transforms = compose_transforms) # C = size(0), H = size(1), W = size(2)
-#     np_imagegrid = torchvision.utils.make_grid(images, nrow = 10, padding = 5, pad_value = 255).numpy()
-#     plt.imshow(np.transpose(np_imagegrid, (1, 2, 0))) # H,W,C
-#     plt.savefig(path)
-#     plt.close()
-
-
-
-
-
-def show(original_imgs, reconstructed_imgs, imgs_ids, imgs_losses):
-    #plt.rcParams["savefig.bbox"] = 'tight'
+# show/plot top-N worst reconstructed images
+def show(original_imgs, reconstructed_imgs, imgs_ids, imgs_losses, savefig_path):
     N,C,H,W = original_imgs.size()
-    #fig, axs = plt.subplots(nrows = N, ncols=2, squeeze=True, figsize=(12, 12))
-    
-    #fig = plt.figure(figsize=(40., 20.))#rows,cols
-    
     fig = plt.figure(figsize=(2. * N, 1. * N))#rows,cols
-    
-    #fig.tight_layout()
-    #fig = plt.figure(constrained_layout=True)#rows,cols
     ncols = 8
     grid = ImageGrid(fig, 111,  # similar to subplot(111)
                     nrows_ncols=(N//4, ncols),  # creates 2x2 grid of axes
                     axes_pad=0.5,  # pad between axes in inch.
-                    )
-    
-    # fig.subplots_adjust(left=0.1,
-    #                 bottom=0.1,
-    #                 right=0.9,
-    #                 top=0.9,
-    #                 wspace=0.4,
-    #                 hspace=0.4)
-    
-    #fig.tight_layout()
-    #i = 0
-    
-    #for org_img,rec_img in zip(original_imgs, reconstructed_imgs):
+                    )    
     for i,axs in enumerate(grid):  
-        #org_img,rec_img = original_imgs[i], reconstructed_imgs[i]
-        if i%2 ==0:
+        im, original_or_reconstructed = None, None
+        if i % 2 == 0:
+            #axs.set_title(f"({i//2 + 1}/{N}) Org. Test img \n id={imgs_ids[i//2]} loss={imgs_losses[i//2]*1e3:.2f} e-3")
             im = original_imgs[i//2]
+            original_or_reconstructed = "Org."
         else:
+            #axs.set_title(f"({i//2 + 1}/{N}) Rec. Test img \n id={imgs_ids[i//2]} loss={imgs_losses[i//2]*1e3:.2f} e-3")
             im =  reconstructed_imgs[(i-1)//2]
-            
-        if i % 2 == 0:# or i % ncols == ncols-1:
-            axs.set_title(f"({i//2 + 1}/{N}) Org. Test img \n id={imgs_ids[i//2]} loss={imgs_losses[i//2]*1e3:.2f} e-3")
-        else:
-            axs.set_title(f"({i//2 + 1}/{N}) Rec. Test img \n id={imgs_ids[i//2]} loss={imgs_losses[i//2]*1e3:.2f} e-3")
+            original_or_reconstructed = "Rec."
         
-        axs.imshow(np.transpose(im, (1, 2, 0)))
-        
-        
-        #img = img.detach()
-        #img = F.to_pil_image(img)
-        #axs[0, i].imshow(np.asarray(img))
-        #print(i, imgs.shape, img.shape)
-        
-        
-        #axs[i, 0].imshow(np.transpose(org_img, (1, 2, 0)))# H,W,C
-        
-        
-        # axs[i, 0].set(
-        #             #xticklabels=np.arange(0+1,W+1,W//8), 
-        #             #yticklabels=np.arange(0+1,H+1,H//8), 
-        #             #xticks=np.arange(0+1,W+1,W//8),
-        #             #yticks=np.arange(0+1,H+1,H//8),
-        #             title = f"Original img: id={imgs_ids[i]}; loss={imgs_losses[i]*1e3:.2f} e-3")
-        
-        
-        #axs[i, 1].imshow(np.transpose(rec_img, (1, 2, 0)))# H,W,C
-        
-        
-        
-        # axs[i, 1].set(
-        #             #xticklabels=np.arange(0+1,W+1,W//8), 
-        #             #yticklabels=np.arange(0+1,H+1,H//8), 
-        #             #xticks=np.arange(0+1,W+1,W//8), 
-        #             #yticks=np.arange(0+1,H+1,H//8),
-        #             title = f"Reconstructed img: id={imgs_ids[i]}; loss={imgs_losses[i]*1e3:.2f} e-3"
-        #             )
-        
-        
-        #i+=1
-        
+        # set title according to the image being original or reconstructed from the Test set (with test image id and its reconstruction loss)
+        axs.set_title(f"({i//2 + 1}/{N}) {original_or_reconstructed} Test img \n id={imgs_ids[i//2]} loss={imgs_losses[i//2]*1e3:.2f} e-3")
+        axs.imshow(np.transpose(im, (1, 2, 0))) # H,W,C
+    
+    # save figure and close plotter
+    plt.savefig(savefig_path,bbox_inches='tight')
+    plt.close()
 
-def visualise_output(images, model, compose_transforms, imgs_ids, imgs_losses):
+def visualise_output(images, model, compose_transforms, imgs_ids, imgs_losses, savefig_path):
 
     with torch.no_grad():
         # original images
@@ -975,23 +861,7 @@ def visualise_output(images, model, compose_transforms, imgs_ids, imgs_losses):
         model = model.to(device)
         reconstructed_images = model(reconstructed_images)
         # put reconstructed mini-batch of images to cpu
-        reconstructed_images = reconstructed_images.to('cpu') # torch.Size([50, 3, 64, 64])
-        
-        # print statics on test set original (real) images (0.0-1.0 float range)
-        print("The test set original (real) images stats (0.0-1.0 float range):")
-        print(f"Size of tensor = {original_images.size()}")
-        print(f"Mean of tensor = {original_images.mean()}")
-        print(f"Min of tensor = {original_images.min()}")
-        print(f"Max of tensor = {original_images.max()}\n")
-        
-        
-        # print statics on reconstructed images (0.0-1.0 float range)
-        print("The test set reconstructed images stats (0.0-1.0 float range):")
-        print(f"Size of tensor = {reconstructed_images.size()}")
-        print(f"Mean of tensor = {reconstructed_images.mean()}")
-        print(f"Min of tensor = {reconstructed_images.min()}")
-        print(f"Max of tensor = {reconstructed_images.max()}\n")
-        
+        reconstructed_images = reconstructed_images.to('cpu') # torch.Size([50, 3, 64, 64])        
         
         diff_0_1 = (original_images-reconstructed_images)
         # print statics on difference between original and reconstructed images (0.0-1.0 float range)
@@ -1001,26 +871,8 @@ def visualise_output(images, model, compose_transforms, imgs_ids, imgs_losses):
         print(f"Min of tensor = {diff_0_1.min()}")
         print(f"Max of tensor = {diff_0_1.max()}\n")
         
-        
         original_images = to_img(original_images, compose_transforms)
-        reconstructed_images = to_img(reconstructed_images, compose_transforms)
-        
-        
-        # print statics on test set original (real) images (0-255 int range)
-        print("The test set original (real) images stats (0-255 int range):")
-        print(f"Size of tensor = {original_images.size()}")
-        print(f"Mean of tensor = {original_images.float().mean()}")
-        print(f"Min of tensor = {original_images.min()}")
-        print(f"Max of tensor = {original_images.max()}\n")
-        
-        
-        # print statics on reconstructed images (0-255 int range)
-        print("The test set reconstructed images stats (0-255 int range):")
-        print(f"Size of tensor = {reconstructed_images.size()}")
-        print(f"Mean of tensor = {reconstructed_images.float().mean()}")
-        print(f"Min of tensor = {reconstructed_images.min()}")
-        print(f"Max of tensor = {reconstructed_images.max()}\n")
-        
+        reconstructed_images = to_img(reconstructed_images, compose_transforms)        
         
         diff_0_255 = (original_images-reconstructed_images)
         # print statics on difference between original and reconstructed images (0-255 int range)
@@ -1032,15 +884,17 @@ def visualise_output(images, model, compose_transforms, imgs_ids, imgs_losses):
         
         #images = to_img(images, compose_transforms = compose_transforms)
         
-        np_imagegrid_original_images = torchvision.utils.make_grid(tensor = original_images, nrow = 10, padding = 5, pad_value = 255).numpy()
-        np_imagegrid_reconstructed_images = torchvision.utils.make_grid(tensor = reconstructed_images, nrow = 10, padding = 5, pad_value = 255).numpy()
+        #np_imagegrid_original_images = torchvision.utils.make_grid(tensor = original_images, nrow = 10, padding = 5, pad_value = 255).numpy()
+        #np_imagegrid_reconstructed_images = torchvision.utils.make_grid(tensor = reconstructed_images, nrow = 10, padding = 5, pad_value = 255).numpy()
         
         #fig, axs = plt.subplots(1, 10, figsize=(20, 10))
         #plt.imshow(np.transpose(np_imagegrid_original_images, (1, 2, 0))) # H,W,C
         #show(original_images,imgs_ids, imgs_losses)
-        show(original_images,reconstructed_images,imgs_ids, imgs_losses)
-        plt.savefig('./SHOW_IMAGES/org_vs_rec_test_imgs.png',bbox_inches='tight')
-        plt.close()
+        
+        
+        show(original_images,reconstructed_images,imgs_ids, imgs_losses, savefig_path)
+        #plt.savefig('./SHOW_IMAGES/org_vs_rec_test_imgs.png',bbox_inches='tight')
+        #plt.close()
         
         #fig, axs = plt.subplots(1, 10, figsize=(20, 10))
         #plt.imshow(np.transpose(np_imagegrid_reconstructed_images, (1, 2, 0))) # H,W,C
@@ -1051,20 +905,13 @@ def visualise_output(images, model, compose_transforms, imgs_ids, imgs_losses):
         #plt.close()
 
 # Reconstruct and visualise the images using the autoencoder
-# print('Autoencoder reconstruction:')
-#visualise_output(top_images, autoencoder, compose_transforms= )
 
 if USE_PRETRAINED_VANILLA_AUTOENCODER:
     # Pretrained
     #visualise_output(top_images, vanilla_autoencoder_loaded, compose_transforms = TRANSFORM_IMG)
-    visualise_output(top_images, vanilla_autoencoder_v02_loaded, compose_transforms = TRANSFORM_IMG, imgs_ids = imgs_ids, imgs_losses=imgs_losses)
+    visualise_output(top_images, vanilla_autoencoder_v02_loaded, compose_transforms = TRANSFORM_IMG, imgs_ids = imgs_ids, imgs_losses=imgs_losses, savefig_path = './SHOW_IMAGES/org_vs_rec_test_imgs.png')
 else:
     # Trained just now
     #visualise_output(top_images, vanilla_autoencoder, compose_transforms = TRANSFORM_IMG)
-    visualise_output(top_images, vanilla_autoencoder_v02, compose_transforms = TRANSFORM_IMG, imgs_ids = imgs_ids, imgs_losses=imgs_losses)
+    visualise_output(top_images, vanilla_autoencoder_v02, compose_transforms = TRANSFORM_IMG, imgs_ids = imgs_ids, imgs_losses=imgs_losses, savefig_path = './SHOW_IMAGES/org_vs_rec_test_imgs.png')
 debug =0
-
-#'./data/MNIST_AE_pretrained/my_autoencoder.pth'
-
-# this is how the autoencoder parameters can be saved:
-#torch.save(autoencoder.state_dict(), pretrained_autoencoder_path) # OBAVEZNO!
