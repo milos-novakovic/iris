@@ -17,10 +17,10 @@ vanilla_autoencoder:
 training_hyperparams:
   - NUM_WORKERS: 4 #NUM_WORKERS = 4# see what this represents exactly!
   - LATENT_DIM: 10 #TO DO
-  - USE_PRETRAINED_VANILLA_AUTOENCODER: False
+  - USE_PRETRAINED_VANILLA_AUTOENCODER: True
   - USE_GPU: True
-  - TRAIN_FLAG: True
-  - NUM_EPOCHS: 1000 #200 #10 #20
+  #- TRAIN_FLAG: True
+  - NUM_EPOCHS: 50 #100 #200 #10 #20
   - BATCH_SIZE_TRAIN: 256 #32 #64 #128
   - BATCH_SIZE_VAL: 256 #32 #64 #128
   - BATCH_SIZE_TEST: 1 #32 #64 #128

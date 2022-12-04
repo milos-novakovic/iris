@@ -1,3 +1,7 @@
+import itertools
+from collections import OrderedDict
+from matplotlib.colors import ListedColormap
+import matplotlib.pyplot as plt
 import os
 import numpy as np
 import torch
@@ -7,7 +11,7 @@ from torch.autograd import Variable
 import torch.utils.data as data
 import torchvision
 from torchvision import transforms
-
+import time
 
 import os
 import pandas as pd
@@ -466,3 +470,498 @@ class Vanilla_Autoencoder_v02(nn.Module):
         #x_recon = self.decoder(latent)
         x_recon = self.sequential_model(x)
         return x_recon
+    
+class Model_Trainer:
+    def __init__(self, args) -> None:
+        self.NUM_EPOCHS = args['NUM_EPOCHS']#1000
+        self.loss_fn = args['loss_fn']#nn.MSELoss()
+        self.device = args['device']#'gpu', i.e.,  device(type='cuda', index=0)
+        self.model = args['model']#vanilla_autoencoder_v02
+        self.model_name = args['model_name']#'vanilla_autoencoder'
+        self.loaders = args['loaders'] # loaders = {'train' : train_data_loader, 'val' : val_data_loader, 'test' : test_data_loader}
+        self.optimizer = args['optimizer'] #torch.optim.Adam(params=vanilla_autoencoder_v02.parameters(), lr=LEARNING_RATE)
+        self.main_folder_path = args['main_folder_path']#'/home/novakovm/iris/MILOS'
+    
+    def get_intermediate_training_stats_str(  self,\
+                                            current_epoch, \
+                                            total_nb_epochs, \
+                                            train_duration_sec, \
+                                            val_duration_sec, \
+                                            start_time_training,\
+                                            batch_size_train,\
+                                            batch_size_val,\
+                                            current_avg_train_loss,\
+                                            current_avg_val_loss, \
+                                            min_avg_train_loss, \
+                                            min_avg_val_loss) -> str:
+        
+        # training duration to str
+        m, s = divmod(train_duration_sec, 60)
+        h, m = divmod(m, 60)
+        train_duration_sec_str = f"{h}:{m}:{s} h/m/s"
+        
+        # validation duration to str
+        m, s = divmod(val_duration_sec, 60)
+        h, m = divmod(m, 60)
+        val_duration_sec_str = f"{h}:{m}:{s} h/m/s"
+        
+        # total time elapsed from the beginning of training
+        m, s = divmod(int(time.time() - start_time_training), 60)
+        h, m = divmod(m, 60)
+        duration_sec_str = f"{h}:{m}:{s} h/m/s"
+        
+        
+        intermediate_training_stats : str = \
+                 f"Epoch {current_epoch+1}/{total_nb_epochs};\n"\
+                +f"Training   Samples Mini-Batch size      = {batch_size_train};\n"\
+                +f"Validation Samples Mini-Batch size      = {batch_size_val};\n"\
+                +f"Total elapsed time in Training Epoch    = {train_duration_sec_str};\n"\
+                +f"Total elapsed time in Validation Epoch  = {val_duration_sec_str};\n"\
+                +f"Total elapsed time from begining        = {duration_sec_str};\n"\
+                +f"Curr. Avg. Train Loss across Mini-Batch = {current_avg_train_loss *1e6 : .1f} e-6;\n"\
+                +f"Curr. Avg. Val   Loss across Mini-Batch = {current_avg_val_loss *1e6 : .1f} e-6;\n"\
+                +f"Min.  Avg. Train Loss across Mini-Batch = {min_avg_train_loss *1e6 : .1f} e-6;\n"\
+                +f"Min.  Avg. Val   Loss across Mini-Batch = {min_avg_val_loss *1e6 : .1f} e-6;\n"\
+                +f"\n----------------------------------------------------------------------------------\n"
+        
+        return intermediate_training_stats
+    
+    def train(self) -> None:
+        print("Training Started")
+        
+        # time when the training began
+        START_TIME_TRAINING = time.time()
+        
+        # put the loss to the specified device
+        self.loss_fn.to(self.device)
+
+        # training and validation minimal avg. losses
+        # (avg. loss is the loss averaged in one mini-batch sample)
+        self.min_train_loss, self.min_val_loss = np.inf, np.inf
+        
+        # rememeber training and validation avg. losses
+        self.train_loss_avg = []
+        self.val_loss_avg = []
+        
+        # training and validation duration in seconds per epoch
+        self.train_duration_per_epoch_seconds = [None]*self.NUM_EPOCHS
+        self.val_duration_per_epoch_seconds = [None]*self.NUM_EPOCHS
+        
+        # epochs loop
+        for epoch in range(self.NUM_EPOCHS):
+            
+            ###################
+            # train the model #
+            ###################
+            
+            # time when the training epoch started
+            start_time_epoch = time.time()
+            
+            # init the avaraged training loss
+            self.train_loss_avg.append(0.)
+            
+            # init the number of mini-batches covered in the current epoch
+            num_batches = 0
+            
+            # init current training loss
+            self.train_loss = 0.0
+            
+            # set the model to the train state
+            self.model.train()
+            
+            for image_batch, image_ids_batch  in self.loaders['train']:
+                
+                #torch.Size([BATCH_SIZE_TRAIN, 3 (RGB), H, W])
+                image_batch = image_batch.to(self.device)
+                
+                # autoencoder reconstruction
+                # forward pass: compute predicted outputs by passing inputs to the model
+                image_batch_recon = self.model(image_batch)
+                
+                # reconstruction error: calculate the batch loss
+                loss = self.loss_fn(image_batch_recon, image_batch)
+                
+                ## find the loss and update the model parameters accordingly
+                # clear the gradients of all optimized variables
+                self.optimizer.zero_grad()
+                
+                # (backpropagation) backward pass: compute gradient of the loss with respect to model parameters
+                loss.backward()
+                
+                # one step of the optmizer (using the gradients from backpropagation)
+                # perform a single optimization step (parameter update)
+                self.optimizer.step()
+                
+                # sum up the current training loss in the last element of the train_loss_avg
+                self.train_loss_avg[-1] += loss.item()
+                
+                # count the number of batches
+                num_batches += 1
+                
+            # calculate the current avg. training loss
+            self.train_loss_avg[-1] /= (1.*num_batches)
+            
+            # calculate the current min. avg. training loss
+            self.min_train_loss = np.min([self.min_train_loss, self.train_loss_avg[-1]])
+            
+            # calculate training elapsed time in the current epoch
+            self.train_duration_per_epoch_seconds[epoch] = int(time.time() - start_time_epoch)
+            
+            ######################    
+            # validate the model #
+            ######################
+            
+            # time when the validation epoch started
+            start_time_epoch = time.time()
+            
+            # init the avaraged validation loss
+            self.val_loss_avg.append(0.)
+            
+            # init the number of mini-batches covered in the current epoch
+            num_batches = 0
+            
+            # init current validation loss
+            self.valid_loss = 0.0
+            
+            # set the model to the evaluation state
+            self.model.eval()
+            
+            for image_batch, image_ids_batch in self.loaders['val']:
+                
+                #torch.Size([BATCH_SIZE_VAL, 3 (RGB), H, W])
+                image_batch = image_batch.to(self.device)
+                
+                # autoencoder reconstruction 
+                # forward pass: compute predicted outputs by passing inputs to the model
+                image_batch_recon = self.model(image_batch)
+                
+                # reconstruction error
+                # calculate the batch loss
+                loss = self.loss_fn(image_batch_recon, image_batch)
+                
+                # since this is validation of the model there is not (backprogagation and update step size)
+                  
+                # sum up the current validation loss in the last element of the train_loss_avg
+                self.val_loss_avg[-1] += loss.item()
+                
+                # count the number of batches
+                num_batches += 1
+            
+            
+            # calculate the current avg. validation loss
+            self.val_loss_avg[-1] /= (1.*num_batches)
+            
+            # calculate the current min. avg. validation loss
+            self.min_val_loss = np.min([self.min_val_loss, self.val_loss_avg[-1]])
+            
+            # calculate validation elapsed time in the current epoch
+            self.val_duration_per_epoch_seconds[epoch] = int(time.time() - start_time_epoch)
+            
+            # every 10th epoch print intermediate training/validation statistics
+            if (epoch+1) % 10 == 0:
+                print(self.get_intermediate_training_stats_str(\
+                    current_epoch           = epoch, \
+                    total_nb_epochs         = self.NUM_EPOCHS, \
+                    train_duration_sec      = self.train_duration_per_epoch_seconds[epoch], \
+                    val_duration_sec        = self.val_duration_per_epoch_seconds[epoch], \
+                    start_time_training     = START_TIME_TRAINING, \
+                    batch_size_train        = self.loaders['train'].batch_size,\
+                    batch_size_val          = self.loaders['val'].batch_size,\
+                    current_avg_train_loss  = self.train_loss_avg[-1],\
+                    current_avg_val_loss    = self.val_loss_avg[-1], \
+                    min_avg_train_loss      = self.min_train_loss, \
+                    min_avg_val_loss        = self.min_val_loss\
+                ))
+
+        # get current time in the format YYYY_MM_DD_hh_mm_ss
+        self.current_time_str = time.strftime("%Y_%m_%d_%H_%M_%S", time.gmtime(time.time())) # 2022_11_19_20_11_26
+
+        #train_loss_avg_path = '/home/novakovm/iris/MILOS/autoencoder_train_loss_avg_' + current_time_str + '.npy'
+        
+        # create training/validation avg. loss file paths
+        self.train_loss_avg_path = self.main_folder_path + '/' + self.model_name + '_train_loss_avg_' + self.current_time_str + '.npy'
+        self.val_loss_avg_path = self.main_folder_path + '/' + self.model_name + '_val_loss_avg_' + self.current_time_str + '.npy'
+
+        # create training/validation avg. losses as numpy arrays to the above specified file paths
+        self.train_loss_avg = np.array(self.train_loss_avg)
+        self.val_loss_avg = np.array(self.val_loss_avg)
+        np.save(self.train_loss_avg_path,
+                self.train_loss_avg
+                )
+        np.save(self.val_loss_avg_path,
+                self.val_loss_avg
+                )
+        
+        # Message that the training/validation avg. losses are saved and the corresponding paths
+        print(f"Autoencoder Training Loss Average saved here\n{self.train_loss_avg_path}")
+        print(f"Autoencoder Validation Loss Average savedhere\n{self.val_loss_avg_path}")
+
+        # example of self.model_path:=            
+        #/home/novakovm/iris/MILOS
+        # /
+        #vanilla_autoencoder
+        # 2022_12_03_19_39_08
+        #.py
+        self.model_path = self.main_folder_path + '/' + self.model_name + self.current_time_str + '.py'
+        
+        # saving model trained parameters, so that it could be used as a pretrained model in the future usages
+        torch.save(self.model.state_dict(),self.model_path)
+        print(f"Current Trained Model saved at = \n {self.model_path}")
+        
+        TOTAL_TRAINING_TIME = int(time.time() - START_TIME_TRAINING)
+        m, s = divmod(TOTAL_TRAINING_TIME, 60)
+        h, m = divmod(m, 60)
+        TOTAL_TRAINING_TIME = f"{h}:{m}:{s} h/m/s"
+        
+        print(f"Total training time is = {TOTAL_TRAINING_TIME}")
+        print("Training Ended")
+    
+    def load_model(self, current_time_str, autoencoder_config_params_wrapped_sorted) -> None:
+        #current time in the format YYYY_MM_DD_hh_mm_ss
+        self.current_time_str  = current_time_str
+        self.model_path = self.main_folder_path + '/' + self.model_name + self.current_time_str + '.py'
+        
+        # load model architecture in params wrapped and sorted fashion
+        self.autoencoder_config_params_wrapped_sorted = autoencoder_config_params_wrapped_sorted
+        
+        # create a model (constructor)
+        self.model = Vanilla_Autoencoder_v02(autoencoder_config_params_wrapped_sorted=self.autoencoder_config_params_wrapped_sorted)
+        
+        # load the model state from the model path
+        self.model.load_state_dict(torch.load(self.model_path))
+        
+        # move model to device
+        self.model = self.model.to(device=self.device)
+        
+        # put loaded model in the evaulation mode
+        self.model.eval()
+    
+    def test(self) -> None:
+        ######################    
+        # testing the model #
+        ######################
+        print("Testing Started")
+        
+        # init test loss array per mini-batch as an empty array
+        self.test_loss = []
+        
+        # test_samples_loss is pandas DataFrame that has two columns
+        # first column name is the test_image_id that is the id of the test image (int type)
+        # second column name is the test_image_rec_loss that is the reconstruction loss of the test image with the id equal to test_image_id (float type)
+        self.test_samples_loss = {} # test_image_tensor: test_loss
+        self.test_samples_loss['test_image_id'] = []
+        self.test_samples_loss['test_image_rec_loss'] = []
+        
+        # put loaded model in the evaulation mode
+        self.model.eval()
+        
+        for image_batch, image_id_batch in self.loaders['test']:
+            assert(self.loaders['test'].batch_size == 1, f"Mini-batch size of the test set should be 1, because of visualization and plotting later on in the code.")
+            
+            # remember the test_image_id (i.e. id of the test image)
+            self.test_samples_loss['test_image_id'].append(image_id_batch.item())
+                
+            with torch.no_grad():
+                # move the image tensor to the device
+                image_batch = image_batch.to(self.device)
+                
+                # autoencoder reconstruction (forward pass)
+                image_batch_recon = self.model(image_batch)
+
+                # reconstruction error (loss calculation)
+                loss = self.loss_fn(image_batch_recon, image_batch)
+
+                # remember the test_image_id's reconstruction loss (in a different array used for complex plotting)
+                self.test_samples_loss['test_image_rec_loss'].append(loss.item())
+                
+                # remember the test_image_id's reconstruction loss (in a different array used for simple plotting)
+                self.test_loss.append(loss.item())
+        
+        # cast it to np.array type 
+        self.test_loss = np.array(self.test_loss)
+        print(f'Average reconstruction error: {np.mean(self.test_loss)}')
+        print("Testing Ended")
+
+    def plot(self, train_val_plot = True, test_plot = True) -> None:
+        # Plot Training and Validation Average Loss per Epoch
+        if train_val_plot:
+            plt.figure()
+            # SEMILOG-Y SCALE for both validation and training loss
+            plt.semilogy(self.train_loss_avg)
+            plt.semilogy(self.val_loss_avg)
+            plt.title(f'Train (Min. = {self.train_loss_avg.min() *1e3: .2f} e-3) & '\
+                    + f'Validation (Min. = {self.val_loss_avg.min() *1e3: .2f} e-3) \n '\
+                    + f'Loss Averaged across Mini-Batch per epoch')
+            plt.xlabel('Epochs')
+            plt.ylabel('Mini-Batch Avg. Train & Validation Loss')
+            plt.legend(['Training Loss','Validation Loss'])
+            plt.grid()
+            plt.savefig(self.main_folder_path + '/semilog_train_val_loss_per_epoch.png')
+            plt.close()
+            
+        if test_plot:
+            # Plot Test Loss for every sample in the Test set
+            fig = plt.figure()
+            ax = plt.gca()
+            x_scatter = np.array(self.test_samples_loss['test_image_id'])
+            y_scatter = np.array(self.test_samples_loss['test_image_rec_loss'])
+            colors = "blue"#[5 for img_id in x_scatter]
+            area = 20 #(30 * np.random.rand(N))**2  # 0 to 15 point radii
+            plt.scatter(x_scatter, y_scatter, s=area, c=colors, alpha=0.4)
+            ax.set_yscale('log')
+            plt.title(f'Test Loss per sample in the Test set \n'+
+                      f'(Avg. = {y_scatter.mean()*1e3 : .2f} e-3)')
+            plt.grid()
+            plt.xlabel('Test sample ids')
+            plt.ylabel('Testing Loss')
+            plt.savefig(self.main_folder_path + '/testing_loss_per_image_in_minibatch.png')
+            plt.close()
+            
+        # scatter plot test images with specific classes [Plot Test Loss for every sample in the Test set]
+        
+        # # one example of encoding a determionistic image generation
+        # if [
+        #     0,      #code for -> 'shape_thickness':  -1
+        #     1,      #code for -> 'shape_name': 'Parallelogram'
+        #     1, 1,   #code for -> 'shape_center_x': 54 # = 0.75 * W + coor_begin_x
+        #     1, 0,   #code for -> 'shape_center_y': 22 # = 0.5 * H + coor_begin_y
+        #     0, 0,   #code for -> 'shape_color': (255, 0, 0)
+        #     0, 1,   #code for -> 'a': 12 # = 0.125 * W
+        #     1, 1,   #code for -> 'b': 16 # = 0.25 * H
+        #     0, 1    #code for -> 'alpha':60
+        #     ] == image_binary_code:
+        #     ## image_id = 11806 = = '0b10111000011110' = reverse('01111000011101') = reverse([0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 0, 1]) = reverse(image_binary_code)
+        #     print(image_binary_code)
+        #     print(shape_specific_stats)
+        
+        total_number_of_bits = 14
+        
+        
+        
+        x_scatter = np.array(self.test_samples_loss['test_image_id'])
+        y_scatter = np.array(self.test_samples_loss['test_image_rec_loss'])
+        
+        shape_features = OrderedDict()
+        
+        # all names have to be unique
+        
+        # from 0-th bit the specification of 'shape_thickness' starts and it has lenght 1 bit (i.e. bit on the position 0)
+        shape_features['shape_thickness'] = [['Fill', 'Hollow'], [0]]
+        # from 1-th bit the specification of 'shape_name' starts and it has lenght 1 bit (i.e. bit on the position 1)
+        shape_features['shape_name'] = [['Ellipse', 'Parallelogram'], [1]]
+        # from 6-th bit the specification of 'shape_color' starts and it has lenght 2 bit (i.e. bits on the positions 6 and 7)
+        shape_features['shape_color'] = [['blue','green','red','white'], [6,7]]
+        
+        #num_of_all_possible_combinations = np.prod(np.array([len(shape_features[k][0]) for k in shape_features]))
+        #selected_bits =  np.sort(np.array([ np.array(shape_features[k][1]) for k in shape_features]).reshape(-1))
+        
+        classes = []
+        
+        
+        #i = 0
+        class_values = []
+        for shape_features_tuples in itertools.product(*([shape_features[k][0] for k in shape_features])):
+            classes.append('-'.join(list(shape_features_tuples)))
+            class_value = 0
+            
+            for shape_features_tuple in shape_features_tuples:
+                for shape_feature in shape_features:
+                    if shape_features_tuple in shape_features[shape_feature][0]:
+                        
+                        class_value +=  shape_features[shape_feature][0].index(shape_features_tuple) \
+                                        * 2 ** min(shape_features[shape_feature][1])
+                        
+            class_values.append(class_value)
+            
+            #i += 1
+        
+        class_values = list(np.unique(class_values))
+        values = [None] * len(x_scatter)
+        for i, x_scatter_val in enumerate(x_scatter):
+            for class_value in class_values:
+                if x_scatter_val & class_value == class_value:
+                    values[i] = class_values.index(class_value)
+        # classes = ['']*num_of_all_possible_combinations
+        # i=0
+        # for shape_feature in shape_features:
+        #     for specific_shape_feature in shape_feature:
+        #         classes[i] = str(specific_shape_feature) + '-'
+        #         i += 1
+                
+        # classes = ['Fill-Ellipse',          ## 00
+        #            'Hollow-Ellipse',        ## 01
+        #            'Fill-Parallelogram',    ## 10
+        #            'Hollow-Parallelogram'] ## 11
+        
+        num_of_all_possible_combinations = len(classes)
+        
+        #values = np.array([img_id % num_of_all_possible_combinations for img_id in x_scatter])
+        
+        # color_list = ['red','green','blue',
+        #               'cyan','magenta','yellow',
+        #               'black', 'gray'][:num_of_all_possible_combinations]
+        # colors = ListedColormap(color_list)
+        
+        cmap = plt.get_cmap('jet')
+        #colors = cmap(np.linspace(0, 1.0, num_of_all_possible_combinations))
+        
+        fig = plt.figure(figsize=(14,14))
+        ax = plt.gca()
+        
+        
+        area = 50
+        linewidths = 1.5
+        scatter = plt.scatter(x_scatter, y_scatter, c=values, cmap=cmap ,alpha=1.0, s=area, linewidths=linewidths, edgecolors = 'black')
+        plt.legend(handles=scatter.legend_elements()[0], labels=classes, 
+            loc='upper center', bbox_to_anchor=(0.5, -0.05),
+            fancybox=True, shadow=True, ncol=4
+            )
+        
+        #for class_, color_ in zip(np.arange(num_of_all_possible_combinations) , cmap):
+        for index_ in np.arange(num_of_all_possible_combinations):
+            plt.axhline(y = np.median(y_scatter[np.where(values == index_)[0]]),
+                        color=index_,
+                        cmap=cmap,
+                        linestyle='-',
+                        linewidth = 4)
+
+
+        ax.set_yscale('log')
+        plt.title(  f'Test Loss per sample in the Test set \n'+
+                    f'(Avg. = {y_scatter.mean()*1e3 : .2f} e-3)\n'+
+                    f'Horizontal lines represent the median values per class')
+        plt.grid()
+        plt.xlabel('Test sample ids')
+        plt.ylabel('Testing Loss')
+        plt.savefig(self.main_folder_path + '/AAA.png')
+        plt.close()
+            
+    def get_worst_test_samples(self, TOP_WORST_RECONSTRUCTED_TEST_IMAGES) -> None:
+        # Visualization of top worst reconstructed test images (i.e. where autoencoder fails) 
+        self.df_test_samples_loss = pd.DataFrame(self.test_samples_loss)
+        self.df_test_samples_loss = self.df_test_samples_loss.sort_values('test_image_rec_loss',ascending=False)\
+                                                            .reset_index(drop=True)
+        #pick top- TOP_WORST_RECONSTRUCTED_TEST_IMAGES worst reconstructed images
+        self.df_worst_reconstructed_test_images = self.df_test_samples_loss.head(TOP_WORST_RECONSTRUCTED_TEST_IMAGES)
+        print(f"pick top {TOP_WORST_RECONSTRUCTED_TEST_IMAGES} worst reconstructed images\n", self.df_worst_reconstructed_test_images.to_string())
+
+
+        self.top_images, self.imgs_ids , self.imgs_losses = [], [], []
+        for worst_reconstructed_test_image_id, worst_reconstructed_test_image_loss in zip(self.df_worst_reconstructed_test_images['test_image_id'], self.df_worst_reconstructed_test_images['test_image_rec_loss']):
+            # find the test image index when you have test image id in the test_data.image_ids tha
+            worst_reconstructed_test_image_id_index = np.where(self.loaders['test'].dataset.image_ids == worst_reconstructed_test_image_id)[0][0]
+            
+            # get the actual image as well as the image_id
+            image, image_id = self.loaders['test'].dataset[worst_reconstructed_test_image_id_index]
+            
+            # save the test image (tensor)
+            self.top_images.append(image)
+            
+            # save the test image id
+            self.imgs_ids.append(image_id)
+            
+            # save the test image reconstruction error (i.e. loss value)
+            self.imgs_losses.append(worst_reconstructed_test_image_loss)
+
+        # saved top_images are list of tensor, so cast to a tensor with torch.stack() function
+        self.top_images = torch.stack(self.top_images) #torch.Size(TOP_WORST_RECONSTRUCTED_TEST_IMAGES, C, H, W)

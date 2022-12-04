@@ -77,7 +77,7 @@ NUM_WORKERS = get_models_hyperparam_value(models_hyperparam_dict['training_hyper
 LATENT_DIM = get_models_hyperparam_value(models_hyperparam_dict['training_hyperparams'], 'LATENT_DIM')# TO DO
 USE_PRETRAINED_VANILLA_AUTOENCODER  = get_models_hyperparam_value(models_hyperparam_dict['training_hyperparams'], 'USE_PRETRAINED_VANILLA_AUTOENCODER')
 USE_GPU = get_models_hyperparam_value(models_hyperparam_dict['training_hyperparams'], 'USE_GPU')
-TRAIN_FLAG = get_models_hyperparam_value(models_hyperparam_dict['training_hyperparams'], 'TRAIN_FLAG')
+#TRAIN_FLAG = get_models_hyperparam_value(models_hyperparam_dict['training_hyperparams'], 'TRAIN_FLAG')
 
 NUM_EPOCHS = get_models_hyperparam_value(models_hyperparam_dict['training_hyperparams'], 'NUM_EPOCHS')
 #BATCH_SIZE = get_models_hyperparam_value(models_hyperparam_dict['training_hyperparams'], 'BATCH_SIZE')
@@ -498,6 +498,27 @@ print("Vanilla AE v02 model summary is as follows:\n",vanilla_autoencoder_v02)
 # set to training mode
 #autoencoder.train()
 
+
+# set the training parameters
+training_args = {}
+training_args['NUM_EPOCHS'] = NUM_EPOCHS
+training_args['loss_fn'] = nn.MSELoss()
+training_args['device'] = device #'gpu', i.e.,  device(type='cuda', index=0)
+training_args['model'] = vanilla_autoencoder_v02
+training_args['model_name'] = 'vanilla_autoencoder'
+training_args['loaders'] = loaders# = {'train' : train_data_loader, 'val' : val_data_loader, 'test' : test_data_loader}
+training_args['optimizer'] = optimizer #torch.optim.Adam(params=vanilla_autoencoder_v02.parameters(), lr=LEARNING_RATE)
+training_args['main_folder_path'] = main_folder_path#'/home/novakovm/iris/MILOS'
+
+# create a trainer object
+trainer = Model_Trainer(args=training_args)
+
+if not USE_PRETRAINED_VANILLA_AUTOENCODER:
+# start the training and validation procedure
+    trainer.train()
+
+"""
+
 MSELoss = nn.MSELoss()
 loss_fn = MSELoss #lambda predicted_outputs, outputs: MSELoss(predicted_outputs, outputs)
 loss_fn.to(device)
@@ -508,6 +529,8 @@ val_loss_avg = []
 training_message_format = lambda current_epoch, \
                                 total_nb_epochs, \
                                 duration_sec, \
+                                train_duration_sec, \
+                                val_duration_sec, \
                                 batch_size_train,\
                                 batch_size_val,\
                                 current_avg_train_loss,\
@@ -515,9 +538,11 @@ training_message_format = lambda current_epoch, \
                                 min_avg_train_loss, \
                                 min_avg_val_loss:\
                             f"Epoch {current_epoch+1}/{total_nb_epochs};\n"\
-                            +f"Training   Samples Mini-Batch size = {batch_size_train};\n"\
-                            +f"Validation Samples Mini-Batch size = {batch_size_val};\n"\
-                            +f"Total time elapsed from beginning of training = {duration_sec};\n"\
+                            +f"Training   Samples Mini-Batch size      = {batch_size_train};\n"\
+                            +f"Validation Samples Mini-Batch size      = {batch_size_val};\n"\
+                            +f"Total time elapsed in Training Loop     = {train_duration_sec};\n"\
+                            +f"Total time elapsed in Validation Loop   = {val_duration_sec};\n"\
+                            +f"Total time elapsed                      = {duration_sec};\n"\
                             +f"Curr. Avg. Train Loss across mini-batch = {current_avg_train_loss *1e6 : .1f} e-6;\n"\
                             +f"Curr. Avg. Val   Loss across mini-batch = {current_avg_val_loss *1e6 : .1f} e-6;\n"\
                             +f"Min.  Avg. Train Loss across mini-batch = {min_avg_train_loss *1e6 : .1f} e-6;\n"\
@@ -624,23 +649,23 @@ if TRAIN_FLAG and not(USE_PRETRAINED_VANILLA_AUTOENCODER):
         #print("\n-------------------------------------------\n")
 
     current_time_str = time.strftime("%Y_%m_%d_%H_%M_%S", time.gmtime(time.time())) # 2022_11_19_20_11_26
-    
+
     #train_loss_avg_path = '/home/novakovm/iris/MILOS/autoencoder_train_loss_avg_' + current_time_str + '.npy'
     train_loss_avg_path = main_folder_path + '/vanilla_autoencoder_train_loss_avg_' + current_time_str + '.npy'
     val_loss_avg_path = main_folder_path + '/vanilla_autoencoder_val_loss_avg_' + current_time_str + '.npy'
-    
+
     train_loss_avg = np.array(train_loss_avg)
     val_loss_avg = np.array(val_loss_avg)
     np.save(train_loss_avg_path,train_loss_avg)
     np.save(val_loss_avg_path,val_loss_avg)
     print(f"Autoencoder Training Loss Average saved here\n{train_loss_avg_path}")
     print(f"Autoencoder Validation Loss Average savedhere\n{val_loss_avg_path}")
-    
+
     pretrained_autoencoder_path = main_folder_path + '/vanilla_autoencoder_' + current_time_str + '.py'
     #torch.save(autoencoder.state_dict(), pretrained_autoencoder_path)
     #torch.save(vanilla_autoencoder.state_dict(), pretrained_autoencoder_path)
-    
-    
+
+
     # SAVING OF vanilla_autoencoder_v02
     #model_file_path_info['model_dir_path'] #'/home/novakovm/iris/MILOS/'
     #model_file_path_info['model_name'] #'vanilla_autoencoder'
@@ -652,7 +677,11 @@ if TRAIN_FLAG and not(USE_PRETRAINED_VANILLA_AUTOENCODER):
                     + model_file_path_info['model_extension']
     torch.save(vanilla_autoencoder_v02.state_dict(),model_path)
     print(f"Current Trained Model saved at = {model_path}")
+"""
 
+
+
+"""
 vanilla_autoencoder_loaded = None
 vanilla_autoencoder_v02_loaded = None
 
@@ -678,16 +707,45 @@ if USE_PRETRAINED_VANILLA_AUTOENCODER:
     vanilla_autoencoder_v02_loaded.load_state_dict(torch.load(vanilla_autoencoder_v02_loaded_path))
     vanilla_autoencoder_v02_loaded = vanilla_autoencoder_v02_loaded.to(device=device)
     vanilla_autoencoder_v02_loaded.eval()
+"""
 
 
+if USE_PRETRAINED_VANILLA_AUTOENCODER:
+    current_time_str = "2022_12_03_19_39_08"#'2022_12_02_17_59_16' # 17h 13min 14 sec 20th Nov. 2022
+    
+    # load model that was trained at newly given current_time_str 
+    trainer.load_model(current_time_str = current_time_str, 
+                       autoencoder_config_params_wrapped_sorted= autoencoder_config_params_wrapped_sorted)
+
+    # load avg. training loss of the training proceedure for a model that was trained at newly given current_time_str 
+    trainer.train_loss_avg = np.load(trainer.main_folder_path
+                                     + '/'
+                                     + trainer.model_name 
+                                     + '_train_loss_avg_'
+                                     + trainer.current_time_str + '.npy')
+    
+    # load avg. validation loss of the validating proceedure for a model that was trained at newly given current_time_str 
+    trainer.val_loss_avg = np.load(trainer.main_folder_path
+                                    + '/'
+                                    + trainer.model_name 
+                                    + '_val_loss_avg_'
+                                    + trainer.current_time_str + '.npy')
+
+loss_fn = trainer.loss_fn#nn.MSELoss()
+loss_fn.to(device)
+#train_loss_avg = trainer.train_loss_avg
+#val_loss_avg = trainer.val_loss_avg
 
 ######################    
 # testing the model #
 ######################
-if USE_PRETRAINED_VANILLA_AUTOENCODER:
-    vanilla_autoencoder_v02_loaded.eval()
-else:
-    vanilla_autoencoder_v02.eval()
+# if USE_PRETRAINED_VANILLA_AUTOENCODER:
+#     vanilla_autoencoder_v02_loaded.eval()
+# else:
+#     vanilla_autoencoder_v02.eval()
+   
+trainer.test() 
+"""
 print('Testing ...')
 test_loss_avg, num_batches = 0, 0
 test_loss = []
@@ -724,8 +782,10 @@ for image_batch, image_id_batch in test_data_loader:
 test_loss_avg /= num_batches
 test_loss = np.array(test_loss)
 print('average reconstruction error: %f' % (test_loss_avg))
+"""
+trainer.plot()
 
-
+"""
 # Plot Training and Validation Average Loss per Epoch
 if TRAIN_FLAG and not(USE_PRETRAINED_VANILLA_AUTOENCODER):
     plt.figure()
@@ -748,8 +808,13 @@ plt.ylabel('Testing Loss')
 plt.savefig(main_folder_path + '/testing_loss_per_image_in_minibatch.png')
 plt.close()
 
+"""
+TOP_WORST_RECONSTRUCTED_TEST_IMAGES = 50
+trainer.get_worst_test_samples(TOP_WORST_RECONSTRUCTED_TEST_IMAGES)
+
+"""
 # Visualization of top worst reconstructed test images (i.e. where autoencoder fails) 
-df_test_samples_loss = pd.DataFrame(test_samples_loss)
+df_test_samples_loss = pd.DataFrame(trainer.test_samples_loss)
 df_test_samples_loss = df_test_samples_loss.sort_values('test_image_rec_loss',ascending=False)\
                                            .reset_index(drop=True)
 #pick top 50 worst reconstructed images
@@ -778,7 +843,11 @@ for worst_reconstructed_test_image_id, worst_reconstructed_test_image_loss in zi
 # saved top_images are list of tensor, so cast to a tensor with torch.stack() function
 #torch.Size(TOP_WORST_RECONSTRUCTED_TEST_IMAGES, C, H, W)
 top_images = torch.stack(top_images) 
+"""
 
+
+trainer.model.eval()
+"""
 # Put model into evaluation mode
 if USE_PRETRAINED_VANILLA_AUTOENCODER:
     # Pretrained
@@ -788,7 +857,7 @@ else:
     # Trained just now
     #vanilla_autoencoder.eval()
     vanilla_autoencoder_v02.eval()
-
+"""
 # This function takes as an input the images to reconstruct
 # and the name of the model with which the reconstructions
 # are performed
@@ -906,6 +975,17 @@ def visualise_output(images, model, compose_transforms, imgs_ids, imgs_losses, s
 
 # Reconstruct and visualise the images using the autoencoder
 
+
+
+visualise_output(images             = trainer.top_images, 
+                 model              = trainer.model,
+                 compose_transforms = TRANSFORM_IMG,
+                 imgs_ids           = trainer.imgs_ids,
+                 imgs_losses        = trainer.imgs_losses,
+                 savefig_path       = './SHOW_IMAGES/org_vs_rec_test_imgs.png')
+
+
+"""
 if USE_PRETRAINED_VANILLA_AUTOENCODER:
     # Pretrained
     #visualise_output(top_images, vanilla_autoencoder_loaded, compose_transforms = TRANSFORM_IMG)
@@ -914,4 +994,5 @@ else:
     # Trained just now
     #visualise_output(top_images, vanilla_autoencoder, compose_transforms = TRANSFORM_IMG)
     visualise_output(top_images, vanilla_autoencoder_v02, compose_transforms = TRANSFORM_IMG, imgs_ids = imgs_ids, imgs_losses=imgs_losses, savefig_path = './SHOW_IMAGES/org_vs_rec_test_imgs.png')
+"""
 debug =0
