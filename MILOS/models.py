@@ -990,6 +990,13 @@ class Model_Trainer:
                               linewidths=linewidths,
                               edgecolors = 'black')
         
+        # define the plot title when number of shape feature of interest is equal to exactly 1 and if we have more then 1
+        if len(shape_features_of_interest) == 1:
+            plot_title = f"{shape_features_of_interest[0]}"
+        else:
+            plot_title = f"{'-'.join(shape_features_of_interest[::-1])}"
+        
+        
         # scatter plot legend
         plt.legend(handles=scatter.legend_elements(num=None)[0], 
                    labels=classes, 
@@ -998,7 +1005,7 @@ class Model_Trainer:
                    fancybox=True,
                    shadow=True,
                    ncol=4,
-                   title = f"Possible buckets for generated test images in the format = \n{'-'.join(shape_features_of_interest[::-1])}")
+                   title = f"Possible buckets for generated test images in the format = \n{plot_title}")
         
         # drawing of median and mean horizontal lines for every bucket
         for index_ in np.arange(num_of_all_possible_combinations):
@@ -1026,7 +1033,8 @@ class Model_Trainer:
         plt.grid()
         plt.xlabel('Test sample ids')
         plt.ylabel('Testing Loss')
-        plt.savefig(self.main_folder_path + '/A_Test_Loss_Over_Test_Image_IDs.png')
+        plt.savefig(self.main_folder_path +\
+        f"/SHOW_IMAGES/Test_Loss_Over_Test_Image_IDs_based_on_following_feature_shapes_{plot_title}.png")
         plt.close()
             
     def get_worst_test_samples(self, TOP_WORST_RECONSTRUCTED_TEST_IMAGES) -> None:
