@@ -1,3 +1,5 @@
+import yaml
+from yaml.loader import SafeLoader
 import itertools
 from collections import OrderedDict
 from matplotlib.colors import ListedColormap
@@ -817,8 +819,9 @@ class Model_Trainer:
             plt.savefig(self.main_folder_path + '/testing_loss_per_image_in_minibatch.png')
             plt.close()
             
+    def scatter_plot_test_images_with_specific_classes(self, shape_features_of_interest) -> None:
         # scatter plot test images with specific classes [Plot Test Loss for every sample in the Test set]
-        
+           
         # # one example of encoding a determionistic image generation
         # if [
         #     0,      #code for -> 'shape_thickness':  -1
@@ -834,106 +837,196 @@ class Model_Trainer:
         #     print(image_binary_code)
         #     print(shape_specific_stats)
         
-        total_number_of_bits = 14
-        
-        
-        
         x_scatter = np.array(self.test_samples_loss['test_image_id'])
         y_scatter = np.array(self.test_samples_loss['test_image_rec_loss'])
         
+        # all names have to be unique
+        all_shape_features           = ['FILL_NOFILL',
+                                        'SHAPE_TYPE_SPACE',
+                                        'X_CENTER_SPACE',
+                                        'Y_CENTER_SPACE',
+                                        'COLOR_LIST',
+                                        'a_CENTER_SPACE',
+                                        'b_CENTER_SPACE',
+                                        'alpha_CENTER_SPACE'
+                                        ]
+
+        # location of the yaml config file
+        milos_config_path = '/home/novakovm/iris/MILOS/milos_config.yaml'
+        
+        # Open the file and load the file
+        with open(milos_config_path) as f:
+            data = yaml.load(f, Loader=SafeLoader)
+
+        # shape_features that we are going to cluster/classify based on test image id
         shape_features = OrderedDict()
         
-        # all names have to be unique
+        # init bit counter to least significant bit (LSB) value, i.e. zero
+        bit_counter = 0
         
+        # for every shape feature that is in the all_shape_features
+        for shape_feature in all_shape_features:
+            # idea of this for loop is shown in the following example:
+            # e.g.
+            # from 6-th bit the specification of 'shape_color' starts and it has lenght 2 bit (i.e. bits on the positions 6 and 7)
+            # shape_features['shape_color'] = [['blue', 'green', 'red', 'white'], [6,7]]
+            
+            # get the list of all possible value shape_feature could take
+            shape_feature_all_possible_values = data[shape_feature]
+            
+            # calculate the minimum number of bits to store shape_feature_all_possible_values
+            shape_feature_all_possible_values_nb_of_bits_req = int(np.log2(len(shape_feature_all_possible_values)))
+            
+            # calculate the minimun bit position for that particular shape_feature
+            min_bit = bit_counter
+            
+            # calculate the maximum bit position for that particular shape_feature
+            max_bit = bit_counter + shape_feature_all_possible_values_nb_of_bits_req
+            
+            # all names have to be unique
+            shape_features[shape_feature] = [shape_feature_all_possible_values, 
+                                            list(np.arange(min_bit,max_bit))]
+            
+            # move bit counter to the next max bit
+            bit_counter = max_bit
+
         # from 0-th bit the specification of 'shape_thickness' starts and it has lenght 1 bit (i.e. bit on the position 0)
-        shape_features['shape_thickness'] = [['Fill', 'Hollow'], [0]]
-        # from 1-th bit the specification of 'shape_name' starts and it has lenght 1 bit (i.e. bit on the position 1)
-        shape_features['shape_name'] = [['Ellipse', 'Parallelogram'], [1]]
-        # from 6-th bit the specification of 'shape_color' starts and it has lenght 2 bit (i.e. bits on the positions 6 and 7)
-        shape_features['shape_color'] = [['blue','green','red','white'], [6,7]]
+        if shape_features['FILL_NOFILL'][0][0] == -1:
+            shape_features['FILL_NOFILL'][0][0] = 'Fill'    # instead of -1
+            shape_features['FILL_NOFILL'][0][1] = 'Hollow'  # instead of +1,+2,.. (the thickness of the line)
+            
+        # keep just only shape_features that are inside shape_features_of_interest
+        shape_features_subset = OrderedDict()
+        for shape_feature in shape_features:
+            if shape_feature in shape_features_of_interest:
+                shape_features_subset[shape_feature] = shape_features[shape_feature]
         
-        #num_of_all_possible_combinations = np.prod(np.array([len(shape_features[k][0]) for k in shape_features]))
-        #selected_bits =  np.sort(np.array([ np.array(shape_features[k][1]) for k in shape_features]).reshape(-1))
+        # overwrite the all features with just the subset of features (determined by shape_features_of_interest)
+        shape_features = shape_features_subset  
         
-        classes = []
+        # init different classes of shape_feature (i.e. code words), as well as their values (i.e. codes)
+        classes, class_values= [], []
         
-        
-        #i = 0
-        class_values = []
-        for shape_features_tuples in itertools.product(*([shape_features[k][0] for k in shape_features])):
-            classes.append('-'.join(list(shape_features_tuples)))
+        for shape_features_tuples in itertools.product(*([shape_features[k][0] for k in shape_features][::-1])):
+            # itertools.product gives us all combinations of shape_features in the reverse order with [::-1] slicer (because we want to respect the bit order)
+            # shape_features_tuples is a tuple of different shape features
+            # e.g.
+            # for selecting 'FILL_NOFILL', 'SHAPE_TYPE_SPACE', and, 'b_CENTER_SPACE',
+            # we can get  classes[-1] to be equal to "0.25-Parallelogram-Fill"
+            # and that is our code word for a particular unique combination of shape features
+            
+            classes.append('-'.join([str(shape_features_tuple) for shape_features_tuple in shape_features_tuples]))
+            
+            # init class value (i.e. code value)
             class_value = 0
             
-            for shape_features_tuple in shape_features_tuples:
+            # for every particular code word
+            for shape_features_tuple in shape_features_tuples:  
+                # for every feature shape
                 for shape_feature in shape_features:
+                    # check if the particular code word is in the list of feature shape names
                     if shape_features_tuple in shape_features[shape_feature][0]:
+                        # if it is, we calculate the code value for that particular code word
+                        # that is in the feature shape names;
+                        # the code value is calculated using simple bin. to dec. arithmetic
                         
-                        class_value +=  shape_features[shape_feature][0].index(shape_features_tuple) \
-                                        * 2 ** min(shape_features[shape_feature][1])
+                        # get the position of that shape_features_tuple in a list defined by shape_feature
+                        shape_features_tuple_position = shape_features[shape_feature][0].index(shape_features_tuple)
                         
-            class_values.append(class_value)
+                        # bit-shift the position to the left to get the code value for that particular shape_feature;
+                        # we shift the position by amount equal to the LSB for that particular shape_feature;
+                        class_value +=   shape_features_tuple_position* 2 ** min(shape_features[shape_feature][1])
+                        
+                        # print out code word (i.e. classes[-1]) and code value (i.e. class_value)  
+                        #print(f"class_value = {class_value} for class = {classes[-1]}")
             
-            #i += 1
-        
+            # save the current class value (i.e. accumulated code value) for that particular classes[-1] (i.e. code word)
+            class_values.append(class_value)
+
+        # make class values unique (because there are a lot of unwanted duplicates)
         class_values = list(np.unique(class_values))
-        values = [None] * len(x_scatter)
-        for i, x_scatter_val in enumerate(x_scatter):
-            for class_value in class_values:
-                if x_scatter_val & class_value == class_value:
-                    values[i] = class_values.index(class_value)
-        # classes = ['']*num_of_all_possible_combinations
-        # i=0
-        # for shape_feature in shape_features:
-        #     for specific_shape_feature in shape_feature:
-        #         classes[i] = str(specific_shape_feature) + '-'
-        #         i += 1
-                
-        # classes = ['Fill-Ellipse',          ## 00
-        #            'Hollow-Ellipse',        ## 01
-        #            'Fill-Parallelogram',    ## 10
-        #            'Hollow-Parallelogram'] ## 11
         
+        # allocate memory for different values associated with different test image ids;
+        # values will be used to label every test image id (as it is generated from some deterministic process)
+        values = [1] * len(x_scatter)
+        
+        # for every test image id
+        for i, x_scatter_val in enumerate(x_scatter):
+            # for every class value (i.e. code word)
+            for class_value in class_values:
+                # check if that test image id has the same bits (at the right positions) as class value (i.e. code word)
+                if x_scatter_val & class_value == class_value:
+                    # if it has, that means that value[i] is the index position of class values array based on the associated code word
+                    values[i] = class_values.index(class_value)
+        
+        # get number of all possible combinations
         num_of_all_possible_combinations = len(classes)
         
-        #values = np.array([img_id % num_of_all_possible_combinations for img_id in x_scatter])
+        # create a color map for plotting purposes
+        cmap = plt.cm.get_cmap('jet', num_of_all_possible_combinations)
         
-        # color_list = ['red','green','blue',
-        #               'cyan','magenta','yellow',
-        #               'black', 'gray'][:num_of_all_possible_combinations]
-        # colors = ListedColormap(color_list)
+        # create colors array based on the color map and total number of available classes
+        # these colors are used for horizontal lines
+        colors = [ cmap(x) for x in np.arange(num_of_all_possible_combinations) ]
         
-        cmap = plt.get_cmap('jet')
-        #colors = cmap(np.linspace(0, 1.0, num_of_all_possible_combinations))
-        
-        fig = plt.figure(figsize=(14,14))
+        # set figure size and get ax
+        fig = plt.figure(figsize=(16,16))
         ax = plt.gca()
         
-        
+        # scatter plot settings
         area = 50
         linewidths = 1.5
-        scatter = plt.scatter(x_scatter, y_scatter, c=values, cmap=cmap ,alpha=1.0, s=area, linewidths=linewidths, edgecolors = 'black')
-        plt.legend(handles=scatter.legend_elements()[0], labels=classes, 
-            loc='upper center', bbox_to_anchor=(0.5, -0.05),
-            fancybox=True, shadow=True, ncol=4
-            )
+        alpha=1.0
         
-        #for class_, color_ in zip(np.arange(num_of_all_possible_combinations) , cmap):
+        # scatter plot with classification of test image ids into the buckets (defined by values list)
+        scatter = plt.scatter(x_scatter, 
+                              y_scatter,
+                              c=values,
+                              cmap=cmap,
+                              vmin=np.min(values), 
+                              vmax=np.max(values),
+                              alpha=alpha,
+                              s=area,
+                              linewidths=linewidths,
+                              edgecolors = 'black')
+        
+        # scatter plot legend
+        plt.legend(handles=scatter.legend_elements(num=None)[0], 
+                   labels=classes, 
+                   loc='upper center',
+                   bbox_to_anchor=(0.5, -0.05),
+                   fancybox=True,
+                   shadow=True,
+                   ncol=4,
+                   title = f"Possible buckets for generated test images in the format = \n{'-'.join(shape_features_of_interest[::-1])}")
+        
+        # drawing of median and mean horizontal lines for every bucket
         for index_ in np.arange(num_of_all_possible_combinations):
+            # non-dotted horizontal line defines the median of the points
             plt.axhline(y = np.median(y_scatter[np.where(values == index_)[0]]),
-                        color=index_,
-                        cmap=cmap,
+                        color=colors[index_],
                         linestyle='-',
-                        linewidth = 4)
+                        linewidth = 5)
+            
+            # dotted horizontal line defines the mean of the points
+            plt.axhline(y = np.mean(y_scatter[np.where(values == index_)[0]]),
+                        color=colors[index_],
+                        linestyle='--',
+                        linewidth = 5)
 
-
+        # set the y axis to the log scale (to have semilogy effect)
         ax.set_yscale('log')
+        
+        # set the plot title
         plt.title(  f'Test Loss per sample in the Test set \n'+
-                    f'(Avg. = {y_scatter.mean()*1e3 : .2f} e-3)\n'+
-                    f'Horizontal lines represent the median values per class')
+                    f'(Min. = {y_scatter.min()*1e9 : .2f} e-9, '+
+                    f'Avg. = {y_scatter.mean()*1e6 : .2f} e-6, '+
+                    f'Max. = {y_scatter.max()*1e3 : .2f} e-3)\n'+
+                    f'Horizontal lines represent the median (full line) and mean (dotted line) values per class')
         plt.grid()
         plt.xlabel('Test sample ids')
         plt.ylabel('Testing Loss')
-        plt.savefig(self.main_folder_path + '/AAA.png')
+        plt.savefig(self.main_folder_path + '/A_Test_Loss_Over_Test_Image_IDs.png')
         plt.close()
             
     def get_worst_test_samples(self, TOP_WORST_RECONSTRUCTED_TEST_IMAGES) -> None:
