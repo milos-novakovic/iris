@@ -786,17 +786,17 @@ print('average reconstruction error: %f' % (test_loss_avg))
 trainer.plot()
 
 
-shape_features_of_interest = [#'FILL_NOFILL',
-                                #'SHAPE_TYPE_SPACE',
-                                #'X_CENTER_SPACE',
-                                #'Y_CENTER_SPACE',
-                                #'COLOR_LIST',
-                                #'a_CENTER_SPACE',
+shape_features_of_interest = [  'FILL_NOFILL',
+                                'SHAPE_TYPE_SPACE',
+                                'X_CENTER_SPACE',
+                                'Y_CENTER_SPACE',
+                                'COLOR_LIST',
+                                'a_CENTER_SPACE',
                                 'b_CENTER_SPACE',
                                 'alpha_CENTER_SPACE'
                                 ]
 for shape_feature_of_interest in shape_features_of_interest:
-    trainer.scatter_plot_test_images_with_specific_classes(shape_features_of_interest = ['FILL_NOFILL', shape_feature_of_interest])
+    trainer.scatter_plot_test_images_with_specific_classes(shape_features_of_interest = [shape_feature_of_interest])
 """
 # Plot Training and Validation Average Loss per Epoch
 if TRAIN_FLAG and not(USE_PRETRAINED_VANILLA_AUTOENCODER):
