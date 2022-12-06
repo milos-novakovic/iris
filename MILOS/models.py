@@ -475,15 +475,25 @@ class Vanilla_Autoencoder_v02(nn.Module):
     
 class Model_Trainer:
     def __init__(self, args) -> None:
-        self.NUM_EPOCHS = args['NUM_EPOCHS']#1000
-        self.loss_fn = args['loss_fn']#nn.MSELoss()
-        self.device = args['device']#'gpu', i.e.,  device(type='cuda', index=0)
-        self.model = args['model']#vanilla_autoencoder_v02
-        self.model_name = args['model_name']#'vanilla_autoencoder'
-        self.loaders = args['loaders'] # loaders = {'train' : train_data_loader, 'val' : val_data_loader, 'test' : test_data_loader}
-        self.optimizer = args['optimizer'] #torch.optim.Adam(params=vanilla_autoencoder_v02.parameters(), lr=LEARNING_RATE)
+        self.NUM_EPOCHS =       args['NUM_EPOCHS']#1000
+        self.loss_fn =          args['loss_fn']#nn.MSELoss()
+        self.device =           args['device']#'gpu', i.e.,  device(type='cuda', index=0)
+        self.model =            args['model']#vanilla_autoencoder_v02
+        self.model_name =       args['model_name']#'vanilla_autoencoder'
+        self.loaders =          args['loaders'] # loaders = {'train' : train_data_loader, 'val' : val_data_loader, 'test' : test_data_loader}
+        self.optimizer_settings=args['optimizer_settings'] #torch.optim.Adam(params=vanilla_autoencoder_v02.parameters(), lr=LEARNING_RATE)
         self.main_folder_path = args['main_folder_path']#'/home/novakovm/iris/MILOS'
-    
+        
+        # create and init self.optimizer
+        if self.optimizer_settings['optimization_algorithm'] == 'Adam':
+            self.optimizer = torch.optim.Adam(params = self.model.parameters(), lr = self.optimizer_settings['lr'])
+            
+        elif self.optimizer_settings['optimization_algorithm'] == 'SGD':
+            self.optimizer = torch.optim.SGD(params = self.model.parameters(), lr = self.optimizer_settings['lr'])
+            
+        else:
+            assert(False, f"There are no optimizers called {self.optimizer_settings['optimization_algorithm']}.")
+
     def get_intermediate_training_stats_str(  self,\
                                             current_epoch, \
                                             total_nb_epochs, \
@@ -533,6 +543,9 @@ class Model_Trainer:
         
         # time when the training began
         START_TIME_TRAINING = time.time()
+        
+        # put the model to the specified device
+        self.model = self.model.to(self.device)
         
         # put the loss to the specified device
         self.loss_fn.to(self.device)
@@ -695,8 +708,8 @@ class Model_Trainer:
                 )
         
         # Message that the training/validation avg. losses are saved and the corresponding paths
-        print(f"Autoencoder Training Loss Average saved here\n{self.train_loss_avg_path}")
-        print(f"Autoencoder Validation Loss Average savedhere\n{self.val_loss_avg_path}")
+        print(f"Autoencoder Training Loss Average saved here\n{self.train_loss_avg_path}", end = '\n\n')
+        print(f"Autoencoder Validation Loss Average saved here\n{self.val_loss_avg_path}", end = '\n\n')
 
         # example of self.model_path:=            
         #/home/novakovm/iris/MILOS
@@ -708,15 +721,15 @@ class Model_Trainer:
         
         # saving model trained parameters, so that it could be used as a pretrained model in the future usages
         torch.save(self.model.state_dict(),self.model_path)
-        print(f"Current Trained Model saved at = \n {self.model_path}")
+        print(f"Current Trained Model saved at = \n {self.model_path}", end = '\n\n')
         
         TOTAL_TRAINING_TIME = int(time.time() - START_TIME_TRAINING)
         m, s = divmod(TOTAL_TRAINING_TIME, 60)
         h, m = divmod(m, 60)
         TOTAL_TRAINING_TIME = f"{h}:{m}:{s} h/m/s"
         
-        print(f"Total training time is = {TOTAL_TRAINING_TIME}")
-        print("Training Ended")
+        print(f"Total training time is = {TOTAL_TRAINING_TIME}, end = '\n\n'")
+        print("Training Ended", end = '\n--------------------------------------------------------------\n')
     
     def load_model(self, current_time_str, autoencoder_config_params_wrapped_sorted) -> None:
         #current time in the format YYYY_MM_DD_hh_mm_ss
@@ -753,6 +766,12 @@ class Model_Trainer:
         self.test_samples_loss = {} # test_image_tensor: test_loss
         self.test_samples_loss['test_image_id'] = []
         self.test_samples_loss['test_image_rec_loss'] = []
+        
+        # put the model to the specified device
+        self.model = self.model.to(self.device)
+        
+        # put the loss to the specified device
+        self.loss_fn.to(self.device)
         
         # put loaded model in the evaulation mode
         self.model.eval()
@@ -977,6 +996,7 @@ class Model_Trainer:
         area = 50
         linewidths = 1.5
         alpha=1.0
+        edgecolors = 'black'
         
         # scatter plot with classification of test image ids into the buckets (defined by values list)
         scatter = plt.scatter(x_scatter, 
@@ -988,7 +1008,7 @@ class Model_Trainer:
                               alpha=alpha,
                               s=area,
                               linewidths=linewidths,
-                              edgecolors = 'black')
+                              edgecolors = edgecolors)
         
         # define the plot title when number of shape feature of interest is equal to exactly 1 and if we have more then 1
         if len(shape_features_of_interest) == 1:
