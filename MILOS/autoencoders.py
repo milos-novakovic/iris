@@ -586,17 +586,6 @@ for sorted_Layer_Number in sorted_Layer_Numbers:
         autoencoder_config_params_unwrapped_sorted[layer_name + '->' +feature_name_feature_value] = \
         autoencoder_config_params_wrapped_sorted[layer_name][feature_name_feature_value]
 
-# Vanilla_Autoencoder_v02 params end
-
-#device = torch.device("cuda:0" if USE_GPU and torch.cuda.is_available() else "cpu")
-
-#vanilla_autoencoder_v02 = Vanilla_Autoencoder_v02(autoencoder_config_params_wrapped_sorted)
-#vanilla_autoencoder_v02 = vanilla_autoencoder_v02.to(device)
-#num_params = sum(p.numel() for p in vanilla_autoencoder_v02.parameters() if p.requires_grad)
-#print(f'Number of parameters in vanilla AE : {num_params}')
-#optimizer = 
-#print("Vanilla AE v02 model summary is as follows:\n",vanilla_autoencoder_v02)
-
 # set the training parameters
 loss_fn = nn.MSELoss()
 device = torch.device("cuda:0" if USE_GPU and torch.cuda.is_available() else "cpu") 
@@ -605,8 +594,7 @@ model_name = 'vanilla_autoencoder'
 loaders = {'train' : train_data_loader, 'val' : val_data_loader, 'test' : test_data_loader}
 optimizer_settings = {'optimization_algorithm':'Adam','lr':LEARNING_RATE}
 
-
-
+# create a trainer init arguments
 training_args = {}
 training_args['NUM_EPOCHS']         = NUM_EPOCHS
 training_args['loss_fn']            = loss_fn
@@ -621,14 +609,12 @@ training_args['main_folder_path']   = main_folder_path
 trainer = Model_Trainer(args=training_args)
 
 if not USE_PRETRAINED_VANILLA_AUTOENCODER:
-# start the training and validation procedure
+    # start the training and validation procedure
     trainer.train()
-
-######################    
-# Use a pretrained model #
-######################
-
-if USE_PRETRAINED_VANILLA_AUTOENCODER:
+else:
+    ######################    
+    # Use a pretrained model #
+    ######################
     current_time_str = "2022_12_03_19_39_08"#'2022_12_02_17_59_16' # 17h 13min 14 sec 20th Nov. 2022
     
     # load model that was trained at newly given current_time_str 
@@ -648,23 +634,25 @@ if USE_PRETRAINED_VANILLA_AUTOENCODER:
                                     + trainer.model_name 
                                     + '_val_loss_avg_'
                                     + trainer.current_time_str + '.npy')
-
-loss_fn = trainer.loss_fn#nn.MSELoss()
-loss_fn.to(trainer.device)
-
 ######################    
 # Testing the model #
 ######################
-
+loss_fn = trainer.loss_fn
+loss_fn.to(trainer.device)
 trainer.test() 
 
 ######################    
 # Plot train and validation avergae loss across mini-batch across epochs #
 # Plot Test Loss for every sample in the Test set #
 ######################
-
 trainer.plot()
 
+######################    
+# Plot test images reconstruction losses
+# And for "labels" use different shape features to see  
+# which shape features did autoencoder learned the best/worst
+# (i.e. what is the easiest/hardest to learn from persepctive of autoencoder)
+######################
 shape_features_of_interest = [
                             'FILL_NOFILL',
                             'SHAPE_TYPE_SPACE',
@@ -678,11 +666,14 @@ shape_features_of_interest = [
 for shape_feature_of_interest in shape_features_of_interest:
     trainer.scatter_plot_test_images_with_specific_classes(shape_features_of_interest = [shape_feature_of_interest])
 
+######################    
+# Plot top-N worst reconstructed test images
+# [with their original test images side by side
+# and rank them from worst (highest reconstruction loss value)
+# to best reconstructed test image]
+######################
 TOP_WORST_RECONSTRUCTED_TEST_IMAGES = 50
 trainer.get_worst_test_samples(TOP_WORST_RECONSTRUCTED_TEST_IMAGES)
-
-
-# Reconstruct and visualise the images using the autoencoder
 trainer.model.eval()
 visualise_output(images             = trainer.top_images, 
                  model              = trainer.model,
