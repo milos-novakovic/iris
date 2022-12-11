@@ -472,7 +472,123 @@ class Vanilla_Autoencoder_v02(nn.Module):
         #x_recon = self.decoder(latent)
         x_recon = self.sequential_model(x)
         return x_recon
+
+"""
+class Discrete_Embedding_Autoencoder(nn.Module):
+    def __init__(self,autoencoder_config_params_wrapped_sorted):
+        super(Discrete_Embedding_Autoencoder, self).__init__()
+        self.autoencoder_config_params_wrapped_sorted = autoencoder_config_params_wrapped_sorted
+        
+        params = autoencoder_config_params_wrapped_sorted
+        self.layers = {}
+        # 'vanilla_autoencoder_vanilla_autoencoder_path': '/home/novakovm/iris/MILOS/',
+        # 'vanilla_autoencoder_vanilla_autoencoder_name': 'vanilla_autoencoder',
+        # 'vanilla_autoencoder_vanilla_autoencoder_version': '_2022_11_20_17_13_14',
+        # 'vanilla_autoencoder_vanilla_autoencoder_extension': '.py'
+        
+        self.sequential_model = torch.nn.Sequential()
+        
+        self.latent_space_dim = 0
+        #self.conv_paddings = {}
+        
+        for param_name in params:
+            param_value_dict = params[param_name]
+            if param_name == 'vanilla_autoencoder':
+                continue            
+            
+            if param_name[:len('conv')] == 'conv':
+                # keys in the param_value_dict =
+                # 'C_in'
+                # 'H_in'
+                # 'W_in'
+                # 'C_out'
+                # 'H_out'
+                # 'W_out'
+                # 'Embedding_Dim'
+                # 'Layer_Name'
+                # 'conv1'
+                # 'Stride_H'
+                # 'Stride_W'
+                # 'Padding_H_top'
+                # 'Padding_H_bottom'
+                # 'Padding_W_left'
+                # 'Padding_W_right'
+                # 'kernel_num'
+                # 'Kernel_H'
+                # 'Kernel_W'
+                # 'Dilation_H'
+                # 'Dilation_W'
+                
+                # First we calculate the padding
+                padding = ( param_value_dict['Padding_W_left'],
+                            param_value_dict['Padding_W_right'],
+                            param_value_dict['Padding_H_top'],
+                            param_value_dict['Padding_H_bottom'])
+                self.sequential_model.add_module(param_name + '_padding', nn.ZeroPad2d(padding))
+                
+                # Second we do 2D convolution
+                self.sequential_model.add_module(param_name, torch.nn.Conv2d(
+                                                                in_channels = param_value_dict['C_in'],
+                                                                out_channels= param_value_dict['C_out'],
+                                                                kernel_size = (param_value_dict['Kernel_H'], param_value_dict['Kernel_W']),
+                                                                stride      = (param_value_dict['Stride_H'], param_value_dict['Stride_W']),
+                                                                #padding = calculated already!
+                                                                dilation    = (param_value_dict['Dilation_H'], param_value_dict['Dilation_W'])
+                                                                ))                
+            elif param_name[:len('maxpool')] == 'maxpool':
+                # First we calculate the padding
+                padding = ( param_value_dict['Padding_W_left'],
+                            param_value_dict['Padding_W_right'],
+                            param_value_dict['Padding_H_top'],
+                            param_value_dict['Padding_H_bottom'])
+                self.sequential_model.add_module(param_name + '_padding', nn.ZeroPad2d(padding))
+                
+                # Second we do 2D maxpooling
+                self.sequential_model.add_module(param_name, torch.nn.MaxPool2d(
+                                                                kernel_size = (param_value_dict['Kernel_H'], param_value_dict['Kernel_W']),
+                                                                stride      = (param_value_dict['Stride_H'], param_value_dict['Stride_W']),
+                                                                #padding = calculated already!
+                                                                dilation    = (param_value_dict['Dilation_H'], param_value_dict['Dilation_W']),
+                                                                return_indices=False,
+                                                                ceil_mode=False
+                                                                ))
+                
+            elif param_name[:len('ReLU')] == 'ReLU':
+                # Apply ReLU as an activation function
+                self.sequential_model.add_module(param_name, torch.nn.ReLU(inplace=False))
+                
+            elif param_name[:len('bn')] == 'bn':
+                # Apply Batch Normalization
+                self.sequential_model.add_module(param_name, torch.nn.BatchNorm2d(num_features = param_value_dict['C_in']))
+                
+            elif param_name[:len('UpSample')] == 'UpSample':
+                # Apply UpSampling to restore the original size of an image
+                self.sequential_model.add_module(param_name, torch.nn.Upsample(
+                                                                            size=None, 
+                                                                            scale_factor=(param_value_dict['Stride_H'], param_value_dict['Stride_W']), 
+                                                                            mode='nearest', # NEAREST MODE IS HARD-CODED # TO DO (MAKE IT SUPPORT OTHER MODES OF UPSAMPLING)
+                                                                            align_corners=None,
+                                                                            recompute_scale_factor=None
+                                                                        ))
+                
+            elif param_name[:len('sigmoid')] == 'sigmoid':
+                # Apply Sigmoid as an activation function
+                self.sequential_model.add_module(param_name, torch.nn.Sigmoid())
+            
+            else:
+                assert(False, f'Unknown config parameter name = {param_name}.')
+            
+            # update latent space dimension
+            self.latent_space_dim = min(self.latent_space_dim , param_value_dict['Embedding_Dim'])
+            
+        
+    def forward(self, x):
+        #latent = self.encoder(x)
+        #x_recon = self.decoder(latent)
+        x_recon = self.sequential_model(x)
+        return x_recon
     
+"""    
 class Model_Trainer:
     def __init__(self, args) -> None:
         self.NUM_EPOCHS =       args['NUM_EPOCHS']#1000
@@ -1083,6 +1199,36 @@ class Model_Trainer:
             
             # save the test image reconstruction error (i.e. loss value)
             self.imgs_losses.append(worst_reconstructed_test_image_loss)
+
+        # saved top_images are list of tensor, so cast to a tensor with torch.stack() function
+        self.top_images = torch.stack(self.top_images) #torch.Size(TOP_WORST_RECONSTRUCTED_TEST_IMAGES, C, H, W)
+    
+    def get_best_test_samples(self, TOP_BEST_RECONSTRUCTED_TEST_IMAGES) -> None:
+        # Visualization of top best reconstructed test images (i.e. where autoencoder succeeds) 
+        self.df_test_samples_loss = pd.DataFrame(self.test_samples_loss)
+        self.df_test_samples_loss = self.df_test_samples_loss.sort_values('test_image_rec_loss',ascending=True)\
+                                                            .reset_index(drop=True)
+        #pick top- TOP_BEST_RECONSTRUCTED_TEST_IMAGES best reconstructed images
+        self.df_best_reconstructed_test_images = self.df_test_samples_loss.head(TOP_BEST_RECONSTRUCTED_TEST_IMAGES)
+        print(f"pick top {TOP_BEST_RECONSTRUCTED_TEST_IMAGES} best reconstructed images\n", self.df_best_reconstructed_test_images.to_string())
+
+
+        self.top_images, self.imgs_ids , self.imgs_losses = [], [], []
+        for best_reconstructed_test_image_id, best_reconstructed_test_image_loss in zip(self.df_best_reconstructed_test_images['test_image_id'], self.df_best_reconstructed_test_images['test_image_rec_loss']):
+            # find the test image index when you have test image id in the test_data.image_ids tha
+            best_reconstructed_test_image_id_index = np.where(self.loaders['test'].dataset.image_ids == best_reconstructed_test_image_id)[0][0]
+            
+            # get the actual image as well as the image_id
+            image, image_id = self.loaders['test'].dataset[best_reconstructed_test_image_id_index]
+            
+            # save the test image (tensor)
+            self.top_images.append(image)
+            
+            # save the test image id
+            self.imgs_ids.append(image_id)
+            
+            # save the test image reconstruction error (i.e. loss value)
+            self.imgs_losses.append(best_reconstructed_test_image_loss)
 
         # saved top_images are list of tensor, so cast to a tensor with torch.stack() function
         self.top_images = torch.stack(self.top_images) #torch.Size(TOP_WORST_RECONSTRUCTED_TEST_IMAGES, C, H, W)

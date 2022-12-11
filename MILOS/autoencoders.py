@@ -680,5 +680,22 @@ visualise_output(images             = trainer.top_images,
                  compose_transforms = TRANSFORM_IMG,
                  imgs_ids           = trainer.imgs_ids,
                  imgs_losses        = trainer.imgs_losses,
-                 savefig_path       = './SHOW_IMAGES/org_vs_rec_test_imgs.png')
+                 savefig_path       = './SHOW_IMAGES/WORST_RECONSTRUCTED_TEST_IMAGES.png')
+
+######################    
+# Plot top-N best reconstructed test images
+# [with their original test images side by side
+# and rank them from best (lowest reconstruction loss value)
+# to worst reconstructed test image]
+######################
+TOP_BEST_RECONSTRUCTED_TEST_IMAGES = 50
+trainer.get_best_test_samples(TOP_BEST_RECONSTRUCTED_TEST_IMAGES)
+trainer.model.eval()
+visualise_output(images             = trainer.top_images, 
+                 model              = trainer.model,
+                 compose_transforms = TRANSFORM_IMG,
+                 imgs_ids           = trainer.imgs_ids,
+                 imgs_losses        = trainer.imgs_losses,
+                 savefig_path       = './SHOW_IMAGES/BEST_RECONSTRUCTED_TEST_IMAGES.png')
+
 debug =0
