@@ -1,0 +1,785 @@
+vanilla_autoencoder:
+  - vanilla_autoencoder_path: '/home/novakovm/iris/MILOS/'
+  - vanilla_autoencoder_name: 'vanilla_autoencoder'
+  - vanilla_autoencoder_version: '_2022_11_20_17_13_14' #!!! TAKING ALWAYS THE CURRENT TIME!!! model_file_path_info['model_version']  = current_time_str # current_time_str = time.strftime("%Y_%m_%d_%H_%M_%S", time.gmtime(time.time())) # 2022_11_19_20_11_26
+  - vanilla_autoencoder_extension: '.py'
+
+training_hyperparams:
+  - NUM_WORKERS: 4 #NUM_WORKERS = 4# see what this represents exactly!
+  - LATENT_DIM: 10 #TO DO
+  - USE_PRETRAINED_VANILLA_AUTOENCODER: False
+  - USE_GPU: True
+  #- TRAIN_FLAG: True
+  - NUM_EPOCHS: 1000 #100 #200 #10 #20
+  - BATCH_SIZE_TRAIN: 256 #32 #64 #128
+  - BATCH_SIZE_VAL: 256 #32 #64 #128
+  - BATCH_SIZE_TEST: 1 #32 #64 #128
+  - LEARNING_RATE: 0.001 #1e-3
+  - TRAIN_DATA_PATH: '/home/novakovm/DATA_TRAIN/' #'./DATA/'
+  - VAL_DATA_PATH: '/home/novakovm/DATA_VALIDATE/' #'./DATA/'
+  - TEST_DATA_PATH: '/home/novakovm/DATA_TEST/' #'./DATA_TEST/'
+  - TRAIN_IMAGES_MEAN_FILE_PATH: '/home/novakovm/iris/MILOS/RGB_mean.npy'
+  - TRAIN_IMAGES_STD_FILE_PATH: '/home/novakovm/iris/MILOS/RGB_std.npy'
+
+######################################################
+#####################VANILLA AE V02###################
+######################################################
+##conv1
+conv1:
+  - Layer_Number : 1
+  - C_in : 3
+  - H_in : 64
+  - W_in : 64
+  - C_out : 8
+  - H_out : 64
+  - W_out : 64
+  - Embedding_Dim : 12288
+  - Layer_Name : "conv1"
+  - Stride_H : 1
+  - Stride_W : 1
+  - Padding_H_top : 1
+  - Padding_H_bottom : 1
+  - Padding_W_left : 1
+  - Padding_W_right : 1
+  - kernel_num : 8
+  - Kernel_H : 3
+  - Kernel_W : 3
+  - Dilation_H : 1
+  - Dilation_W : 1
+#"
+##maxpool1
+maxpool1:
+  - Layer_Number : 2
+  - C_in : 8
+  - H_in : 64
+  - W_in : 64
+  - C_out : 8
+  - H_out : 32
+  - W_out : 32
+  - Embedding_Dim : 32768
+  - Layer_Name : "maxpool1"
+  - Stride_H : 2
+  - Stride_W : 2
+  - Padding_H_top : 0
+  - Padding_H_bottom : 0
+  - Padding_W_left : 0
+  - Padding_W_right : 0
+  - kernel_num : 8
+  - Kernel_H : 2
+  - Kernel_W : 2
+  - Dilation_H : 1
+  - Dilation_W : 1
+#"
+##ReLU1
+ReLU1:
+  - Layer_Number : 3
+  - C_in : 8
+  - H_in : 32
+  - W_in : 32
+  - C_out : 8
+  - H_out : 32
+  - W_out : 32
+  - Embedding_Dim : 8192
+  - Layer_Name : "ReLU1"
+  - Stride_H : 
+  - Stride_W : 
+  - Padding_H_top : 
+  - Padding_H_bottom : 
+  - Padding_W_left : 
+  - Padding_W_right : 
+  - kernel_num : 
+  - Kernel_H : 
+  - Kernel_W : 
+  - Dilation_H : 
+  - Dilation_W : 
+#"
+##bn1
+bn1:
+  - Layer_Number : 4
+  - C_in : 8
+  - H_in : 32
+  - W_in : 32
+  - C_out : 8
+  - H_out : 32
+  - W_out : 32
+  - Embedding_Dim : 8192
+  - Layer_Name : "bn1"
+  - Stride_H : 
+  - Stride_W : 
+  - Padding_H_top : 
+  - Padding_H_bottom : 
+  - Padding_W_left : 
+  - Padding_W_right : 
+  - kernel_num : 
+  - Kernel_H : 
+  - Kernel_W : 
+  - Dilation_H : 
+  - Dilation_W : 
+#"
+##conv2
+conv2:
+  - Layer_Number : 5
+  - C_in : 8
+  - H_in : 32
+  - W_in : 32
+  - C_out : 16
+  - H_out : 32
+  - W_out : 32
+  - Embedding_Dim : 8192
+  - Layer_Name : "conv2"
+  - Stride_H : 1
+  - Stride_W : 1
+  - Padding_H_top : 1
+  - Padding_H_bottom : 1
+  - Padding_W_left : 1
+  - Padding_W_right : 1
+  - kernel_num : 16
+  - Kernel_H : 3
+  - Kernel_W : 3
+  - Dilation_H : 1
+  - Dilation_W : 1
+#"
+##maxpool2
+maxpool2:
+  - Layer_Number : 6
+  - C_in : 16
+  - H_in : 32
+  - W_in : 32
+  - C_out : 16
+  - H_out : 16
+  - W_out : 16
+  - Embedding_Dim : 16384
+  - Layer_Name : "maxpool2"
+  - Stride_H : 2
+  - Stride_W : 2
+  - Padding_H_top : 0
+  - Padding_H_bottom : 0
+  - Padding_W_left : 0
+  - Padding_W_right : 0
+  - kernel_num : 16
+  - Kernel_H : 2
+  - Kernel_W : 2
+  - Dilation_H : 1
+  - Dilation_W : 1
+#"
+##ReLU2
+ReLU2:
+  - Layer_Number : 7
+  - C_in : 16
+  - H_in : 16
+  - W_in : 16
+  - C_out : 16
+  - H_out : 16
+  - W_out : 16
+  - Embedding_Dim : 4096
+  - Layer_Name : "ReLU2"
+  - Stride_H : 
+  - Stride_W : 
+  - Padding_H_top : 
+  - Padding_H_bottom : 
+  - Padding_W_left : 
+  - Padding_W_right : 
+  - kernel_num : 
+  - Kernel_H : 
+  - Kernel_W : 
+  - Dilation_H : 
+  - Dilation_W : 
+#"
+##bn2
+bn2:
+  - Layer_Number : 8
+  - C_in : 16
+  - H_in : 16
+  - W_in : 16
+  - C_out : 16
+  - H_out : 16
+  - W_out : 16
+  - Embedding_Dim : 4096
+  - Layer_Name : "bn2"
+  - Stride_H : 
+  - Stride_W : 
+  - Padding_H_top : 
+  - Padding_H_bottom : 
+  - Padding_W_left : 
+  - Padding_W_right : 
+  - kernel_num : 
+  - Kernel_H : 
+  - Kernel_W : 
+  - Dilation_H : 
+  - Dilation_W : 
+#"
+##conv3
+conv3:
+  - Layer_Number : 9
+  - C_in : 16
+  - H_in : 16
+  - W_in : 16
+  - C_out : 32
+  - H_out : 16
+  - W_out : 16
+  - Embedding_Dim : 4096
+  - Layer_Name : "conv3"
+  - Stride_H : 1
+  - Stride_W : 1
+  - Padding_H_top : 1
+  - Padding_H_bottom : 1
+  - Padding_W_left : 1
+  - Padding_W_right : 1
+  - kernel_num : 32
+  - Kernel_H : 3
+  - Kernel_W : 3
+  - Dilation_H : 1
+  - Dilation_W : 1
+#"
+##maxpool3
+maxpool3:
+  - Layer_Number : 10
+  - C_in : 32
+  - H_in : 16
+  - W_in : 16
+  - C_out : 32
+  - H_out : 8
+  - W_out : 8
+  - Embedding_Dim : 8192
+  - Layer_Name : "maxpool3"
+  - Stride_H : 2
+  - Stride_W : 2
+  - Padding_H_top : 0
+  - Padding_H_bottom : 0
+  - Padding_W_left : 0
+  - Padding_W_right : 0
+  - kernel_num : 32
+  - Kernel_H : 2
+  - Kernel_W : 2
+  - Dilation_H : 1
+  - Dilation_W : 1
+#"
+##ReLU3
+ReLU3:
+  - Layer_Number : 11
+  - C_in : 32
+  - H_in : 8
+  - W_in : 8
+  - C_out : 32
+  - H_out : 8
+  - W_out : 8
+  - Embedding_Dim : 2048
+  - Layer_Name : "ReLU3"
+  - Stride_H : 
+  - Stride_W : 
+  - Padding_H_top : 
+  - Padding_H_bottom : 
+  - Padding_W_left : 
+  - Padding_W_right : 
+  - kernel_num : 
+  - Kernel_H : 
+  - Kernel_W : 
+  - Dilation_H : 
+  - Dilation_W : 
+#"
+##bn3
+bn3:
+  - Layer_Number : 12
+  - C_in : 32
+  - H_in : 8
+  - W_in : 8
+  - C_out : 32
+  - H_out : 8
+  - W_out : 8
+  - Embedding_Dim : 2048
+  - Layer_Name : "bn3"
+  - Stride_H : 
+  - Stride_W : 
+  - Padding_H_top : 
+  - Padding_H_bottom : 
+  - Padding_W_left : 
+  - Padding_W_right : 
+  - kernel_num : 
+  - Kernel_H : 
+  - Kernel_W : 
+  - Dilation_H : 
+  - Dilation_W : 
+#"
+##conv4
+conv4:
+  - Layer_Number : 13
+  - C_in : 32
+  - H_in : 8
+  - W_in : 8
+  - C_out : 64
+  - H_out : 8
+  - W_out : 8
+  - Embedding_Dim : 2048
+  - Layer_Name : "conv4"
+  - Stride_H : 1
+  - Stride_W : 1
+  - Padding_H_top : 1
+  - Padding_H_bottom : 1
+  - Padding_W_left : 1
+  - Padding_W_right : 1
+  - kernel_num : 64
+  - Kernel_H : 3
+  - Kernel_W : 3
+  - Dilation_H : 1
+  - Dilation_W : 1
+#"
+##maxpool4
+maxpool4:
+  - Layer_Number : 14
+  - C_in : 64
+  - H_in : 8
+  - W_in : 8
+  - C_out : 64
+  - H_out : 4
+  - W_out : 4
+  - Embedding_Dim : 4096
+  - Layer_Name : "maxpool4"
+  - Stride_H : 2
+  - Stride_W : 2
+  - Padding_H_top : 0
+  - Padding_H_bottom : 0
+  - Padding_W_left : 0
+  - Padding_W_right : 0
+  - kernel_num : 64
+  - Kernel_H : 2
+  - Kernel_W : 2
+  - Dilation_H : 1
+  - Dilation_W : 1
+#"
+##ReLU4
+ReLU4:
+  - Layer_Number : 15
+  - C_in : 64
+  - H_in : 4
+  - W_in : 4
+  - C_out : 64
+  - H_out : 4
+  - W_out : 4
+  - Embedding_Dim : 1024
+  - Layer_Name : "ReLU4"
+  - Stride_H : 
+  - Stride_W : 
+  - Padding_H_top : 
+  - Padding_H_bottom : 
+  - Padding_W_left : 
+  - Padding_W_right : 
+  - kernel_num : 
+  - Kernel_H : 
+  - Kernel_W : 
+  - Dilation_H : 
+  - Dilation_W : 
+#"
+##bn4
+bn4:
+  - Layer_Number : 16
+  - C_in : 64
+  - H_in : 4
+  - W_in : 4
+  - C_out : 64
+  - H_out : 4
+  - W_out : 4
+  - Embedding_Dim : 1024
+  - Layer_Name : "bn4"
+  - Stride_H : 
+  - Stride_W : 
+  - Padding_H_top : 
+  - Padding_H_bottom : 
+  - Padding_W_left : 
+  - Padding_W_right : 
+  - kernel_num : 
+  - Kernel_H : 
+  - Kernel_W : 
+  - Dilation_H : 
+  - Dilation_W : 
+#"
+##conv5
+conv5:
+  - Layer_Number : 17
+  - C_in : 64
+  - H_in : 4
+  - W_in : 4
+  - C_out : 32
+  - H_out : 4
+  - W_out : 4
+  - Embedding_Dim : 1024
+  - Layer_Name : "conv5"
+  - Stride_H : 1
+  - Stride_W : 1
+  - Padding_H_top : 1
+  - Padding_H_bottom : 1
+  - Padding_W_left : 1
+  - Padding_W_right : 1
+  - kernel_num : 32
+  - Kernel_H : 3
+  - Kernel_W : 3
+  - Dilation_H : 1
+  - Dilation_W : 1
+#"
+##ReLU5
+ReLU5:
+  - Layer_Number : 18
+  - C_in : 32
+  - H_in : 4
+  - W_in : 4
+  - C_out : 32
+  - H_out : 4
+  - W_out : 4
+  - Embedding_Dim : 512
+  - Layer_Name : "ReLU5"
+  - Stride_H : 
+  - Stride_W : 
+  - Padding_H_top : 
+  - Padding_H_bottom : 
+  - Padding_W_left : 
+  - Padding_W_right : 
+  - kernel_num : 
+  - Kernel_H : 
+  - Kernel_W : 
+  - Dilation_H : 
+  - Dilation_W : 
+#"
+##UpSample1
+UpSample1:
+  - Layer_Number : 19
+  - C_in : 32
+  - H_in : 4
+  - W_in : 4
+  - C_out : 32
+  - H_out : 8
+  - W_out : 8
+  - Embedding_Dim : 512
+  - Layer_Name : "UpSample1"
+  - Stride_H : 2
+  - Stride_W : 2
+  - Padding_H_top : 
+  - Padding_H_bottom : 
+  - Padding_W_left : 
+  - Padding_W_right : 
+  - kernel_num : 
+  - Kernel_H : 
+  - Kernel_W : 
+  - Dilation_H : 
+  - Dilation_W : 
+#"
+##conv6
+conv6:
+  - Layer_Number : 20
+  - C_in : 32
+  - H_in : 8
+  - W_in : 8
+  - C_out : 64
+  - H_out : 8
+  - W_out : 8
+  - Embedding_Dim : 2048
+  - Layer_Name : "conv6"
+  - Stride_H : 1
+  - Stride_W : 1
+  - Padding_H_top : 1
+  - Padding_H_bottom : 1
+  - Padding_W_left : 1
+  - Padding_W_right : 1
+  - kernel_num : 64
+  - Kernel_H : 3
+  - Kernel_W : 3
+  - Dilation_H : 1
+  - Dilation_W : 1
+#"
+##ReLU6
+ReLU6:
+  - Layer_Number : 21
+  - C_in : 64
+  - H_in : 8
+  - W_in : 8
+  - C_out : 64
+  - H_out : 8
+  - W_out : 8
+  - Embedding_Dim : 4096
+  - Layer_Name : "ReLU6"
+  - Stride_H : 
+  - Stride_W : 
+  - Padding_H_top : 
+  - Padding_H_bottom : 
+  - Padding_W_left : 
+  - Padding_W_right : 
+  - kernel_num : 
+  - Kernel_H : 
+  - Kernel_W : 
+  - Dilation_H : 
+  - Dilation_W : 
+#"
+##bn5
+bn5:
+  - Layer_Number : 22
+  - C_in : 64
+  - H_in : 8
+  - W_in : 8
+  - C_out : 64
+  - H_out : 8
+  - W_out : 8
+  - Embedding_Dim : 4096
+  - Layer_Name : "bn5"
+  - Stride_H : 
+  - Stride_W : 
+  - Padding_H_top : 
+  - Padding_H_bottom : 
+  - Padding_W_left : 
+  - Padding_W_right : 
+  - kernel_num : 
+  - Kernel_H : 
+  - Kernel_W : 
+  - Dilation_H : 
+  - Dilation_W : 
+#"
+##UpSample2
+UpSample2:
+  - Layer_Number : 23
+  - C_in : 64
+  - H_in : 8
+  - W_in : 8
+  - C_out : 64
+  - H_out : 16
+  - W_out : 16
+  - Embedding_Dim : 4096
+  - Layer_Name : "UpSample2"
+  - Stride_H : 2
+  - Stride_W : 2
+  - Padding_H_top : 
+  - Padding_H_bottom : 
+  - Padding_W_left : 
+  - Padding_W_right : 
+  - kernel_num : 
+  - Kernel_H : 
+  - Kernel_W : 
+  - Dilation_H : 
+  - Dilation_W : 
+#"
+##conv7
+conv7:
+  - Layer_Number : 24
+  - C_in : 64
+  - H_in : 16
+  - W_in : 16
+  - C_out : 32
+  - H_out : 16
+  - W_out : 16
+  - Embedding_Dim : 16384
+  - Layer_Name : "conv7"
+  - Stride_H : 1
+  - Stride_W : 1
+  - Padding_H_top : 1
+  - Padding_H_bottom : 1
+  - Padding_W_left : 1
+  - Padding_W_right : 1
+  - kernel_num : 32
+  - Kernel_H : 3
+  - Kernel_W : 3
+  - Dilation_H : 1
+  - Dilation_W : 1
+#"
+##ReLU7
+ReLU7:
+  - Layer_Number : 25
+  - C_in : 32
+  - H_in : 16
+  - W_in : 16
+  - C_out : 32
+  - H_out : 16
+  - W_out : 16
+  - Embedding_Dim : 8192
+  - Layer_Name : "ReLU7"
+  - Stride_H : 
+  - Stride_W : 
+  - Padding_H_top : 
+  - Padding_H_bottom : 
+  - Padding_W_left : 
+  - Padding_W_right : 
+  - kernel_num : 
+  - Kernel_H : 
+  - Kernel_W : 
+  - Dilation_H : 
+  - Dilation_W : 
+#"
+##bn6
+bn6:
+  - Layer_Number : 26
+  - C_in : 32
+  - H_in : 16
+  - W_in : 16
+  - C_out : 32
+  - H_out : 16
+  - W_out : 16
+  - Embedding_Dim : 8192
+  - Layer_Name : "bn6"
+  - Stride_H : 
+  - Stride_W : 
+  - Padding_H_top : 
+  - Padding_H_bottom : 
+  - Padding_W_left : 
+  - Padding_W_right : 
+  - kernel_num : 
+  - Kernel_H : 
+  - Kernel_W : 
+  - Dilation_H : 
+  - Dilation_W : 
+#"
+##UpSample3
+UpSample3:
+  - Layer_Number : 27
+  - C_in : 32
+  - H_in : 16
+  - W_in : 16
+  - C_out : 32
+  - H_out : 32
+  - W_out : 32
+  - Embedding_Dim : 8192
+  - Layer_Name : "UpSample3"
+  - Stride_H : 2
+  - Stride_W : 2
+  - Padding_H_top : 
+  - Padding_H_bottom : 
+  - Padding_W_left : 
+  - Padding_W_right : 
+  - kernel_num : 
+  - Kernel_H : 
+  - Kernel_W : 
+  - Dilation_H : 
+  - Dilation_W : 
+#"
+##conv8
+conv8:
+  - Layer_Number : 28
+  - C_in : 32
+  - H_in : 32
+  - W_in : 32
+  - C_out : 16
+  - H_out : 32
+  - W_out : 32
+  - Embedding_Dim : 32768
+  - Layer_Name : "conv8"
+  - Stride_H : 1
+  - Stride_W : 1
+  - Padding_H_top : 1
+  - Padding_H_bottom : 1
+  - Padding_W_left : 1
+  - Padding_W_right : 1
+  - kernel_num : 16
+  - Kernel_H : 3
+  - Kernel_W : 3
+  - Dilation_H : 1
+  - Dilation_W : 1
+#"
+##ReLU8
+ReLU8:
+  - Layer_Number : 29
+  - C_in : 16
+  - H_in : 32
+  - W_in : 32
+  - C_out : 16
+  - H_out : 32
+  - W_out : 32
+  - Embedding_Dim : 16384
+  - Layer_Name : "ReLU8"
+  - Stride_H : 
+  - Stride_W : 
+  - Padding_H_top : 
+  - Padding_H_bottom : 
+  - Padding_W_left : 
+  - Padding_W_right : 
+  - kernel_num : 
+  - Kernel_H : 
+  - Kernel_W : 
+  - Dilation_H : 
+  - Dilation_W : 
+#"
+##bn7
+bn7:
+  - Layer_Number : 30
+  - C_in : 16
+  - H_in : 32
+  - W_in : 32
+  - C_out : 16
+  - H_out : 32
+  - W_out : 32
+  - Embedding_Dim : 16384
+  - Layer_Name : "bn7"
+  - Stride_H : 
+  - Stride_W : 
+  - Padding_H_top : 
+  - Padding_H_bottom : 
+  - Padding_W_left : 
+  - Padding_W_right : 
+  - kernel_num : 
+  - Kernel_H : 
+  - Kernel_W : 
+  - Dilation_H : 
+  - Dilation_W : 
+#"
+##UpSample4
+UpSample4:
+  - Layer_Number : 31
+  - C_in : 16
+  - H_in : 32
+  - W_in : 32
+  - C_out : 16
+  - H_out : 64
+  - W_out : 64
+  - Embedding_Dim : 16384
+  - Layer_Name : "UpSample4"
+  - Stride_H : 2
+  - Stride_W : 2
+  - Padding_H_top : 
+  - Padding_H_bottom : 
+  - Padding_W_left : 
+  - Padding_W_right : 
+  - kernel_num : 
+  - Kernel_H : 
+  - Kernel_W : 
+  - Dilation_H : 
+  - Dilation_W : 
+#"
+##conv9
+conv9:
+  - Layer_Number : 32
+  - C_in : 16
+  - H_in : 64
+  - W_in : 64
+  - C_out : 3
+  - H_out : 64
+  - W_out : 64
+  - Embedding_Dim : 65536
+  - Layer_Name : "conv9"
+  - Stride_H : 1
+  - Stride_W : 1
+  - Padding_H_top : 1
+  - Padding_H_bottom : 1
+  - Padding_W_left : 1
+  - Padding_W_right : 1
+  - kernel_num : 3
+  - Kernel_H : 3
+  - Kernel_W : 3
+  - Dilation_H : 1
+  - Dilation_W : 1
+#"
+##sigmoid1
+sigmoid1:
+  - Layer_Number : 33
+  - C_in : 3
+  - H_in : 64
+  - W_in : 64
+  - C_out : 3
+  - H_out : 64
+  - W_out : 64
+  - Embedding_Dim : 12288
+  - Layer_Name : "sigmoid1"
+  - Stride_H : 
+  - Stride_W : 
+  - Padding_H_top : 
+  - Padding_H_bottom : 
+  - Padding_W_left : 
+  - Padding_W_right : 
+  - kernel_num : 
+  - Kernel_H : 
+  - Kernel_W : 
+  - Dilation_H : 
+  - Dilation_W : 
+#"
