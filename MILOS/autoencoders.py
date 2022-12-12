@@ -244,7 +244,9 @@ W=get_images_hyperparam_value(images_hyperparam_dict, 'W')
 C=get_images_hyperparam_value(images_hyperparam_dict, 'C')
 
 # hyperparameters related to training of autoencoder
-models_hyperparam_path = main_folder_path + '/autoencoders_config.yaml'
+#models_hyperparam_path = main_folder_path + '/autoencoders_config_64_cont_embed.yaml'
+models_hyperparam_path = main_folder_path + '/autoencoders_config_512_cont_embed.yaml'
+
 with open(models_hyperparam_path) as f:
     config_dict = yaml.load(f, Loader=yaml.SafeLoader)
 
@@ -281,12 +283,15 @@ zero_mean_unit_std_transform = transforms.Compose([
     ])
 
 zero_min_one_max_transform = transforms.Compose([
-#    transforms.Resize(256),
-#    transforms.CenterCrop(256),
-    #transforms.ToTensor(),
     transforms.Normalize(mean = [0., 0., 0.],
                           std  = [255., 255., 255.])
     ])
+
+minus_one_min_one_max_transform = transforms.Compose([
+    transforms.Normalize(mean = [-255./2., -255./2., -255./2.],
+                          std  = [255./2., 255./2., 255./2.])
+    ])
+
 
 # Pick one transform that is applied
 TRANSFORM_IMG = zero_min_one_max_transform#zero_mean_unit_std_transform # zero_min_one_max_transform
@@ -517,7 +522,7 @@ params['conv5_H_out'],params['conv5_W_out'] = conv2d_dims(h_in = params['conv5_H
 ### Vanilla_Autoencoder_v02 params begin
 
 autoencoder_config_params = {}
-autoencoder_config_params_file_path = main_folder_path + '/autoencoders_config.yaml'
+autoencoder_config_params_file_path = models_hyperparam_path#main_folder_path + '/autoencoders_config.yaml'
 
 with open(autoencoder_config_params_file_path) as f:
     autoencoder_config_params = yaml.load(f, Loader=yaml.SafeLoader)

@@ -473,122 +473,175 @@ class Vanilla_Autoencoder_v02(nn.Module):
         x_recon = self.sequential_model(x)
         return x_recon
 
-"""
-class Discrete_Embedding_Autoencoder(nn.Module):
-    def __init__(self,autoencoder_config_params_wrapped_sorted):
-        super(Discrete_Embedding_Autoencoder, self).__init__()
-        self.autoencoder_config_params_wrapped_sorted = autoencoder_config_params_wrapped_sorted
-        
-        params = autoencoder_config_params_wrapped_sorted
-        self.layers = {}
-        # 'vanilla_autoencoder_vanilla_autoencoder_path': '/home/novakovm/iris/MILOS/',
-        # 'vanilla_autoencoder_vanilla_autoencoder_name': 'vanilla_autoencoder',
-        # 'vanilla_autoencoder_vanilla_autoencoder_version': '_2022_11_20_17_13_14',
-        # 'vanilla_autoencoder_vanilla_autoencoder_extension': '.py'
-        
-        self.sequential_model = torch.nn.Sequential()
-        
-        self.latent_space_dim = 0
-        #self.conv_paddings = {}
-        
-        for param_name in params:
-            param_value_dict = params[param_name]
-            if param_name == 'vanilla_autoencoder':
-                continue            
+
+def get_sequential_modules(autoencoder_config_params_wrapped_sorted) -> torch.nn.Sequential:
+    params = autoencoder_config_params_wrapped_sorted
+    sequential = torch.nn.Sequential()
+    
+    for param_name in params:
+        param_value_dict = params[param_name]
+        if param_name == 'vanilla_autoencoder':
+            continue            
+
+        if param_name[:len('conv')] == 'conv':
+            # keys in the param_value_dict =
+            # 'C_in'
+            # 'H_in'
+            # 'W_in'
+            # 'C_out'
+            # 'H_out'
+            # 'W_out'
+            # 'Embedding_Dim'
+            # 'Layer_Name'
+            # 'conv1'
+            # 'Stride_H'
+            # 'Stride_W'
+            # 'Padding_H_top'
+            # 'Padding_H_bottom'
+            # 'Padding_W_left'
+            # 'Padding_W_right'
+            # 'kernel_num'
+            # 'Kernel_H'
+            # 'Kernel_W'
+            # 'Dilation_H'
+            # 'Dilation_W'
             
-            if param_name[:len('conv')] == 'conv':
-                # keys in the param_value_dict =
-                # 'C_in'
-                # 'H_in'
-                # 'W_in'
-                # 'C_out'
-                # 'H_out'
-                # 'W_out'
-                # 'Embedding_Dim'
-                # 'Layer_Name'
-                # 'conv1'
-                # 'Stride_H'
-                # 'Stride_W'
-                # 'Padding_H_top'
-                # 'Padding_H_bottom'
-                # 'Padding_W_left'
-                # 'Padding_W_right'
-                # 'kernel_num'
-                # 'Kernel_H'
-                # 'Kernel_W'
-                # 'Dilation_H'
-                # 'Dilation_W'
-                
-                # First we calculate the padding
-                padding = ( param_value_dict['Padding_W_left'],
-                            param_value_dict['Padding_W_right'],
-                            param_value_dict['Padding_H_top'],
-                            param_value_dict['Padding_H_bottom'])
-                self.sequential_model.add_module(param_name + '_padding', nn.ZeroPad2d(padding))
-                
-                # Second we do 2D convolution
-                self.sequential_model.add_module(param_name, torch.nn.Conv2d(
-                                                                in_channels = param_value_dict['C_in'],
-                                                                out_channels= param_value_dict['C_out'],
-                                                                kernel_size = (param_value_dict['Kernel_H'], param_value_dict['Kernel_W']),
-                                                                stride      = (param_value_dict['Stride_H'], param_value_dict['Stride_W']),
-                                                                #padding = calculated already!
-                                                                dilation    = (param_value_dict['Dilation_H'], param_value_dict['Dilation_W'])
-                                                                ))                
-            elif param_name[:len('maxpool')] == 'maxpool':
-                # First we calculate the padding
-                padding = ( param_value_dict['Padding_W_left'],
-                            param_value_dict['Padding_W_right'],
-                            param_value_dict['Padding_H_top'],
-                            param_value_dict['Padding_H_bottom'])
-                self.sequential_model.add_module(param_name + '_padding', nn.ZeroPad2d(padding))
-                
-                # Second we do 2D maxpooling
-                self.sequential_model.add_module(param_name, torch.nn.MaxPool2d(
-                                                                kernel_size = (param_value_dict['Kernel_H'], param_value_dict['Kernel_W']),
-                                                                stride      = (param_value_dict['Stride_H'], param_value_dict['Stride_W']),
-                                                                #padding = calculated already!
-                                                                dilation    = (param_value_dict['Dilation_H'], param_value_dict['Dilation_W']),
-                                                                return_indices=False,
-                                                                ceil_mode=False
+            # First we calculate the padding
+            padding = ( param_value_dict['Padding_W_left'],
+                        param_value_dict['Padding_W_right'],
+                        param_value_dict['Padding_H_top'],
+                        param_value_dict['Padding_H_bottom'])
+            sequential.add_module(param_name + '_padding', nn.ZeroPad2d(padding))
+            
+            # Second we do 2D convolution
+            sequential.add_module(param_name, torch.nn.Conv2d(
+                                                    in_channels = param_value_dict['C_in'],
+                                                    out_channels= param_value_dict['C_out'],
+                                                    kernel_size = (param_value_dict['Kernel_H'], param_value_dict['Kernel_W']),
+                                                    stride      = (param_value_dict['Stride_H'], param_value_dict['Stride_W']),
+                                                    #padding = calculated already!
+                                                    dilation    = (param_value_dict['Dilation_H'], param_value_dict['Dilation_W'])
+                                                    ))                
+        elif param_name[:len('maxpool')] == 'maxpool':
+            # First we calculate the padding
+            padding = ( param_value_dict['Padding_W_left'],
+                        param_value_dict['Padding_W_right'],
+                        param_value_dict['Padding_H_top'],
+                        param_value_dict['Padding_H_bottom'])
+            sequential.add_module(param_name + '_padding', nn.ZeroPad2d(padding))
+            
+            # Second we do 2D maxpooling
+            sequential.add_module(param_name, torch.nn.MaxPool2d(
+                                                    kernel_size = (param_value_dict['Kernel_H'], param_value_dict['Kernel_W']),
+                                                    stride      = (param_value_dict['Stride_H'], param_value_dict['Stride_W']),
+                                                    #padding = calculated already!
+                                                    dilation    = (param_value_dict['Dilation_H'], param_value_dict['Dilation_W']),
+                                                    return_indices=False,
+                                                    ceil_mode=False
+                                                    ))
+            
+        elif param_name[:len('ReLU')] == 'ReLU':
+            # Apply ReLU as an activation function
+            sequential.add_module(param_name, torch.nn.ReLU(inplace=False))
+            
+        elif param_name[:len('bn')] == 'bn':
+            # Apply Batch Normalization
+            sequential.add_module(param_name, torch.nn.BatchNorm2d(num_features = param_value_dict['C_in']))
+            
+        elif param_name[:len('UpSample')] == 'UpSample':
+            # Apply UpSampling to restore the original size of an image
+            sequential.add_module(param_name, torch.nn.Upsample(
+                                                                size=None, 
+                                                                scale_factor=(param_value_dict['Stride_H'], param_value_dict['Stride_W']), 
+                                                                mode='nearest', # NEAREST MODE IS HARD-CODED # TO DO (MAKE IT SUPPORT OTHER MODES OF UPSAMPLING)
+                                                                align_corners=None,
+                                                                recompute_scale_factor=None
                                                                 ))
-                
-            elif param_name[:len('ReLU')] == 'ReLU':
-                # Apply ReLU as an activation function
-                self.sequential_model.add_module(param_name, torch.nn.ReLU(inplace=False))
-                
-            elif param_name[:len('bn')] == 'bn':
-                # Apply Batch Normalization
-                self.sequential_model.add_module(param_name, torch.nn.BatchNorm2d(num_features = param_value_dict['C_in']))
-                
-            elif param_name[:len('UpSample')] == 'UpSample':
-                # Apply UpSampling to restore the original size of an image
-                self.sequential_model.add_module(param_name, torch.nn.Upsample(
-                                                                            size=None, 
-                                                                            scale_factor=(param_value_dict['Stride_H'], param_value_dict['Stride_W']), 
-                                                                            mode='nearest', # NEAREST MODE IS HARD-CODED # TO DO (MAKE IT SUPPORT OTHER MODES OF UPSAMPLING)
-                                                                            align_corners=None,
-                                                                            recompute_scale_factor=None
-                                                                        ))
-                
-            elif param_name[:len('sigmoid')] == 'sigmoid':
-                # Apply Sigmoid as an activation function
-                self.sequential_model.add_module(param_name, torch.nn.Sigmoid())
             
-            else:
-                assert(False, f'Unknown config parameter name = {param_name}.')
-            
-            # update latent space dimension
-            self.latent_space_dim = min(self.latent_space_dim , param_value_dict['Embedding_Dim'])
-            
+        elif param_name[:len('sigmoid')] == 'sigmoid':
+            # Apply Sigmoid as an activation function
+            sequential.add_module(param_name, torch.nn.Sigmoid())
+
+        else:
+            assert(False, f'Unknown config parameter name = {param_name}.')
+
+    return sequential
+
+class VQ_VAE(nn.Module):
+    def __init__(self,
+                 encoder_config_params_wrapped_sorted, 
+                 decoder_config_params_wrapped_sorted,
+                 vector_quantizer_config_params_wrapped_sorted):#autoencoder_config_params_wrapped_sorted):
+        super(VQ_VAE, self).__init__()
+        #self.autoencoder_config_params_wrapped_sorted = autoencoder_config_params_wrapped_sorted
+        self.encoder_config_params_wrapped_sorted           = encoder_config_params_wrapped_sorted
+        self.decoder_config_params_wrapped_sorted           = decoder_config_params_wrapped_sorted
+        self.vector_quantizer_config_params_wrapped_sorted  = vector_quantizer_config_params_wrapped_sorted
+        
+        self.encoder = get_sequential_modules(self.encoder_config_params_wrapped_sorted)
+        self.decoder = get_sequential_modules(self.decoder_config_params_wrapped_sorted)
+        
+        self.K    = self.vector_quantizer_config_params_wrapped_sorted['num_embeddings']
+        self.D    = self.vector_quantizer_config_params_wrapped_sorted['embedding_dim']
+        self.beta = self.vector_quantizer_config_params_wrapped_sorted['beta']
+        
+        self.E = nn.Embedding(self.K, self.D)
+        self.E.weight.data.uniform_(-1/self.K, 1/self.K)
         
     def forward(self, x):
-        #latent = self.encoder(x)
-        #x_recon = self.decoder(latent)
-        x_recon = self.sequential_model(x)
+        # encoder pass
+        encoder_output = self.encoder(x) # [B, C_e, H_e, W_e]
+        B, C_e, H_e, W_e = encoder_output.shape
+        N_e = B * H_e * W_e
+        
+        # encoder output reorganized into the matrix 
+        # [B, C_e, H_e, W_e] -> [B, H_e, W_e, C_e] -> [B * H_e * W_e, C_e]
+        # flatten encoder output into an array of C_e - sized real vectors
+        Ze_mat = encoder_output.permute(0, 2, 3, 1).contiguous().view(N_e, C_e)
+        
+        # calculate distance matrix D
+        # D_(i,j) is defined as l2-distance =
+        # || Ze_mat_i - E_j ||^2
+        D = (
+            torch.sum(Ze_mat ** 2, dim = 1, keepdim=True)
+            + torch.sum(self.E.weight ** 2, dim = 1, keepdim=True).t() # or + torch.sum(self.E.weight ** 2, dim = 1)
+            - 2 * torch.matmul(Ze_mat, self.E.weight.t())
+            )
+        
+        # try also this one
+        # D = (Ze_mat ** 2) @ torch.ones(C_e, self.K) + torch.ones(N_e, C_e) @ (self.E.weight ** 2).t() - 2 * Ze_mat @ self.E.weight.t()
+        
+        # calculate the encoding indices that are closses in the l2-sense (accroding to the distance matrix D)
+        EI = torch.argmin(D, dim=1).unsqueeze(1)
+        
+        # calculate the one hot encoding indices that are closses in the l2-sense (accroding to the distance matrix D)
+        # init with zero matrix of dimensions N_e and K (device same as the output of an encoder)
+        OEI = torch.zeros(N_e, self.K, device=encoder_output.device)
+        # fill in the one hot encoding based on the encoding indicies EI
+        OEI.scatter_(dim = 1,
+                     index = EI,
+                     src = 1) # fill_value
+        
+        # get the quantized vectors from the embedding space (i.e. code book) E,
+        # which index is defined as a one-hot encoding in the OEI matrix
+        Zq_mat = torch.matmul(OEI, self.E) # (N_e x D) <- (N_e x K) @ (K x D)
+        
+        # unflatten Zq_mat matrix to the right decoder input tensor size
+        decoder_input = Zq_mat.view(encoder_output)
+        
+        # Loss calculation
+        vq_loss         = F.mse_loss(encoder_output.detach(), decoder_input)
+        commitment_loss = F.mse_loss(encoder_output,          decoder_input.detach())
+        self.commitment_and_vq_loss = vq_loss + self.beta * commitment_loss
+        
+        # implementation of the straight-through gradient estimation of mapping from Ze_mat to Zq_mat
+        decoder_input = encoder_output + (decoder_input - encoder_output).detach()
+        
+        # decoder pass
+        x_recon = self.decoder(decoder_input)
+        
         return x_recon
     
-"""    
 class Model_Trainer:
     def __init__(self, args) -> None:
         self.NUM_EPOCHS =       args['NUM_EPOCHS']#1000
