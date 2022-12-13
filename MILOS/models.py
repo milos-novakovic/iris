@@ -604,7 +604,7 @@ class VQ_VAE(nn.Module):
         # || Ze_mat_i - E_j ||^2
         D = (
             torch.sum(Ze_mat ** 2, dim = 1, keepdim=True)
-            + torch.sum(self.E.weight ** 2, dim = 1, keepdim=True).t() # or + torch.sum(self.E.weight ** 2, dim = 1)
+            + torch.sum(self.E.weight ** 2, dim = 1, keepdim=False) # or + torch.sum(self.E.weight ** 2, dim = 1, keepdim=True).t()
             - 2 * torch.matmul(Ze_mat, self.E.weight.t())
             )
         
@@ -642,6 +642,120 @@ class VQ_VAE(nn.Module):
         
         return x_recon
     
+class ResidualBlock(nn.Module):
+    def __init__(self, C_in, C_out, C_mid):
+        super(ResidualBlock, self).__init__()
+        self.residual_block = nn.Sequential(
+                                    nn.ReLU(True),
+                                    nn.Conv2d(  in_channels=C_in,
+                                                out_channels=C_mid,
+                                                kernel_size=3, 
+                                                stride=1,
+                                                padding=1,
+                                                bias=False),
+                                    nn.ReLU(True),
+                                    nn.Conv2d(  in_channels=C_mid,
+                                                out_channels=C_out,
+                                                kernel_size=1, 
+                                                stride=1,
+                                                bias=False)
+                                    )
+    
+    def forward(self, x):
+        return x + self.residual_block(x)
+
+
+class ResidualStack(nn.Module):
+    def __init__(self, in_channels, num_hiddens, num_residual_layers, num_residual_hiddens):
+        super(ResidualStack, self).__init__()
+        self._num_residual_layers = num_residual_layers
+        self._layers = nn.ModuleList([ResidualBlock(in_channels, num_hiddens, num_residual_hiddens)
+                             for _ in range(self._num_residual_layers)])
+
+    def forward(self, x):
+        for i in range(self._num_residual_layers):
+            x = self._layers[i](x)
+        return F.relu(x)
+
+class Encoder(nn.Module):
+    def __init__(self, in_channels, num_hiddens, num_residual_layers, num_residual_hiddens):
+        super(Encoder, self).__init__()
+
+        self._conv_1 = nn.Conv2d(in_channels=in_channels,
+                                 out_channels=num_hiddens//2,
+                                 kernel_size=4,
+                                 stride=2, padding=1)
+        self._conv_2 = nn.Conv2d(in_channels=num_hiddens//2,
+                                 out_channels=num_hiddens,
+                                 kernel_size=4,
+                                 stride=2, padding=1)
+        self._conv_3 = nn.Conv2d(in_channels=num_hiddens,
+                                 out_channels=num_hiddens,
+                                 kernel_size=3,
+                                 stride=1, padding=1)
+        self._residual_stack = ResidualStack(in_channels=num_hiddens,
+                                             num_hiddens=num_hiddens,
+                                             num_residual_layers=num_residual_layers,
+                                             num_residual_hiddens=num_residual_hiddens)
+
+    def forward(self, inputs):
+        x = self._conv_1(inputs)
+        x = F.relu(x)
+        
+        x = self._conv_2(x)
+        x = F.relu(x)
+        
+        x = self._conv_3(x)
+        return self._residual_stack(x)
+class Decoder(nn.Module):
+    def __init__(self, in_channels, num_hiddens, num_residual_layers, num_residual_hiddens):
+        super(Decoder, self).__init__()
+        
+        self._conv_1 = nn.Conv2d(in_channels=in_channels,
+                                 out_channels=num_hiddens,
+                                 kernel_size=3, 
+                                 stride=1, padding=1)
+        
+        self._residual_stack = ResidualStack(in_channels=num_hiddens,
+                                             num_hiddens=num_hiddens,
+                                             num_residual_layers=num_residual_layers,
+                                             num_residual_hiddens=num_residual_hiddens)
+        
+        self._conv_trans_1 = nn.ConvTranspose2d(in_channels=num_hiddens, 
+                                                out_channels=num_hiddens//2,
+                                                kernel_size=4, 
+                                                stride=2, padding=1)
+        
+        self._conv_trans_2 = nn.ConvTranspose2d(in_channels=num_hiddens//2, 
+                                                out_channels=3,
+                                                kernel_size=4, 
+                                                stride=2, padding=1)
+
+    def forward(self, inputs):
+        x = self._conv_1(inputs)
+        
+        x = self._residual_stack(x)
+        
+        x = self._conv_trans_1(x)
+        x = F.relu(x)
+        
+        return self._conv_trans_2(x)
+# batch_size = 256
+# num_training_updates = 15000
+
+# num_hiddens = 128
+# num_residual_hiddens = 32
+# num_residual_layers = 2
+
+# embedding_dim = 64
+# num_embeddings = 512
+
+# commitment_cost = 0.25
+
+# decay = 0.99
+
+# learning_rate = 1e-3
+
 class Model_Trainer:
     def __init__(self, args) -> None:
         self.NUM_EPOCHS =       args['NUM_EPOCHS']#1000
