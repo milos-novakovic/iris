@@ -643,7 +643,13 @@ class VQ_VAE(nn.Module):
         return x_recon
     
 class ResidualBlock(nn.Module):
-    def __init__(self, C_in, C_out, C_mid):
+    def __init__(self, 
+                 C_in,
+                 C_out,
+                 C_mid):
+        '''
+        DocString comment here
+        '''
         super(ResidualBlock, self).__init__()
         self.residual_block = nn.Sequential(
                                     nn.ReLU(True),
@@ -652,12 +658,19 @@ class ResidualBlock(nn.Module):
                                                 kernel_size=3, 
                                                 stride=1,
                                                 padding=1,
+                                                dilation = 1,
                                                 bias=False),
+                                    # with k=3, s=1, p=1, d = 1
+                                    # H_out = floor( (H_in + p_top + p_bottom - d * (k-1) -1) / s + 1)
+                                    # H_out = floor( (H_in + 1 + 1 - 1 * (3-1) -1) / 1 + 1)
+                                    # H_out = H_in
+                                    # i.e., H_out = H_in and W_out = W_in
                                     nn.ReLU(True),
                                     nn.Conv2d(  in_channels=C_mid,
                                                 out_channels=C_out,
                                                 kernel_size=1, 
                                                 stride=1,
+                                                dilation = 1,
                                                 bias=False)
                                     )
     
@@ -666,21 +679,30 @@ class ResidualBlock(nn.Module):
 
 
 class ResidualStack(nn.Module):
-    def __init__(self, in_channels, num_hiddens, num_residual_layers, num_residual_hiddens):
+    def __init__(self, 
+                 C_in,
+                 C_out,
+                 C_mid,
+                 num_residual_layers):
+        '''
+        DocString comment here
+        '''
         super(ResidualStack, self).__init__()
-        self._num_residual_layers = num_residual_layers
-        self._layers = nn.ModuleList([ResidualBlock(in_channels, num_hiddens, num_residual_hiddens)
-                             for _ in range(self._num_residual_layers)])
+        self.num_residual_layers = num_residual_layers
+        self.layers = nn.ModuleList([ResidualBlock(C_in,C_out,C_mid) for _ in range(self.num_residual_layers)])
 
     def forward(self, x):
         for i in range(self._num_residual_layers):
             x = self._layers[i](x)
-        return F.relu(x)
+        x = F.relu(x)
+        return x
 
 class Encoder(nn.Module):
     def __init__(self, in_channels, num_hiddens, num_residual_layers, num_residual_hiddens):
         super(Encoder, self).__init__()
-
+        '''
+        DocString comment here
+        '''
         self._conv_1 = nn.Conv2d(in_channels=in_channels,
                                  out_channels=num_hiddens//2,
                                  kernel_size=4,
@@ -699,18 +721,17 @@ class Encoder(nn.Module):
                                              num_residual_hiddens=num_residual_hiddens)
 
     def forward(self, inputs):
-        x = self._conv_1(inputs)
-        x = F.relu(x)
-        
-        x = self._conv_2(x)
-        x = F.relu(x)
-        
-        x = self._conv_3(x)
-        return self._residual_stack(x)
+        x = F.relu(self._conv_1(inputs))
+        x = F.relu(self._conv_2(x))
+        x = self._residual_stack(self._conv_3(x))
+        return (x)
+    
 class Decoder(nn.Module):
     def __init__(self, in_channels, num_hiddens, num_residual_layers, num_residual_hiddens):
         super(Decoder, self).__init__()
-        
+        '''
+        DocString comment here
+        '''
         self._conv_1 = nn.Conv2d(in_channels=in_channels,
                                  out_channels=num_hiddens,
                                  kernel_size=3, 
