@@ -16,6 +16,8 @@ from collections import OrderedDict
 import yaml
 #from yaml.loader import SafeLoader
 from models import *
+from vq_vae_implementation import *
+
 from mpl_toolkits.axes_grid1 import ImageGrid
 
 
@@ -285,13 +287,12 @@ zero_mean_unit_std_transform = transforms.Compose([
 zero_min_one_max_transform = transforms.Compose([
     transforms.Normalize(mean = [0., 0., 0.],
                           std  = [255., 255., 255.])
-    ])
+    ]) # OUTPUT SIGMOID of DNN
 
 minus_one_min_one_max_transform = transforms.Compose([
     transforms.Normalize(mean = [-255./2., -255./2., -255./2.],
                           std  = [255./2., 255./2., 255./2.])
-    ])
-
+    ]) # OUTPUT TANH of DNN
 
 # Pick one transform that is applied
 TRANSFORM_IMG = zero_min_one_max_transform#zero_mean_unit_std_transform # zero_min_one_max_transform
@@ -307,10 +308,6 @@ val_data_loader = torch.utils.data.DataLoader(dataset = val_data, batch_size=BAT
 # Test Data & Test data Loader
 test_data = CustomImageDataset(args = args_test, root=TEST_DATA_PATH, transform=TRANSFORM_IMG)
 test_data_loader  = torch.utils.data.DataLoader(dataset = test_data, batch_size=BATCH_SIZE_TEST, shuffle=True, num_workers=NUM_WORKERS) 
-
-
-
-
 
 
 """
@@ -591,11 +588,30 @@ for sorted_Layer_Number in sorted_Layer_Numbers:
         autoencoder_config_params_unwrapped_sorted[layer_name + '->' +feature_name_feature_value] = \
         autoencoder_config_params_wrapped_sorted[layer_name][feature_name_feature_value]
 
+# VQ VAE params
+vector_quantizer_config_params_wrapped_sorted= {}
+#K
+vector_quantizer_config_params_wrapped_sorted['num_embeddings'] = 128#int(2**14)
+#D
+vector_quantizer_config_params_wrapped_sorted['embedding_dim'] = 64#32
+#commitment loss hyper param
+vector_quantizer_config_params_wrapped_sorted['beta'] = 0.25
+#prior on the embedding space matrix
+vector_quantizer_config_params_wrapped_sorted['E_prior_weight_distribution'] = 'uniform'
+
 # set the training parameters
 loss_fn = nn.MSELoss()
 device = torch.device("cuda:0" if USE_GPU and torch.cuda.is_available() else "cpu") 
-model = Vanilla_Autoencoder_v02(autoencoder_config_params_wrapped_sorted)
-model_name = 'vanilla_autoencoder'
+#model = Vanilla_Autoencoder_v02(autoencoder_config_params_wrapped_sorted)
+model = VQ_VAE(vector_quantizer_config_params_wrapped_sorted = vector_quantizer_config_params_wrapped_sorted,
+                 encoder_config_params_wrapped_sorted = None, 
+                 decoder_config_params_wrapped_sorted = None,
+                 encoder_model = VQ_VAE_Encoder(C_in = 3, C_Conv2d = 64, num_residual_layers = 2),
+                 decoder_model = VQ_VAE_Decoder(C_in = 64, num_residual_layers = 2))
+
+model = vq_vae_implemented_model
+#model_name = 'vanilla_autoencoder'
+model_name = 'VQ_VAE'
 loaders = {'train' : train_data_loader, 'val' : val_data_loader, 'test' : test_data_loader}
 optimizer_settings = {'optimization_algorithm':'Adam','lr':LEARNING_RATE}
 
@@ -617,9 +633,9 @@ if not USE_PRETRAINED_VANILLA_AUTOENCODER:
     # start the training and validation procedure
     trainer.train()
 else:
-    ######################    
+    ##########################    
     # Use a pretrained model #
-    ######################
+    ##########################
     current_time_str = "2022_12_03_19_39_08"#'2022_12_02_17_59_16' # 17h 13min 14 sec 20th Nov. 2022
     
     # load model that was trained at newly given current_time_str 

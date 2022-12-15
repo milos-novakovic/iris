@@ -521,6 +521,23 @@ def get_sequential_modules(autoencoder_config_params_wrapped_sorted) -> torch.nn
                                                     stride      = (param_value_dict['Stride_H'], param_value_dict['Stride_W']),
                                                     #padding = calculated already!
                                                     dilation    = (param_value_dict['Dilation_H'], param_value_dict['Dilation_W'])
+                                                    ))
+        elif param_name[:len('trans_conv')] == 'trans_conv':            
+            # First we calculate the padding
+            padding = ( param_value_dict['Padding_W_left'],
+                        param_value_dict['Padding_W_right'],
+                        param_value_dict['Padding_H_top'],
+                        param_value_dict['Padding_H_bottom'])
+            sequential.add_module(param_name + '_padding', nn.ZeroPad2d(padding))
+            
+            # Second we do 2D convolution
+            sequential.add_module(param_name, torch.nn.Conv2d(
+                                                    in_channels = param_value_dict['C_in'],
+                                                    out_channels= param_value_dict['C_out'],
+                                                    kernel_size = (param_value_dict['Kernel_H'], param_value_dict['Kernel_W']),
+                                                    stride      = (param_value_dict['Stride_H'], param_value_dict['Stride_W']),
+                                                    #padding = calculated already!
+                                                    dilation    = (param_value_dict['Dilation_H'], param_value_dict['Dilation_W'])
                                                     ))                
         elif param_name[:len('maxpool')] == 'maxpool':
             # First we calculate the padding
@@ -530,14 +547,14 @@ def get_sequential_modules(autoencoder_config_params_wrapped_sorted) -> torch.nn
                         param_value_dict['Padding_H_bottom'])
             sequential.add_module(param_name + '_padding', nn.ZeroPad2d(padding))
             
-            # Second we do 2D maxpooling
-            sequential.add_module(param_name, torch.nn.MaxPool2d(
+            # Second we do 2D Transpose Convolution
+            sequential.add_module(param_name, torch.nn.ConvTranspose2d(
+                                                    in_channels = param_value_dict['C_in'],
+                                                    out_channels= param_value_dict['C_out'],
                                                     kernel_size = (param_value_dict['Kernel_H'], param_value_dict['Kernel_W']),
                                                     stride      = (param_value_dict['Stride_H'], param_value_dict['Stride_W']),
                                                     #padding = calculated already!
-                                                    dilation    = (param_value_dict['Dilation_H'], param_value_dict['Dilation_W']),
-                                                    return_indices=False,
-                                                    ceil_mode=False
+                                                    dilation    = (param_value_dict['Dilation_H'], param_value_dict['Dilation_W'])
                                                     ))
             
         elif param_name[:len('ReLU')] == 'ReLU':
@@ -569,24 +586,36 @@ def get_sequential_modules(autoencoder_config_params_wrapped_sorted) -> torch.nn
 
 class VQ_VAE(nn.Module):
     def __init__(self,
-                 encoder_config_params_wrapped_sorted, 
-                 decoder_config_params_wrapped_sorted,
-                 vector_quantizer_config_params_wrapped_sorted):#autoencoder_config_params_wrapped_sorted):
+                 vector_quantizer_config_params_wrapped_sorted = None,
+                 encoder_config_params_wrapped_sorted = None, 
+                 decoder_config_params_wrapped_sorted = None,
+                 encoder_model = None,
+                 decoder_model = None):#autoencoder_config_params_wrapped_sorted):
         super(VQ_VAE, self).__init__()
         #self.autoencoder_config_params_wrapped_sorted = autoencoder_config_params_wrapped_sorted
         self.encoder_config_params_wrapped_sorted           = encoder_config_params_wrapped_sorted
         self.decoder_config_params_wrapped_sorted           = decoder_config_params_wrapped_sorted
         self.vector_quantizer_config_params_wrapped_sorted  = vector_quantizer_config_params_wrapped_sorted
         
-        self.encoder = get_sequential_modules(self.encoder_config_params_wrapped_sorted)
-        self.decoder = get_sequential_modules(self.decoder_config_params_wrapped_sorted)
+        if encoder_config_params_wrapped_sorted != None and decoder_config_params_wrapped_sorted != None and encoder_model == None and decoder_model == None:
+            self.encoder = get_sequential_modules(self.encoder_config_params_wrapped_sorted)
+            self.decoder = get_sequential_modules(self.decoder_config_params_wrapped_sorted)
         
-        self.K    = self.vector_quantizer_config_params_wrapped_sorted['num_embeddings']
-        self.D    = self.vector_quantizer_config_params_wrapped_sorted['embedding_dim']
-        self.beta = self.vector_quantizer_config_params_wrapped_sorted['beta']
+        if encoder_config_params_wrapped_sorted == None and decoder_config_params_wrapped_sorted == None and encoder_model != None and decoder_model != None:
+            self.encoder = encoder_model
+            self.decoder = decoder_model
+        
+        
+        self.K    = self.vector_quantizer_config_params_wrapped_sorted['num_embeddings'] # 512
+        self.D    = self.vector_quantizer_config_params_wrapped_sorted['embedding_dim'] # 64
+        self.beta = self.vector_quantizer_config_params_wrapped_sorted['beta'] # 0.25
+        self.E_prior_weight_distribution = vector_quantizer_config_params_wrapped_sorted['E_prior_weight_distribution']#'uniform'
         
         self.E = nn.Embedding(self.K, self.D)
-        self.E.weight.data.uniform_(-1/self.K, 1/self.K)
+        if self.E_prior_weight_distribution == 'uniform':
+            self.E.weight.data.uniform_(-1/self.K, 1/self.K)
+        #else:
+            #assert(False, f"{self.E_prior_weight_distribution} is not implemented as the prior on the weights of embedded matrix space E.")
         
     def forward(self, x):
         # encoder pass
@@ -618,16 +647,16 @@ class VQ_VAE(nn.Module):
         # init with zero matrix of dimensions N_e and K (device same as the output of an encoder)
         OEI = torch.zeros(N_e, self.K, device=encoder_output.device)
         # fill in the one hot encoding based on the encoding indicies EI
-        OEI.scatter_(dim = 1,
-                     index = EI,
-                     src = 1) # fill_value
+        OEI.scatter_(1,#go over each row (axis =1) and put on the column index by EI the fill-in value
+                     EI,#the index vector that specifices in which column to put the fill-in value for every row of the index vector
+                     1) #the fill-in value
         
         # get the quantized vectors from the embedding space (i.e. code book) E,
         # which index is defined as a one-hot encoding in the OEI matrix
-        Zq_mat = torch.matmul(OEI, self.E) # (N_e x D) <- (N_e x K) @ (K x D)
+        Zq_mat = torch.matmul(OEI, self.E.weight) # (N_e x D) <- (N_e x K) @ (K x D)
         
         # unflatten Zq_mat matrix to the right decoder input tensor size
-        decoder_input = Zq_mat.view(encoder_output)
+        decoder_input = Zq_mat.view(encoder_output.shape)
         
         # Loss calculation
         vq_loss         = F.mse_loss(encoder_output.detach(), decoder_input)
@@ -670,9 +699,11 @@ class ResidualBlock(nn.Module):
                                                 out_channels=C_out,
                                                 kernel_size=1, 
                                                 stride=1,
+                                                padding=0,
                                                 dilation = 1,
                                                 bias=False)
                                     )
+        # i.e., H_out = H_in and W_out = W_in
     
     def forward(self, x):
         return x + self.residual_block(x)
@@ -692,75 +723,171 @@ class ResidualStack(nn.Module):
         self.layers = nn.ModuleList([ResidualBlock(C_in,C_out,C_mid) for _ in range(self.num_residual_layers)])
 
     def forward(self, x):
-        for i in range(self._num_residual_layers):
-            x = self._layers[i](x)
+        for i in range(self.num_residual_layers):
+            x = self.layers[i](x)
         x = F.relu(x)
         return x
 
-class Encoder(nn.Module):
-    def __init__(self, in_channels, num_hiddens, num_residual_layers, num_residual_hiddens):
-        super(Encoder, self).__init__()
+class VQ_VAE_Encoder(nn.Module):
+    def __init__(self,
+                 C_in=3,
+                 C_Conv2d=32,
+                 num_residual_layers=2):
+        super(VQ_VAE_Encoder, self).__init__()
         '''
         DocString comment here
         '''
-        self._conv_1 = nn.Conv2d(in_channels=in_channels,
-                                 out_channels=num_hiddens//2,
+        self.conv1 = nn.Conv2d(in_channels=C_in,
+                                 out_channels=C_Conv2d,
                                  kernel_size=4,
-                                 stride=2, padding=1)
-        self._conv_2 = nn.Conv2d(in_channels=num_hiddens//2,
-                                 out_channels=num_hiddens,
+                                 stride=2, 
+                                 padding=1,
+                                 dilation=1)
+        self.bn1 = torch.nn.BatchNorm2d(num_features = C_Conv2d)
+        self.conv2 = nn.Conv2d(in_channels=C_Conv2d,
+                                 out_channels=C_Conv2d,
                                  kernel_size=4,
-                                 stride=2, padding=1)
-        self._conv_3 = nn.Conv2d(in_channels=num_hiddens,
-                                 out_channels=num_hiddens,
+                                 stride=2,
+                                 padding=1,
+                                 dilation=1)
+        self.bn2 = torch.nn.BatchNorm2d(num_features = C_Conv2d)
+        self.conv3 = nn.Conv2d(in_channels=C_Conv2d,
+                                 out_channels=C_Conv2d,
                                  kernel_size=3,
-                                 stride=1, padding=1)
-        self._residual_stack = ResidualStack(in_channels=num_hiddens,
-                                             num_hiddens=num_hiddens,
-                                             num_residual_layers=num_residual_layers,
-                                             num_residual_hiddens=num_residual_hiddens)
+                                 stride=1,
+                                 padding=1,
+                                 dilation=1)
+        self.residual_stack = ResidualStack(C_in = C_Conv2d,
+                                             C_out = C_Conv2d,
+                                             C_mid = C_Conv2d,
+                                             num_residual_layers = num_residual_layers)
 
     def forward(self, inputs):
-        x = F.relu(self._conv_1(inputs))
-        x = F.relu(self._conv_2(x))
-        x = self._residual_stack(self._conv_3(x))
-        return (x)
+        x = F.relu(self.conv1(inputs))
+        x = self.bn1(x)
+        x = F.relu(self.conv2(x))
+        x = self.bn2(x)
+        x = self.conv3(x)
+        x = self.residual_stack(x)
+        return x
     
-class Decoder(nn.Module):
-    def __init__(self, in_channels, num_hiddens, num_residual_layers, num_residual_hiddens):
-        super(Decoder, self).__init__()
+class VQ_VAE_Decoder(nn.Module):
+    def __init__(self, 
+                 C_in = 32,
+                 num_residual_layers = 2):
+        super(VQ_VAE_Decoder, self).__init__()
         '''
         DocString comment here
         '''
-        self._conv_1 = nn.Conv2d(in_channels=in_channels,
-                                 out_channels=num_hiddens,
+        self.conv1 = nn.Conv2d(in_channels=C_in,
+                                 out_channels=C_in,
                                  kernel_size=3, 
-                                 stride=1, padding=1)
+                                 stride=1,
+                                 padding=1,
+                                 dilation=1)
         
-        self._residual_stack = ResidualStack(in_channels=num_hiddens,
-                                             num_hiddens=num_hiddens,
-                                             num_residual_layers=num_residual_layers,
-                                             num_residual_hiddens=num_residual_hiddens)
+        self.residual_stack = ResidualStack(C_in = C_in, C_out = C_in, C_mid = C_in, num_residual_layers = num_residual_layers)
         
-        self._conv_trans_1 = nn.ConvTranspose2d(in_channels=num_hiddens, 
-                                                out_channels=num_hiddens//2,
+        self.conv_trans_1 = nn.ConvTranspose2d(in_channels=C_in, 
+                                                out_channels=C_in,
                                                 kernel_size=4, 
-                                                stride=2, padding=1)
+                                                stride=2,
+                                                padding=1)
         
-        self._conv_trans_2 = nn.ConvTranspose2d(in_channels=num_hiddens//2, 
+        self.conv_trans_2 = nn.ConvTranspose2d(in_channels=C_in, 
                                                 out_channels=3,
                                                 kernel_size=4, 
-                                                stride=2, padding=1)
+                                                stride=2, 
+                                                padding=1)
 
     def forward(self, inputs):
-        x = self._conv_1(inputs)
+        x = self.conv1(inputs)
+        x = self.residual_stack(x)
+        x = F.relu(self.conv_trans_1(x))    
+        x = self.conv_trans_2(x)
+        x = torch.sigmoid(x)    
+        return x
+    
+    
+class My_VQ_VAE_Encoder_Decoder(nn.Module):
+    def __init__(self,
+                 C_in=3,
+                 C_Conv2d=32,
+                 num_residual_layers=2):
+        super(My_VQ_VAE_Encoder, self).__init__()
+        '''
+        DocString comment here
+        '''
+        self.conv1 = nn.Conv2d(in_channels=C_in,
+                                 out_channels=C_Conv2d,
+                                 kernel_size=4,
+                                 stride=2, 
+                                 padding=1,
+                                 dilation=1)
+        self.bn1 = torch.nn.BatchNorm2d(num_features = C_Conv2d)
+        self.conv2 = nn.Conv2d(in_channels=C_Conv2d,
+                                 out_channels=C_Conv2d,
+                                 kernel_size=4,
+                                 stride=2,
+                                 padding=1,
+                                 dilation=1)
+        self.bn2 = torch.nn.BatchNorm2d(num_features = C_Conv2d)
+        self.conv3 = nn.Conv2d(in_channels=C_Conv2d,
+                                 out_channels=C_Conv2d,
+                                 kernel_size=3,
+                                 stride=1,
+                                 padding=1,
+                                 dilation=1)
+        self.residual_stack = ResidualStack(C_in = C_Conv2d,
+                                             C_out = C_Conv2d,
+                                             C_mid = C_Conv2d,
+                                             num_residual_layers = num_residual_layers)
+
+    def forward(self, inputs):
+        x = F.relu(self.conv1(inputs))
+        x = self.bn1(x)
+        x = F.relu(self.conv2(x))
+        x = self.bn2(x)
+        x = self.conv3(x)
+        x = self.residual_stack(x)
+        return x
+    
+class My_VQ_VAE_Decoder(nn.Module):
+    def __init__(self, 
+                 C_in = 32,
+                 num_residual_layers = 2):
+        super(My_VQ_VAE_Decoder, self).__init__()
+        '''
+        DocString comment here
+        '''
+        self.conv1 = nn.Conv2d(in_channels=C_in,
+                                 out_channels=C_in,
+                                 kernel_size=3, 
+                                 stride=1,
+                                 padding=1,
+                                 dilation=1)
         
-        x = self._residual_stack(x)
+        self.residual_stack = ResidualStack(C_in = C_in, C_out = C_in, C_mid = C_in, num_residual_layers = num_residual_layers)
         
-        x = self._conv_trans_1(x)
-        x = F.relu(x)
+        self.conv_trans_1 = nn.ConvTranspose2d(in_channels=C_in, 
+                                                out_channels=C_in,
+                                                kernel_size=4, 
+                                                stride=2,
+                                                padding=1)
         
-        return self._conv_trans_2(x)
+        self.conv_trans_2 = nn.ConvTranspose2d(in_channels=C_in, 
+                                                out_channels=3,
+                                                kernel_size=4, 
+                                                stride=2, 
+                                                padding=1)
+
+    def forward(self, inputs):
+        x = self.conv1(inputs)
+        x = self.residual_stack(x)
+        x = F.relu(self.conv_trans_1(x))    
+        x = self.conv_trans_2(x)
+        x = torch.sigmoid(x)    
+        return x
 # batch_size = 256
 # num_training_updates = 15000
 
@@ -898,8 +1025,14 @@ class Model_Trainer:
                 image_batch_recon = self.model(image_batch)
                 
                 # reconstruction error: calculate the batch loss
-                loss = self.loss_fn(image_batch_recon, image_batch)
                 
+                if len(image_batch_recon) == 3:
+                    vq_loss, image_batch_recon_, perplexity = image_batch_recon
+                    recon_error = F.mse_loss(image_batch_recon_, image_batch)# / data_variance
+                    loss = recon_error + vq_loss
+                else:
+                    loss = self.loss_fn(image_batch_recon, image_batch)
+                    
                 ## find the loss and update the model parameters accordingly
                 # clear the gradients of all optimized variables
                 self.optimizer.zero_grad()
