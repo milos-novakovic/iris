@@ -640,7 +640,7 @@ else:
     ##########################    
     # Use a pretrained model #
     ##########################
-    current_time_str = "2022_12_15_02_13_36"#"2022_12_03_19_39_08"#'2022_12_02_17_59_16' # 17h 13min 14 sec 20th Nov. 2022
+    current_time_str = "2022_12_15_13_45_59"#"2022_12_15_02_13_36"#"2022_12_03_19_39_08"#'2022_12_02_17_59_16' # 17h 13min 14 sec 20th Nov. 2022
     
     # load model that was trained at newly given current_time_str 
     trainer.load_model(current_time_str = current_time_str, 
