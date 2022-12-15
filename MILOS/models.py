@@ -1251,7 +1251,7 @@ class Model_Trainer:
 
         # cast it to np.array type 
         self.test_loss = np.array(self.test_loss)
-        print(f'Average reconstruction error: {np.mean(self.test_loss)}')
+        print(f'Average reconstruction error: {np.round(np.mean(self.test_loss)*1e6,1)} e-6')
         print("Testing Ended")
 
     def plot(self, train_val_plot = True, test_plot = True) -> None:
