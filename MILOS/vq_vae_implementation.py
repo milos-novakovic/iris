@@ -159,27 +159,35 @@ class Decoder(nn.Module):
         return self._conv_trans_2(x)
 
 class Model(nn.Module):
-    def __init__(self, num_hiddens = 128, num_residual_layers = 2, num_residual_hiddens = 32, 
-                 num_embeddings = 512, embedding_dim = 64, commitment_cost = 0.25, decay=0):
+    def __init__(self, C_enc = 128, C_dec = 128, 
+                 num_residual_layers = 2, C_res_block = 32, 
+                 K = 512, D = 64, beta = 0.25, decay=0):
         super(Model, self).__init__()
+        self.C_enc = C_enc
+        self.C_dec = C_dec
+        self.num_residual_layers = num_residual_layers 
+        self.C_res_block =  C_res_block 
+        self.K = K
+        self.D = D 
+        self.beta = beta
+        self.decay=decay
         
-        self._encoder = Encoder(3, num_hiddens,
+        self._encoder = Encoder(3, C_enc,
                                 num_residual_layers, 
-                                num_residual_hiddens)
-        self._pre_vq_conv = nn.Conv2d(in_channels=num_hiddens, 
-                                      out_channels=embedding_dim,
+                                C_res_block)
+        self._pre_vq_conv = nn.Conv2d(in_channels=C_enc, 
+                                      out_channels=D,
                                       kernel_size=1, 
                                       stride=1)
         if decay > 0.0:
-            #self._vq_vae = VectorQuantizerEMA(num_embeddings, embedding_dim,commitment_cost, decay)
+            #self._vq_vae = VectorQuantizerEMA(K, D,beta, decay)
             assert(False)
         else:
-            self._vq_vae = VectorQuantizer(num_embeddings, embedding_dim,
-                                           commitment_cost)
-        self._decoder = Decoder(embedding_dim,
-                                num_hiddens, 
+            self._vq_vae = VectorQuantizer(K, D, beta)
+        self._decoder = Decoder(D,
+                                C_dec, 
                                 num_residual_layers, 
-                                num_residual_hiddens)
+                                C_res_block)
 
     def forward(self, x):
         z = self._encoder(x)
@@ -192,25 +200,28 @@ class Model(nn.Module):
 #batch_size = 256
 #num_training_updates = 15000
 
-num_hiddens = 128
-num_residual_hiddens = 32
+C_enc = 128
+C_dec = 128
+C_res_block = 32
 num_residual_layers = 2
 
-#D
-embedding_dim = 64
-#K
-num_embeddings = 512
+#embedding dimension
+D = 64
+#number of embeddings
+K_bits = 9#14
+K = int(2 ** K_bits)#512
 
-commitment_cost = 0.25
+beta = 0.25
 
 decay = 0#0.99
 
 learning_rate = 1e-3
 
-vq_vae_implemented_model = Model(num_hiddens, 
-                                 num_residual_layers,
-                                 num_residual_hiddens,
-                                 num_embeddings,
-                                 embedding_dim,
-                                 commitment_cost,
-                                 decay)#.to(device)
+vq_vae_implemented_model = Model(C_enc = C_enc,
+                                 C_dec = C_dec, 
+                                 num_residual_layers = num_residual_layers,
+                                 C_res_block = C_res_block,
+                                 K = K,
+                                 D = D,
+                                 beta = beta,
+                                 decay = decay)#.to(device)

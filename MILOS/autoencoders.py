@@ -591,26 +591,27 @@ for sorted_Layer_Number in sorted_Layer_Numbers:
         autoencoder_config_params_unwrapped_sorted[layer_name + '->' +feature_name_feature_value] = \
         autoencoder_config_params_wrapped_sorted[layer_name][feature_name_feature_value]
 
-# VQ VAE params
-vector_quantizer_config_params_wrapped_sorted= {}
-#K
-vector_quantizer_config_params_wrapped_sorted['num_embeddings'] = 128#int(2**14)
-#D
-vector_quantizer_config_params_wrapped_sorted['embedding_dim'] = 64#32
-#commitment loss hyper param
-vector_quantizer_config_params_wrapped_sorted['beta'] = 0.25
-#prior on the embedding space matrix
-vector_quantizer_config_params_wrapped_sorted['E_prior_weight_distribution'] = 'uniform'
+# # VQ VAE params
+# vector_quantizer_config_params_wrapped_sorted= {}
+# K_bits = 9#14
+# #K
+# vector_quantizer_config_params_wrapped_sorted['num_embeddings'] = int(2**K_bits)
+# #D
+# vector_quantizer_config_params_wrapped_sorted['embedding_dim'] = 64#32#64#32
+# #commitment loss hyper param
+# vector_quantizer_config_params_wrapped_sorted['beta'] = 0.25
+# #prior on the embedding space matrix
+# vector_quantizer_config_params_wrapped_sorted['E_prior_weight_distribution'] = 'uniform'
 
 # set the training parameters
 loss_fn = nn.MSELoss()
 device = torch.device("cuda:0" if USE_GPU and torch.cuda.is_available() else "cpu") 
 #model = Vanilla_Autoencoder_v02(autoencoder_config_params_wrapped_sorted)
-model = VQ_VAE(vector_quantizer_config_params_wrapped_sorted = vector_quantizer_config_params_wrapped_sorted,
-                 encoder_config_params_wrapped_sorted = None, 
-                 decoder_config_params_wrapped_sorted = None,
-                 encoder_model = VQ_VAE_Encoder(C_in = 3, C_Conv2d = 64, num_residual_layers = 2),
-                 decoder_model = VQ_VAE_Decoder(C_in = 64, num_residual_layers = 2))
+# model = VQ_VAE(vector_quantizer_config_params_wrapped_sorted = vector_quantizer_config_params_wrapped_sorted,
+#                  encoder_config_params_wrapped_sorted = None, 
+#                  decoder_config_params_wrapped_sorted = None,
+#                  encoder_model = VQ_VAE_Encoder(C_in = 3, C_Conv2d = 64, num_residual_layers = 2),
+#                  decoder_model = VQ_VAE_Decoder(C_in = 64, num_residual_layers = 2))
 
 model = vq_vae_implemented_model
 #model_name = 'vanilla_autoencoder'
