@@ -16,7 +16,7 @@ from collections import OrderedDict
 import yaml
 #from yaml.loader import SafeLoader
 from models import *
-from vq_vae_implementation import *
+
 
 from mpl_toolkits.axes_grid1 import ImageGrid
 
@@ -81,7 +81,7 @@ def show(original_imgs, reconstructed_imgs, imgs_ids, imgs_losses, savefig_path)
     plt.savefig(savefig_path,bbox_inches='tight')
     plt.close()
 
-def visualise_output(images, model, compose_transforms, imgs_ids, imgs_losses, savefig_path):
+def visualise_output(images, model, compose_transforms, imgs_ids, imgs_losses, savefig_path, device):
 
     with torch.no_grad():
         # original images
@@ -92,6 +92,9 @@ def visualise_output(images, model, compose_transforms, imgs_ids, imgs_losses, s
         reconstructed_images = images.to(device)
         model = model.to(device)
         reconstructed_images = model(reconstructed_images)
+        if len(reconstructed_images) == 3:
+            reconstructed_images = reconstructed_images[1]
+        
         # put reconstructed mini-batch of images to cpu
         reconstructed_images = reconstructed_images.to('cpu') # torch.Size([50, 3, 64, 64])        
         
@@ -636,7 +639,7 @@ else:
     ##########################    
     # Use a pretrained model #
     ##########################
-    current_time_str = "2022_12_03_19_39_08"#'2022_12_02_17_59_16' # 17h 13min 14 sec 20th Nov. 2022
+    current_time_str = "2022_12_15_02_13_36"#"2022_12_03_19_39_08"#'2022_12_02_17_59_16' # 17h 13min 14 sec 20th Nov. 2022
     
     # load model that was trained at newly given current_time_str 
     trainer.load_model(current_time_str = current_time_str, 
@@ -701,7 +704,8 @@ visualise_output(images             = trainer.top_images,
                  compose_transforms = TRANSFORM_IMG,
                  imgs_ids           = trainer.imgs_ids,
                  imgs_losses        = trainer.imgs_losses,
-                 savefig_path       = './SHOW_IMAGES/WORST_RECONSTRUCTED_TEST_IMAGES.png')
+                 savefig_path       = './SHOW_IMAGES/WORST_RECONSTRUCTED_TEST_IMAGES.png',
+                 device = trainer.device)
 
 ######################    
 # Plot top-N best reconstructed test images
@@ -717,6 +721,7 @@ visualise_output(images             = trainer.top_images,
                  compose_transforms = TRANSFORM_IMG,
                  imgs_ids           = trainer.imgs_ids,
                  imgs_losses        = trainer.imgs_losses,
-                 savefig_path       = './SHOW_IMAGES/BEST_RECONSTRUCTED_TEST_IMAGES.png')
+                 savefig_path       = './SHOW_IMAGES/BEST_RECONSTRUCTED_TEST_IMAGES.png',
+                 device = trainer.device)
 
 debug =0

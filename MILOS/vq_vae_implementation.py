@@ -1,5 +1,5 @@
 from __future__ import print_function
-
+# https://colab.research.google.com/github/zalandoresearch/pytorch-vq-vae/blob/master/vq-vae.ipynb#scrollTo=P6V6Oe6l6rtr
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -196,7 +196,9 @@ num_hiddens = 128
 num_residual_hiddens = 32
 num_residual_layers = 2
 
+#D
 embedding_dim = 64
+#K
 num_embeddings = 512
 
 commitment_cost = 0.25
@@ -205,4 +207,10 @@ decay = 0#0.99
 
 learning_rate = 1e-3
 
-vq_vae_implemented_model = Model(num_hiddens, num_residual_layers, num_residual_hiddens, num_embeddings, embedding_dim, commitment_cost, decay)#.to(device)
+vq_vae_implemented_model = Model(num_hiddens, 
+                                 num_residual_layers,
+                                 num_residual_hiddens,
+                                 num_embeddings,
+                                 embedding_dim,
+                                 commitment_cost,
+                                 decay)#.to(device)

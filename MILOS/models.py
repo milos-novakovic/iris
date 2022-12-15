@@ -19,6 +19,8 @@ import os
 import pandas as pd
 from torchvision.io import read_image
 
+from vq_vae_implementation import *
+
 class CustomImageDataset(torch.utils.data.Dataset):
     def __init__(self, args, root = False, transform=False, target_transform=False):
         #self.img_labels = pd.read_csv(annotations_file)
@@ -1025,7 +1027,6 @@ class Model_Trainer:
                 image_batch_recon = self.model(image_batch)
                 
                 # reconstruction error: calculate the batch loss
-                
                 if len(image_batch_recon) == 3:
                     vq_loss, image_batch_recon_, perplexity = image_batch_recon
                     recon_error = F.mse_loss(image_batch_recon_, image_batch)# / data_variance
@@ -1089,7 +1090,13 @@ class Model_Trainer:
                 
                 # reconstruction error
                 # calculate the batch loss
-                loss = self.loss_fn(image_batch_recon, image_batch)
+                if len(image_batch_recon) == 3:
+                    vq_loss, image_batch_recon_, perplexity = image_batch_recon
+                    recon_error = F.mse_loss(image_batch_recon_, image_batch)# / data_variance
+                    loss = recon_error + vq_loss
+                else:
+                    loss = self.loss_fn(image_batch_recon, image_batch)
+                    
                 
                 # since this is validation of the model there is not (backprogagation and update step size)
                   
@@ -1177,7 +1184,8 @@ class Model_Trainer:
         self.autoencoder_config_params_wrapped_sorted = autoencoder_config_params_wrapped_sorted
         
         # create a model (constructor)
-        self.model = Vanilla_Autoencoder_v02(autoencoder_config_params_wrapped_sorted=self.autoencoder_config_params_wrapped_sorted)
+        #self.model = Vanilla_Autoencoder_v02(autoencoder_config_params_wrapped_sorted=self.autoencoder_config_params_wrapped_sorted)
+        self.model = vq_vae_implemented_model
         
         # load the model state from the model path
         self.model.load_state_dict(torch.load(self.model_path))
@@ -1193,26 +1201,26 @@ class Model_Trainer:
         # testing the model #
         ######################
         print("Testing Started")
-        
+
         # init test loss array per mini-batch as an empty array
         self.test_loss = []
-        
+
         # test_samples_loss is pandas DataFrame that has two columns
         # first column name is the test_image_id that is the id of the test image (int type)
         # second column name is the test_image_rec_loss that is the reconstruction loss of the test image with the id equal to test_image_id (float type)
         self.test_samples_loss = {} # test_image_tensor: test_loss
         self.test_samples_loss['test_image_id'] = []
         self.test_samples_loss['test_image_rec_loss'] = []
-        
+
         # put the model to the specified device
         self.model = self.model.to(self.device)
-        
+
         # put the loss to the specified device
         self.loss_fn.to(self.device)
-        
+
         # put loaded model in the evaulation mode
         self.model.eval()
-        
+
         for image_batch, image_id_batch in self.loaders['test']:
             assert(self.loaders['test'].batch_size == 1, f"Mini-batch size of the test set should be 1, because of visualization and plotting later on in the code.")
             
@@ -1227,14 +1235,20 @@ class Model_Trainer:
                 image_batch_recon = self.model(image_batch)
 
                 # reconstruction error (loss calculation)
-                loss = self.loss_fn(image_batch_recon, image_batch)
+                if len(image_batch_recon) == 3:
+                    vq_loss, image_batch_recon_, perplexity = image_batch_recon
+                    recon_error = F.mse_loss(image_batch_recon_, image_batch)# / data_variance
+                    loss = recon_error + vq_loss
+                else:
+                    loss = self.loss_fn(image_batch_recon, image_batch)
+                
 
                 # remember the test_image_id's reconstruction loss (in a different array used for complex plotting)
                 self.test_samples_loss['test_image_rec_loss'].append(loss.item())
                 
                 # remember the test_image_id's reconstruction loss (in a different array used for simple plotting)
                 self.test_loss.append(loss.item())
-        
+
         # cast it to np.array type 
         self.test_loss = np.array(self.test_loss)
         print(f'Average reconstruction error: {np.mean(self.test_loss)}')
@@ -1268,7 +1282,7 @@ class Model_Trainer:
             plt.scatter(x_scatter, y_scatter, s=area, c=colors, alpha=0.4)
             ax.set_yscale('log')
             plt.title(f'Test Loss per sample in the Test set \n'+
-                      f'(Avg. = {y_scatter.mean()*1e3 : .2f} e-3)')
+                        f'(Avg. = {y_scatter.mean()*1e3 : .2f} e-3)')
             plt.grid()
             plt.xlabel('Test sample ids')
             plt.ylabel('Testing Loss')
