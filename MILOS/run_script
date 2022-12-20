@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+# declare an array variable
+K_array=( 512 256 128 64 32 16 8 4 2 1 )
+#D_array=( 64 32 16 8 4 2 1 )
+D_array=( 64 )
+#D=64
+# get length of an array
+K_length=${#K_array[@]}
+D_length=${#D_array[@]}
+id=0
+for (( d=0; d<D_length; d++ ));
+do
+    for (( k=0; k<K_length; k++ ));
+    do
+    id=$((id + 1)) 
+    K="${K_array[$k]}"
+    D="${D_array[$d]}"
+    
+    printf "$id) Running for K = $K & D = $D :\n"
+    
+    python /home/novakovm/iris/MILOS/autoencoders.py $K $D $id
+    printf "\n"
+    printf "**************************************** \n"
+    printf "\n"
+    #printf "Current index %d with value %s\n" $j "${mahabharata[$j]}"
+    done
+done
+
+
+# #echo "Running for K = 512 & D = 64 :"
+# #python /home/novakovm/iris/MILOS/autoencoders.py 512 64 0
+
+# #!/bin/bash
+# # declare an array called array and define 3 vales
+
+# # get length of an array
+# length=${#array[@]}
+
+# id=0
+
+# for K in "${array[@]}"
+# do
+#     #id = $(( $id + 1 ))
+#     id=$((id + 1)) 
+#     echo 
+#     python /home/novakovm/iris/MILOS/autoencoders.py $K 64 $id
+# done

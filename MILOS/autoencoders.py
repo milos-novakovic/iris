@@ -92,7 +92,7 @@ def visualise_output(images, model, compose_transforms, imgs_ids, imgs_losses, s
         reconstructed_images = images.to(device)
         model = model.to(device)
         reconstructed_images = model(reconstructed_images)
-        if len(reconstructed_images) == 3:
+        if len(reconstructed_images) == 2:
             reconstructed_images = reconstructed_images[1]
         
         # put reconstructed mini-batch of images to cpu
@@ -628,10 +628,30 @@ training_args['model']              = model
 training_args['model_name']         = model_name
 training_args['loaders']            = loaders
 training_args['optimizer_settings'] = optimizer_settings #torch.optim.Adam(params=model.parameters(), lr=LEARNING_RATE)#, weight_decay=1e-5)
-training_args['main_folder_path']   = main_folder_path
+
+# create a Folder where one will save everything relevant and important for trainer model
+# old
+# training_args['main_folder_path']   = main_folder_path
+# new
+run_id = int(sys.argv[3])
+trainer_folder_path = main_folder_path + "/" + \
+                      str(run_id).zfill(3) + "_" + model_name + \
+                      '_K_' + str(model.args_VQ['K']) + \
+                      '_D_' + str(model.args_VQ['D'])
+training_args['main_folder_path']   = trainer_folder_path
+
+if not(os.path.exists(trainer_folder_path)):
+    os.system(f'mkdir {trainer_folder_path}')
+
 
 # create a trainer object
 trainer = Model_Trainer(args=training_args)
+
+
+
+
+trainer.main_folder_path   =  trainer_folder_path
+
 
 if not USE_PRETRAINED_VANILLA_AUTOENCODER:
     # start the training and validation procedure
@@ -705,7 +725,7 @@ visualise_output(images             = trainer.top_images,
                  compose_transforms = TRANSFORM_IMG,
                  imgs_ids           = trainer.imgs_ids,
                  imgs_losses        = trainer.imgs_losses,
-                 savefig_path       = './SHOW_IMAGES/WORST_RECONSTRUCTED_TEST_IMAGES.png',
+                 savefig_path       = trainer.main_folder_path + '/WORST_RECONSTRUCTED_TEST_IMAGES.png',
                  device = trainer.device)
 
 ######################    
@@ -722,7 +742,7 @@ visualise_output(images             = trainer.top_images,
                  compose_transforms = TRANSFORM_IMG,
                  imgs_ids           = trainer.imgs_ids,
                  imgs_losses        = trainer.imgs_losses,
-                 savefig_path       = './SHOW_IMAGES/BEST_RECONSTRUCTED_TEST_IMAGES.png',
+                 savefig_path       = trainer.main_folder_path + '/BEST_RECONSTRUCTED_TEST_IMAGES.png',
                  device = trainer.device)
 
 debug =0

@@ -1235,8 +1235,8 @@ class Model_Trainer:
                 image_batch_recon = self.model(image_batch)
 
                 # reconstruction error (loss calculation)
-                if len(image_batch_recon) == 3:
-                    vq_loss, image_batch_recon_, perplexity = image_batch_recon
+                if len(image_batch_recon) == 2:
+                    vq_loss, image_batch_recon_ = image_batch_recon
                     recon_error = F.mse_loss(image_batch_recon_, image_batch)# / data_variance
                     loss = recon_error + vq_loss
                 else:
@@ -1504,8 +1504,7 @@ class Model_Trainer:
         plt.grid()
         plt.xlabel('Test sample ids')
         plt.ylabel('Testing Loss')
-        plt.savefig(self.main_folder_path +\
-        f"/SHOW_IMAGES/Test_Loss_Over_Test_Image_IDs_based_on_following_feature_shapes_{plot_title}.png")
+        plt.savefig(self.main_folder_path + f"/Test_Loss_Over_Test_Image_IDs_based_on_following_feature_shapes_{plot_title}.png")
         plt.close()
             
     def get_worst_test_samples(self, TOP_WORST_RECONSTRUCTED_TEST_IMAGES) -> None:
@@ -1515,7 +1514,7 @@ class Model_Trainer:
                                                             .reset_index(drop=True)
         #pick top- TOP_WORST_RECONSTRUCTED_TEST_IMAGES worst reconstructed images
         self.df_worst_reconstructed_test_images = self.df_test_samples_loss.head(TOP_WORST_RECONSTRUCTED_TEST_IMAGES)
-        print(f"pick top {TOP_WORST_RECONSTRUCTED_TEST_IMAGES} worst reconstructed images\n", self.df_worst_reconstructed_test_images.to_string())
+        #print(f"pick top {TOP_WORST_RECONSTRUCTED_TEST_IMAGES} worst reconstructed images\n", self.df_worst_reconstructed_test_images.to_string())
 
 
         self.top_images, self.imgs_ids , self.imgs_losses = [], [], []
@@ -1545,7 +1544,7 @@ class Model_Trainer:
                                                             .reset_index(drop=True)
         #pick top- TOP_BEST_RECONSTRUCTED_TEST_IMAGES best reconstructed images
         self.df_best_reconstructed_test_images = self.df_test_samples_loss.head(TOP_BEST_RECONSTRUCTED_TEST_IMAGES)
-        print(f"pick top {TOP_BEST_RECONSTRUCTED_TEST_IMAGES} best reconstructed images\n", self.df_best_reconstructed_test_images.to_string())
+        #print(f"pick top {TOP_BEST_RECONSTRUCTED_TEST_IMAGES} best reconstructed images\n", self.df_best_reconstructed_test_images.to_string())
 
 
         self.top_images, self.imgs_ids , self.imgs_losses = [], [], []
