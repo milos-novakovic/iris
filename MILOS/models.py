@@ -1027,8 +1027,8 @@ class Model_Trainer:
                 image_batch_recon = self.model(image_batch)
                 
                 # reconstruction error: calculate the batch loss
-                if len(image_batch_recon) == 3:
-                    vq_loss, image_batch_recon_, perplexity = image_batch_recon
+                if len(image_batch_recon) == 2:
+                    vq_loss, image_batch_recon_ = image_batch_recon
                     recon_error = F.mse_loss(image_batch_recon_, image_batch)# / data_variance
                     loss = recon_error + vq_loss
                 else:
@@ -1090,8 +1090,8 @@ class Model_Trainer:
                 
                 # reconstruction error
                 # calculate the batch loss
-                if len(image_batch_recon) == 3:
-                    vq_loss, image_batch_recon_, perplexity = image_batch_recon
+                if len(image_batch_recon) == 2:
+                    vq_loss, image_batch_recon_ = image_batch_recon
                     recon_error = F.mse_loss(image_batch_recon_, image_batch)# / data_variance
                     loss = recon_error + vq_loss
                 else:
