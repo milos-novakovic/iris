@@ -1,5 +1,4 @@
 from __future__ import print_function
-# https://colab.research.google.com/github/zalandoresearch/pytorch-vq-vae/blob/master/vq-vae.ipynb#scrollTo=P6V6Oe6l6rtr
 
 import matplotlib.pyplot as plt
 import numpy as np
