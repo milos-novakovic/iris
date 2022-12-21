@@ -100,6 +100,7 @@ class Encoder(nn.Module):
     def __init__(self, args_encoder, res_block_args):
         super(Encoder, self).__init__()
 
+        self.args_encoder = args_encoder 
         self.sequential_convs = nn.Sequential(
                                                 nn.Conv2d(  in_channels=args_encoder['conv1_Cin'],#Cin
                                                             out_channels=args_encoder['conv1_Cout'],#64
@@ -129,11 +130,20 @@ class Encoder(nn.Module):
                                                 stride=args_encoder['channel_adjusting_conv_s'],#1,
                                                 padding=args_encoder['channel_adjusting_conv_p']#0
                                                 )
-        
+        if args_encoder['M'] == 0:
+            # First we calculate the padding
+            padding = (0,1,0,1) #param_value_dict['Padding_W_left'],
+                        #                param_value_dict['Padding_W_right'],
+                        #                param_value_dict['Padding_H_top'],
+                        #                param_value_dict['Padding_H_bottom'])
+            self.zeropad1=  nn.ZeroPad2d(padding)
+
     def forward(self, x):
         x = self.sequential_convs(x)
         x = self.residual_stack(x)
         x = self.channel_adjusting_conv(x)
+        if self.args_encoder['M'] == 0:
+            x = self.zeropad1(x)
         return x
     
 class Decoder(nn.Module):
@@ -252,6 +262,7 @@ args_VQ['M'] = M
 # 3 × 3 blocks (implemented as ReLU, 3x3 conv, ReLU, 1x1 conv), all having 256 hidden units. 
 
 args_encoder = {}
+args_encoder['M']=M #neccecary because of zero padding layer
 args_encoder['conv1_Cin'] = 3 #Cin
 args_encoder['conv1_Cout'] = 256 #64 #64
 args_encoder['conv1_k'] = 4 #4
@@ -356,23 +367,13 @@ res_block_args['C_mid'] = 256#32
 args_decoder['CONV_LAYERS'] = 4#TRANS_CONV_LAYER_NUMBER
 for i in range(1,args_decoder['CONV_LAYERS']+1):
     args_decoder[f'trans_conv{i}_Cin'] = args_decoder['channel_adjusting_conv_Cout'] #128
-    if M == 1:
-        args_decoder[f'trans_conv{i}_k'] = 4#TRANS_CONV_KERNEL_SIZE#4#8#4 #4
-    elif M == 0:
-        args_decoder[f'trans_conv{i}_k'] = 5
-    else:
-        args_decoder[f'trans_conv{i}_k'] = 4#TRANS_CONV_KERNEL_SIZE#4#8#4 #4
+    args_decoder[f'trans_conv{i}_k'] = 4#TRANS_CONV_KERNEL_SIZE#4#8#4 #4
     args_decoder[f'trans_conv{i}_s'] = 2#8#2
     args_decoder[f'trans_conv{i}_p'] = 0#1#1
     
     if i == args_decoder['CONV_LAYERS']:
         args_decoder[f'trans_conv{i}_Cout'] = 3 # last conv layer C_out
-        if M == 1:
-            args_decoder[f'trans_conv{i}_k'] += 2 #8#4 #4
-        elif M == 0:
-            args_decoder[f'trans_conv{i}_k'] += 3 #8#4 #4
-        else:
-            args_decoder[f'trans_conv{i}_k'] += 2 #8#4 #4
+        args_decoder[f'trans_conv{i}_k'] += 2 #8#4 #4
     else:
         args_decoder[f'trans_conv{i}_Cout'] = 256#64#64
 

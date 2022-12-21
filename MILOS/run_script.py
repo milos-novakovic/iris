@@ -12,10 +12,12 @@ import numpy as np
 #         6  5  4  3 2 1
 #D_array=( 6 5 4 3 2 1 )
 
+
+K_BIT_MIN, K_BIT_MAX = 1 , 20
 # countinous vq-vae learns with K=512 D=256 and M=2
 D_array = np.array([256])  #np.array([256, 128, 64, 32])
 M_array = np.array([0, 1]) #np.array([0, 1, 3])   #np.array([1, 2, 3, 4, 5, 6])
-K_array = 2 ** np.arange(17, 20)    # from 1 bit to 19bits (ground truth is 14bits)
+K_array = 2 ** np.arange(K_BIT_MIN, K_BIT_MAX + 1)    # from 1 bit to 19bits (ground truth is 14bits)
 
 run_id=0
 input_bits=14
@@ -37,8 +39,8 @@ os.environ['MKL_THREADING_LAYER'] = 'GNU'
 # 6) Running for K = 16384 & D = 256 & M = 1 (i.e. bits = 14):
 # 7) Running for K = 128 & D = 256 & M = 0 (i.e. bits = 7):
 for d in D_array:
-    for m in M_array:
-        for k in K_array:
+    for k in K_array:
+        for m in M_array:
             compressed_number_of_bits_per_image = int(np.ceil((m+1)**2 * np.log2(k)))
             
             if compressed_number_of_bits_per_image > 50:
