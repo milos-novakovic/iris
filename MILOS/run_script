@@ -1,13 +1,28 @@
 #!/usr/bin/env bash
 # declare an array variable
-K_array=( 512 256 128 64 32 16 8 4 2 1 )
-#D_array=( 64 32 16 8 4 2 1 )
-D_array=( 64 )
-#D=64
+# bigger runs (for night)
+#K_array=( 512 256 128 64 32 16 8 4 2 )
+#           9  8    7   6  5  4 3 2 1
+#D_array=( 1 2 3 4 5 6 7 8 9 10 11 12)
+
+# smaller runs (for day) 
+K_array=( 64 32 16 8 )
+#         6   5  4  3
+D_array=( 6 5 4 3 2 1 )
+
+
 # get length of an array
 K_length=${#K_array[@]}
 D_length=${#D_array[@]}
 id=0
+
+#C=3
+#H=64
+#W=64
+L=14
+#input_bits=$(($C * $H * $W * 8))
+input_bits=$(($L))
+
 for (( d=0; d<D_length; d++ ));
 do
     for (( k=0; k<K_length; k++ ));
@@ -15,9 +30,9 @@ do
     id=$((id + 1)) 
     K="${K_array[$k]}"
     D="${D_array[$d]}"
-    
-    printf "$id) Running for K = $K & D = $D :\n"
-    
+    log2_K=$(awk -v a="$K" 'BEGIN{print log(a)/log(2)}')
+    bits=$(($D * $log2_K))
+    printf "$id) Running for K = $K & D = $D (i.e. bits = $bits)"
     python /home/novakovm/iris/MILOS/autoencoders.py $K $D $id
     printf "\n"
     printf "**************************************** \n"

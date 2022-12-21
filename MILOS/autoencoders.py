@@ -98,24 +98,24 @@ def visualise_output(images, model, compose_transforms, imgs_ids, imgs_losses, s
         # put reconstructed mini-batch of images to cpu
         reconstructed_images = reconstructed_images.to('cpu') # torch.Size([50, 3, 64, 64])        
         
-        diff_0_1 = (original_images-reconstructed_images)
-        # print statics on difference between original and reconstructed images (0.0-1.0 float range)
-        print("The test set difference between original and reconstructed images stats (0.0-1.0 float range):")
-        print(f"Size of tensor = {diff_0_1.size()}")
-        print(f"Mean of tensor = {diff_0_1.mean()}")
-        print(f"Min of tensor = {diff_0_1.min()}")
-        print(f"Max of tensor = {diff_0_1.max()}\n")
+        # diff_0_1 = (original_images-reconstructed_images)
+        # # print statics on difference between original and reconstructed images (0.0-1.0 float range)
+        # print("The test set difference between original and reconstructed images stats (0.0-1.0 float range):")
+        # print(f"Size of tensor = {diff_0_1.size()}")
+        # print(f"Mean of tensor = {diff_0_1.mean()}")
+        # print(f"Min of tensor = {diff_0_1.min()}")
+        # print(f"Max of tensor = {diff_0_1.max()}\n")
         
         original_images = to_img(original_images, compose_transforms)
         reconstructed_images = to_img(reconstructed_images, compose_transforms)        
         
-        diff_0_255 = (original_images-reconstructed_images)
-        # print statics on difference between original and reconstructed images (0-255 int range)
-        print("The test set difference between original and reconstructed images stats (0-255 int range):")
-        print(f"Size of tensor = {diff_0_255.size()}")
-        print(f"Mean of tensor = {diff_0_255.float().mean()}")
-        print(f"Min of tensor = {diff_0_255.min()}")
-        print(f"Max of tensor = {diff_0_255.max()}\n")
+        # diff_0_255 = (original_images-reconstructed_images)
+        # # print statics on difference between original and reconstructed images (0-255 int range)
+        # print("The test set difference between original and reconstructed images stats (0-255 int range):")
+        # print(f"Size of tensor = {diff_0_255.size()}")
+        # print(f"Mean of tensor = {diff_0_255.float().mean()}")
+        # print(f"Min of tensor = {diff_0_255.min()}")
+        # print(f"Max of tensor = {diff_0_255.max()}\n")
         
         #images = to_img(images, compose_transforms = compose_transforms)
         

@@ -194,6 +194,17 @@ class VQ_VAE(nn.Module):
 
 args_VQ = {}
 K,D = int(sys.argv[1]), int(sys.argv[2]) # K D
+
+true_number_of_bits_per_image =14
+log2_K=np.log2(K)
+compressed_number_of_bits_per_image = int(np.ceil(D * log2_K))
+compression_gain = true_number_of_bits_per_image / compressed_number_of_bits_per_image
+print(f"True # of bits per image        = {true_number_of_bits_per_image}")
+print(f"Compressed # of bits per image  = {true_number_of_bits_per_image}")
+print(f"So a reduction of {round(compression_gain,5)} bits is achieved")
+
+
+
 args_VQ['D'] = D # 64 #embedding dimension
 args_VQ['K'] = K # 512 #number of embeddings
 args_VQ['beta'] = 0.25 #64 #embedding dimension
