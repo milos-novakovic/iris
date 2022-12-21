@@ -5,6 +5,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import sys
+import os
 
 class VectorQuantizer(nn.Module):
     def __init__(self, args_VQ):
@@ -196,12 +197,29 @@ args_VQ = {}
 K,D = int(sys.argv[1]), int(sys.argv[2]) # K D
 
 true_number_of_bits_per_image =14
-log2_K=np.log2(K)
-compressed_number_of_bits_per_image = int(np.ceil(D * log2_K))
+compressed_number_of_bits_per_image = int(np.ceil(D * np.log2(K)))
 compression_gain = true_number_of_bits_per_image / compressed_number_of_bits_per_image
 print(f"True # of bits per image        = {true_number_of_bits_per_image}")
 print(f"Compressed # of bits per image  = {true_number_of_bits_per_image}")
 print(f"So a reduction of {round(compression_gain,5)} bits is achieved")
+
+# Folder renaming
+# run_id = 0
+# for d in np.array([6, 5, 4, 3, 2, 1]):
+#     for k in np.array([64, 32, 16, 8]):
+#         run_id += 1
+#         compressed_number_of_bits_per_image = int(np.ceil(d * np.log2(k)))
+#         trainer_folder_path_old = "/home/novakovm/iris/MILOS" + "/" + \
+#                       str(run_id).zfill(3) + "_" + 'VQ_VAE' + \
+#                       '_K_' + str(k) + \
+#                       '_D_' + str(d)
+#         trainer_folder_path_new = "/home/novakovm/iris/MILOS" + "/" + \
+#                       str(run_id).zfill(3) + "_" + 'VQ_VAE' + \
+#                       '_K_' + str(k) + \
+#                       '_D_' + str(d) + \
+#                       '_bits_' + str(compressed_number_of_bits_per_image)
+#         old_name, new_name = trainer_folder_path_old, trainer_folder_path_new
+#         os.system(f"mv {old_name} {new_name}")
 
 
 
