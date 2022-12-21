@@ -1,0 +1,3 @@
+hi
+The model is learning, for K = 128, D= 256, M = 1
+The model is learning, for K = 1024, D= 256, M = 1

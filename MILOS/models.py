@@ -1132,7 +1132,7 @@ class Model_Trainer:
                     min_avg_val_loss        = self.min_val_loss\
                 ))
                 
-                if (epoch+1)>20 and self.train_loss_avg[-1] > 16000*1e-6:
+                if (epoch+1)>=20 and self.train_loss_avg[-1] > 16000*1e-6:
                     print("The model is not learning.")
                     raise KeyboardInterrupt #^C # keyboard interruption = means the model is not learning
 

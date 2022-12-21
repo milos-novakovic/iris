@@ -13,9 +13,9 @@ import numpy as np
 #D_array=( 6 5 4 3 2 1 )
 
 # countinous vq-vae learns with K=512 D=256 and M=2
-D_array = np.array([256])#np.array([256, 128, 64, 32])
-M_array = np.array([0, 1, 3])#np.array([1, 2, 3, 4, 5, 6])
-K_array = 2 ** np.arange(1, 20) # from 1 bit to 19bits (ground truth is 14bits)
+D_array = np.array([256])  #np.array([256, 128, 64, 32])
+M_array = np.array([1]) #np.array([0, 1, 3])   #np.array([1, 2, 3, 4, 5, 6])
+K_array = 2 ** np.arange(1, 12)    # from 1 bit to 19bits (ground truth is 14bits)
 
 run_id=0
 input_bits=14

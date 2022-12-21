@@ -353,16 +353,16 @@ res_block_args['C_in'] = args_decoder['channel_adjusting_conv_Cout'] # 128
 res_block_args['C_mid'] = 256#32
 
 #CONV_LAYERS = 4#int(np.log2(H))
-args_decoder['CONV_LAYERS'] = TRANS_CONV_LAYER_NUMBER
+args_decoder['CONV_LAYERS'] = 4#TRANS_CONV_LAYER_NUMBER
 for i in range(1,args_decoder['CONV_LAYERS']+1):
     args_decoder[f'trans_conv{i}_Cin'] = args_decoder['channel_adjusting_conv_Cout'] #128
-    args_decoder[f'trans_conv{i}_k'] = TRANS_CONV_KERNEL_SIZE#4#8#4 #4
+    args_decoder[f'trans_conv{i}_k'] = 4#TRANS_CONV_KERNEL_SIZE#4#8#4 #4
     args_decoder[f'trans_conv{i}_s'] = 2#8#2
     args_decoder[f'trans_conv{i}_p'] = 0#1#1
     
     if i == args_decoder['CONV_LAYERS']:
         args_decoder[f'trans_conv{i}_Cout'] = 3 # last conv layer C_out
-        #args_decoder[f'trans_conv{i}_k'] += 2 #8#4 #4
+        args_decoder[f'trans_conv{i}_k'] += 2 #8#4 #4
     else:
         args_decoder[f'trans_conv{i}_Cout'] = 256#64#64
 
