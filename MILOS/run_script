@@ -32,7 +32,7 @@ do
     D="${D_array[$d]}"
     log2_K=$(awk -v a="$K" 'BEGIN{print log(a)/log(2)}')
     bits=$(($D * $log2_K))
-    printf "$id) Running for K = $K & D = $D (i.e. bits = $bits)"
+    printf "$id) Running for K = $K & D = $D (i.e. bits = $bits):\n"
     python /home/novakovm/iris/MILOS/autoencoders.py $K $D $id
     printf "\n"
     printf "**************************************** \n"
