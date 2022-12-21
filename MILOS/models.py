@@ -1131,7 +1131,21 @@ class Model_Trainer:
                     min_avg_train_loss      = self.min_train_loss, \
                     min_avg_val_loss        = self.min_val_loss\
                 ))
+                
+                if (epoch+1)>20 and self.train_loss_avg[-1] > 16000*1e-6:
+                    print("The model is not learning.")
+                    raise KeyboardInterrupt #^C # keyboard interruption = means the model is not learning
 
+                
+                # if self.train_loss_avg[-1] < 4000*1e-6:
+                #     k_,d_,m_ = self.model.args_VQ['K'], self.model.args_VQ['D'], self.model.args_VQ['M']
+                #     print(f"The model is learning, for K = {k_}, D= {d_}, M = {m_}")
+                #     raise KeyboardInterrupt
+                
+        
+        with open('log.txt', 'a') as f:
+            k_,d_,m_ = self.model.args_VQ['K'], self.model.args_VQ['D'], self.model.args_VQ['M']
+            f.write(f"The model is learning, for K = {k_}, D= {d_}, M = {m_}\n")
         # get current time in the format YYYY_MM_DD_hh_mm_ss
         self.current_time_str = time.strftime("%Y_%m_%d_%H_%M_%S", time.gmtime(time.time())) # 2022_11_19_20_11_26
 

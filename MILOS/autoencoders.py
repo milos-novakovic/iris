@@ -634,12 +634,13 @@ training_args['optimizer_settings'] = optimizer_settings #torch.optim.Adam(param
 # training_args['main_folder_path']   = main_folder_path
 # new
 run_id = int(sys.argv[3])
-compressed_number_of_bits_per_image = int(np.ceil(D * np.log2(K)))
+compressed_number_of_bits_per_image = int(np.ceil(np.log2(K))) * (M+1) ** 2
 
 trainer_folder_path = main_folder_path + "/" + \
                       str(run_id).zfill(3) + "_" + model_name + \
                       '_K_' + str(model.args_VQ['K']) + \
                       '_D_' + str(model.args_VQ['D']) + \
+                      '_M_' + str(model.args_VQ['M']) + \
                       '_bits_' + str(compressed_number_of_bits_per_image)
 training_args['main_folder_path']   = trainer_folder_path
 
