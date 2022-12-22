@@ -15,7 +15,7 @@ import numpy as np
 
 K_BIT_MIN, K_BIT_MAX = 1 , 20
 # countinous vq-vae learns with K=512 D=256 and M=2
-D_array = np.array([256])  #np.array([256, 128, 64, 32])
+D_array = np.array([256]) #np.array([512, 256, 128, 64, 32, 16, 8, 4])  #np.array([256, 128, 64, 32])
 M_array = np.array([0, 1]) #np.array([0, 1, 3])   #np.array([1, 2, 3, 4, 5, 6])
 K_array = 2 ** np.arange(K_BIT_MIN, K_BIT_MAX + 1)    # from 1 bit to 19bits (ground truth is 14bits)
 
@@ -43,9 +43,9 @@ for d in D_array:
         for m in M_array:
             compressed_number_of_bits_per_image = int(np.ceil((m+1)**2 * np.log2(k)))
             
-            if compressed_number_of_bits_per_image > 50:
-                print(f"Pass the run for K = {k} & D = {d} & M = {m} (i.e. bits = {compressed_number_of_bits_per_image}):\n")
-                continue
+            # if compressed_number_of_bits_per_image > 50:
+            #     print(f"Pass the run for K = {k} & D = {d} & M = {m} (i.e. bits = {compressed_number_of_bits_per_image}):\n")
+            #     continue
             
             run_id += 1
             compression_gain = round(input_bits / compressed_number_of_bits_per_image,3)

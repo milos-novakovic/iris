@@ -1,3 +1,6 @@
 hi
 The model is learning, for K = 128, D= 256, M = 1
 The model is learning, for K = 1024, D= 256, M = 1
+The model is learning, for K = 131072, D= 256, M = 0
+The model is learning, for K = 128, D= 256, M = 1
+The model is learning, for K = 4096, D= 256, M = 1
