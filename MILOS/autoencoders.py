@@ -92,7 +92,7 @@ def visualise_output(images, model, compose_transforms, imgs_ids, imgs_losses, s
         reconstructed_images = images.to(device)
         model = model.to(device)
         reconstructed_images = model(reconstructed_images)
-        if len(reconstructed_images) == 2:
+        if len(reconstructed_images) == 4:
             reconstructed_images = reconstructed_images[1]
         
         # put reconstructed mini-batch of images to cpu

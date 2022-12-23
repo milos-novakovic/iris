@@ -1027,10 +1027,10 @@ class Model_Trainer:
                 image_batch_recon = self.model(image_batch)
                 
                 # reconstruction error: calculate the batch loss
-                if len(image_batch_recon) == 2:
-                    vq_loss, image_batch_recon_ = image_batch_recon
+                if len(image_batch_recon) == 4:
+                    e_and_q_latent_loss, image_batch_recon_, e_latent_loss, q_latent_loss = image_batch_recon                                       
                     recon_error = F.mse_loss(image_batch_recon_, image_batch)# / data_variance
-                    loss = recon_error + vq_loss
+                    loss = recon_error + e_and_q_latent_loss
                 else:
                     loss = self.loss_fn(image_batch_recon, image_batch)
                     
@@ -1090,17 +1090,17 @@ class Model_Trainer:
                 
                 # reconstruction error
                 # calculate the batch loss
-                if len(image_batch_recon) == 2:
-                    vq_loss, image_batch_recon_ = image_batch_recon
+                if len(image_batch_recon) == 4:
+                    e_and_q_latent_loss, image_batch_recon_, e_latent_loss, q_latent_loss = image_batch_recon                                       
                     recon_error = F.mse_loss(image_batch_recon_, image_batch)# / data_variance
-                    loss = recon_error + vq_loss
+                    loss = recon_error + e_and_q_latent_loss
                 else:
                     loss = self.loss_fn(image_batch_recon, image_batch)
                     
                 
                 # since this is validation of the model there is not (backprogagation and update step size)
                   
-                # sum up the current validation loss in the last element of the train_loss_avg
+                # sum up the current validation loss in the last element of the val_loss_avg
                 self.val_loss_avg[-1] += loss.item()
                 
                 # count the number of batches
@@ -1118,7 +1118,7 @@ class Model_Trainer:
             
             # every 10th epoch print intermediate training/validation statistics
             if (epoch+1) % 10 == 0:
-                print(self.get_intermediate_training_stats_str(\
+                message = self.get_intermediate_training_stats_str(\
                     current_epoch           = epoch, \
                     total_nb_epochs         = self.NUM_EPOCHS, \
                     train_duration_sec      = self.train_duration_per_epoch_seconds[epoch], \
@@ -1129,13 +1129,20 @@ class Model_Trainer:
                     current_avg_train_loss  = self.train_loss_avg[-1],\
                     current_avg_val_loss    = self.val_loss_avg[-1], \
                     min_avg_train_loss      = self.min_train_loss, \
-                    min_avg_val_loss        = self.min_val_loss\
-                ))
+                    min_avg_val_loss        = self.min_val_loss)
+                print(message)
                 
-                if (epoch+1)>=20 and self.train_loss_avg[-1] > 16000*1e-6:
-                    print("The model is not learning.")
-                    raise KeyboardInterrupt #^C # keyboard interruption = means the model is not learning
-
+                if (epoch+1)==int(0.2 * self.NUM_EPOCHS):
+                    if (self.train_loss_avg[epoch]/self.train_loss_avg[epoch-int(0.05 * self.NUM_EPOCHS)]) > 1.0: # self.train_loss_avg[-1]> 16000*1e-6: #self.train_loss_avg[-1] > 16000*1e-6
+                        print(f"The model is not learning, i.e. mini-batch avg. train loss in epoch {epoch} = {self.train_loss_avg[epoch]  *1e6 : .1f} e-6, while in epoch {epoch-10} avg. tr. loss = {self.train_loss_avg[epoch-10]  *1e6 : .1f} e-6, and their ratio = {(self.train_loss_avg[epoch] / self.train_loss_avg[epoch-10])  : .2f} \n")
+                        raise KeyboardInterrupt #^C # keyboard interruption = means the model is not learning
+                
+                if (epoch+1)==int(0.5 * self.NUM_EPOCHS) or (epoch+1)==self.NUM_EPOCHS:# and self.train_loss_avg[-1] < 16000*1e-6: #self.train_loss_avg[-1] > 16000*1e-6
+                    with open('log.txt', 'a') as f:
+                        k_,d_,m_ = self.model.args_VQ['K'], self.model.args_VQ['D'], self.model.args_VQ['M']
+                        f.write(f"The model is learning, for K = {k_}, D= {d_}, M = {m_}\n")
+                        f.write(f"{message}\n")
+                    #raise KeyboardInterrupt
                 
                 # if self.train_loss_avg[-1] < 4000*1e-6:
                 #     k_,d_,m_ = self.model.args_VQ['K'], self.model.args_VQ['D'], self.model.args_VQ['M']
@@ -1146,6 +1153,7 @@ class Model_Trainer:
         with open('log.txt', 'a') as f:
             k_,d_,m_ = self.model.args_VQ['K'], self.model.args_VQ['D'], self.model.args_VQ['M']
             f.write(f"The model is learning, for K = {k_}, D= {d_}, M = {m_}\n")
+        
         # get current time in the format YYYY_MM_DD_hh_mm_ss
         self.current_time_str = time.strftime("%Y_%m_%d_%H_%M_%S", time.gmtime(time.time())) # 2022_11_19_20_11_26
 
@@ -1249,10 +1257,10 @@ class Model_Trainer:
                 image_batch_recon = self.model(image_batch)
 
                 # reconstruction error (loss calculation)
-                if len(image_batch_recon) == 2:
-                    vq_loss, image_batch_recon_ = image_batch_recon
+                if len(image_batch_recon) == 4:
+                    e_and_q_latent_loss, image_batch_recon_, e_latent_loss, q_latent_loss = image_batch_recon                                       
                     recon_error = F.mse_loss(image_batch_recon_, image_batch)# / data_variance
-                    loss = recon_error + vq_loss
+                    loss = recon_error + e_and_q_latent_loss
                 else:
                     loss = self.loss_fn(image_batch_recon, image_batch)
                 

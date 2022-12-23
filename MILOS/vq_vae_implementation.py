@@ -49,12 +49,13 @@ class VectorQuantizer(nn.Module):
         # Combination of two losses
         e_and_q_latent_loss = q_latent_loss + self.beta * e_latent_loss
         
+        
         # in + (out - in).detach() 
         Zq_tensor = Ze_tensor + (Zq_tensor - Ze_tensor).detach()        
         
         # BHWC -> BCHW
         Zq_tensor = Zq_tensor.permute(0, 3, 1, 2).contiguous()
-        return e_and_q_latent_loss, Zq_tensor
+        return e_and_q_latent_loss, Zq_tensor, e_latent_loss.item(), q_latent_loss.item()
     
 class Residual(nn.Module):
     def __init__(self, res_block_args):
@@ -81,26 +82,36 @@ class Residual(nn.Module):
         )
     
     def forward(self, x):
+        # two CNN (resulution-agnostic) layers and input are simply added to create a residual path
         return x + self.residual_block(x)
 
 
 class ResidualStack(nn.Module):
     def __init__(self, res_block_args):
-        #block_size=2conv1
         super(ResidualStack, self).__init__()
+        
+        # save residual block arguments in dict
         self.res_block_args = res_block_args
+        
+        # Add sequentially block_size number of Residual (two CNNs and a residual path) blocks
         self.residual_blocks = nn.ModuleList([Residual(res_block_args) for _ in range(self.res_block_args['block_size'])])
 
     def forward(self, x):
+        # sequentially call each block one after the other; and do forward pass on each block
         for i in range(self.res_block_args['block_size']):
             x = self.residual_blocks[i](x)
+            
+        # because blocks finish with one CNN that does not have an activation function put the activation function to be ReLU at the end
         return F.relu(x)
     
 class Encoder(nn.Module):
     def __init__(self, args_encoder, res_block_args):
         super(Encoder, self).__init__()
 
-        self.args_encoder = args_encoder 
+        # save Encoder arguments in dict
+        self.args_encoder = args_encoder
+        
+        # Series of conv layers with stride = 2 to reduce the image resolution by a factor of 2 for each conv layer 
         self.sequential_convs = nn.Sequential(
                                                 nn.Conv2d(  in_channels=args_encoder['conv1_Cin'],#Cin
                                                             out_channels=args_encoder['conv1_Cout'],#64
@@ -122,8 +133,10 @@ class Encoder(nn.Module):
                                                 #nn.ReLU(True)#input to the residual stack already has ReLU at the input, so we dont put it here (applying ReLU two times does not change anything but increases the computational time)                                            
                                             )
         
+        # Series of two-depth residual blocks packed into a residual stack (e.g. ResNet)
         self.residual_stack = ResidualStack(res_block_args)                                             
         
+        #
         self.channel_adjusting_conv = nn.Conv2d(in_channels=args_encoder['channel_adjusting_conv_Cin'], #C_enc, 
                                                 out_channels=args_encoder['channel_adjusting_conv_Cout'], #D,
                                                 kernel_size=args_encoder['channel_adjusting_conv_k'],#1, # kernel size has to be 1 because this (linear) conv layer just changes the chanell dimension
@@ -132,10 +145,7 @@ class Encoder(nn.Module):
                                                 )
         if args_encoder['M'] == 0:
             # First we calculate the padding
-            padding = (0,1,0,1) #param_value_dict['Padding_W_left'],
-                        #                param_value_dict['Padding_W_right'],
-                        #                param_value_dict['Padding_H_top'],
-                        #                param_value_dict['Padding_H_bottom'])
+            padding = (0,1,0,1) #['W_left'], ['Padding_W_right'], ['Padding_H_top'], ['Padding_H_bottom']
             self.zeropad1=  nn.ZeroPad2d(padding)
 
     def forward(self, x):
@@ -170,8 +180,10 @@ class Decoder(nn.Module):
                                                    )
             
             if i != args_decoder['CONV_LAYERS']:
+                # Do not add ReLU() activation function layer to the last CNN
                 self.sequential_trans_convs.add_module(f"ReLU_{i}", nn.ReLU(True))
         
+        # Manual fill in of the nn.Sequential() class wrapper of the CNN layers
         # self.sequential_trans_convs = nn.Sequential(
         #                                             nn.ConvTranspose2d( in_channels=args_decoder['trans_conv1_Cin'],#128
         #                                                                 out_channels=args_decoder['trans_conv1_Cout'],#64
@@ -208,12 +220,11 @@ class VQ_VAE(nn.Module):
 
     def forward(self, x):                       #torch.Size([128, 3, 64, 64])
         Ze = self.encoder(x)                    #torch.Size([128, 64, 16, 16])
-        e_and_q_latent_loss, Zq = self.VQ(Ze)   #torch.Size([128, 64, 16, 16])
-        
-        # use this for simple countinous vanilla AE
-        #e_and_q_latent_loss, Zq = 0,Ze   #torch.Size([128, 64, 16, 16])
+        e_and_q_latent_loss, Zq, e_latent_loss, q_latent_loss = self.VQ(Ze)   #torch.Size([128, 64, 16, 16])
+        # use this for simple countinous vanilla AE (i.e. to bypass the VQ class forward pass)
+        #e_and_q_latent_loss, Zq,  e_latent_loss, q_latent_loss = 0,Ze, 0, 0         #torch.Size([128, 64, 16, 16])
         x_recon = self.decoder(Zq)              #torch.Size([128, 3, 64, 64])
-        return e_and_q_latent_loss, x_recon
+        return e_and_q_latent_loss, x_recon, e_latent_loss, q_latent_loss
 
 #################################
 # Vector Quantization arguments #
