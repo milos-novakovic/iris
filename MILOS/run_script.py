@@ -39,6 +39,7 @@ os.environ['MKL_THREADING_LAYER'] = 'GNU'
 with open('log.txt', 'a') as f:
     # get current time in the format hh:mm:ss DD.MM.YYYY
     current_time_str = time.strftime("%H:%M:%S %d.%m.%Y", time.gmtime(time.time()))
+    f.wirte(f"****************************************************************************************************************\n\n")
     f.write(f"----- {current_time_str} BEGIN RUN -----\n\n")
 
 
@@ -58,7 +59,14 @@ for d in D_array:
             compression_gain = round(input_bits / compressed_number_of_bits_per_image,3)
             print(f"{run_id}) Running for K = {k} & D = {d} & M = {m} (i.e. bits = {compressed_number_of_bits_per_image}):\n")
             command = f"python /home/novakovm/iris/MILOS/autoencoders.py {k} {d} {run_id} {m}"
+            START_TIME = time.time()
             os.system(command)
+            TOTAL_TRAINING_TIME = int(time.time() - START_TIME)
+            m, s = divmod(TOTAL_TRAINING_TIME, 60)
+            h, m = divmod(m, 60)
+            TOTAL_TRAINING_TIME = f"{h}:{m}:{s} h/m/s"             
+            print(f"{run_id}) Running for K = {k} & D = {d} & M = {m} (i.e. bits = {compressed_number_of_bits_per_image}).\n")
+            print(f"Total training time is = {TOTAL_TRAINING_TIME}. \n")
             print("\n****************************************\n")
             
 
@@ -66,4 +74,5 @@ with open('log.txt', 'a') as f:
     # get current time in the format hh:mm:ss DD.MM.YYYY
     current_time_str = time.strftime("%H:%M:%S %d.%m.%Y", time.gmtime(time.time()))
     f.write(f"----- {current_time_str} END RUN -----\n\n")
+    f.wirte(f"****************************************************************************************************************\n\n")
 
