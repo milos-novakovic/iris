@@ -415,17 +415,23 @@ def count_parameters(model):
     for name, parameter in model.named_parameters():
         if not parameter.requires_grad: continue
         params = parameter.numel()
+        params = int(params/1e3)
         Modules_list.append(name)
         Parameters_list.append(params)
         #table.add_row([name, params])
         total_params+=params
     Parameters_list_percent = [round(param_ / total_params * 100.,2) for param_ in Parameters_list]
-    table = pd.DataFrame({"Module Name" : Modules_list, "# of params" : Parameters_list, "# of params [%]" : Parameters_list_percent})
+    table = pd.DataFrame({"Module Name" : Modules_list, "# of params in thousands" : Parameters_list, "# of params [%]" : Parameters_list_percent})
     print(table)
-    print(f"Total Trainable Params: {total_params}")
+    print(f"Total Trainable Params in thousands: {total_params}")
+    
+    with open('log_all.txt', 'a') as f:
+        f.write(f"\n Total Trainable Params in thousands: {total_params} \n")
+        f.write(f"\n{table.to_string()}\n\n")
+    
     return total_params
     
-#count_parameters(vq_vae_implemented_model)
+count_parameters(vq_vae_implemented_model)
 print(vq_vae_implemented_model(torch.empty(1,3,64,64).normal_())[1].size())
 d=0
 # We use the ADAM optimiser [21] with learning rate 2e-4 and evaluate

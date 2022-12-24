@@ -1130,7 +1130,9 @@ class Model_Trainer:
                     current_avg_val_loss    = self.val_loss_avg[-1], \
                     min_avg_train_loss      = self.min_train_loss, \
                     min_avg_val_loss        = self.min_val_loss)
-                print(message)
+                #print(message)
+                with open('log_all.txt', 'a') as f:
+                        f.write(f"{message}\n")
                 
                 if (epoch+1)==int(0.2 * self.NUM_EPOCHS):
                     if (self.train_loss_avg[epoch]/self.train_loss_avg[epoch-int(0.05 * self.NUM_EPOCHS)]) > 1.0: # self.train_loss_avg[-1]> 16000*1e-6: #self.train_loss_avg[-1] > 16000*1e-6

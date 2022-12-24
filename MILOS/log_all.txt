@@ -1,0 +1,14 @@
+
+Epoch 10/200;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:10 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:4 h/m/s;
+Total elapsed time from begining        = 0:2:22 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  17492.1 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  12644.5 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  16581.5 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12644.5 e-6;
+
+----------------------------------------------------------------------------------
+
