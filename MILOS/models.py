@@ -991,6 +991,8 @@ class Model_Trainer:
         self.train_loss_avg = []
         self.val_loss_avg = []
         
+        
+        
         # training and validation duration in seconds per epoch
         self.train_duration_per_epoch_seconds = [None]*self.NUM_EPOCHS
         self.val_duration_per_epoch_seconds = [None]*self.NUM_EPOCHS
@@ -1137,7 +1139,7 @@ class Model_Trainer:
                 if (epoch+1)==int(0.2 * self.NUM_EPOCHS):
                     if (self.train_loss_avg[epoch]/self.train_loss_avg[epoch-int(0.05 * self.NUM_EPOCHS)]) > 1.0: # self.train_loss_avg[-1]> 16000*1e-6: #self.train_loss_avg[-1] > 16000*1e-6
                         print(f"The model is not learning, i.e. mini-batch avg. train loss in epoch {epoch} = {self.train_loss_avg[epoch]  *1e6 : .1f} e-6, while in epoch {epoch-10} avg. tr. loss = {self.train_loss_avg[epoch-10]  *1e6 : .1f} e-6, and their ratio = {(self.train_loss_avg[epoch] / self.train_loss_avg[epoch-10])  : .2f} \n")
-                        raise KeyboardInterrupt #^C # keyboard interruption = means the model is not learning
+                        #raise KeyboardInterrupt #^C # keyboard interruption = means the model is not learning
                 
                 if (epoch+1)==int(0.5 * self.NUM_EPOCHS) or (epoch+1)==self.NUM_EPOCHS:# and self.train_loss_avg[-1] < 16000*1e-6: #self.train_loss_avg[-1] > 16000*1e-6
                     with open('log.txt', 'a') as f:
