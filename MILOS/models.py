@@ -15,6 +15,10 @@ import torchvision
 from torchvision import transforms
 import time
 
+# for functionvisualize_model_as_graph_image
+from torchview import draw_graph
+import graphviz
+
 import os
 import pandas as pd
 from torchvision.io import read_image
@@ -1732,3 +1736,27 @@ class Model_Trainer:
 
         # saved top_images are list of tensor, so cast to a tensor with torch.stack() function
         self.top_images = torch.stack(self.top_images) #torch.Size(TOP_WORST_RECONSTRUCTED_TEST_IMAGES, C, H, W)
+    
+    def visualize_model_as_graph_image(self) -> None:   
+        # when running on VSCode run the below command
+        # svg format on vscode does not give desired result
+        graphviz.set_jupyter_format('png')
+        
+        # draw_graph
+        B = self.loaders['train'].batch_size
+        C, H, W = self.model.C_in, self.model.H_in, self.model.W_in
+        filename = f"visualize_model_as_graph_image" # + ".png"     
+        vq_vae_implemented_model_graph = draw_graph(model = self.model, 
+                                                    input_size= (B,C,H,W), 
+                                                    graph_name = self.model_name,
+                                                    expand_nested=True,
+                                                    hide_module_functions = False,
+                                                    hide_inner_tensors = False,
+                                                    roll = True,
+                                                    save_graph = True,
+                                                    filename = filename,
+                                                    directory = self.main_folder_path)
+        # visualize graph
+        # vq_vae_implemented_model_graph.visual_graph
+        
+        

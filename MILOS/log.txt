@@ -1118,3 +1118,17 @@ The model is learning, for K = 1048576, D= 256, M = 0
 
 ----- 20:55:26 25.12.2022 BEGIN RUN -----
 
+The model is learning, for K = 64, D= 256, M = 1
+Epoch 200/400;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:7 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:0 h/m/s;
+Total elapsed time from begining        = 0:26:9 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  2412.9 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  3718.8 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  2401.8 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  3601.2 e-6;
+
+----------------------------------------------------------------------------------
+

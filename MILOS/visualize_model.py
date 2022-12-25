@@ -1,21 +1,20 @@
 from torchview import draw_graph
-#from torchvision.models import resnet18, GoogLeNet, densenet, vit_b_16
 import graphviz
 #K,D,run_id,M = 2**20, 256, 999, 1
 #C,H,W = 3,64,64
-#! pip install -q torchview
-#! pip install -q -U graphviz
+
+# run following command in the file : /home/novakovm/iris/MILOS/
+# python visualize_model.py 64 256 999 1
 
 model = vq_vae_implemented_model #nn.Model
 graph_name = "VQ_VAE"
-save_graph = False
-filename = ""
+save_graph = True
+filename = f"001_VQ_VAE_K_64_D_256_M_1_bits_24"
 directory = ""
 
 
-# when running on VSCode run the below command
-# svg format on vscode does not give desired result
-graphviz.set_jupyter_format('png')
+
+
 
 # draw_graph
 vq_vae_implemented_model_graph = draw_graph(model = model, 
