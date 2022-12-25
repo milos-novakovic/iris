@@ -16,6 +16,7 @@ from torchvision import transforms
 import time
 
 # for functionvisualize_model_as_graph_image
+# taken from https://github.com/mert-kurttutan/torchview
 from torchview import draw_graph
 import graphviz
 
@@ -1354,11 +1355,11 @@ class Model_Trainer:
             legend_labels = []
                         
             # Semilogy plot for avg. training losses
-            plt.semilogy(self.train_loss_avg, fmt = '-k') # black solid line
+            plt.semilogy(self.train_loss_avg, '-k') # black solid line
             legend_labels.append('Training Loss')
             
             # Semilogy plot for avg. validation losses
-            plt.semilogy(self.val_loss_avg, fmt = '-m') # magenta solid line
+            plt.semilogy(self.val_loss_avg, '-m') # magenta solid line
             legend_labels.append('Validation Loss')
 
             plt.title(f'Train (Min. = {self.train_loss_avg.min() *1e3: .2f} e-3) & '\
@@ -1373,15 +1374,18 @@ class Model_Trainer:
             
             
             # SEMILOG-Y SCALE for individual Loss terms applied to both validation and training loss
-            plt.figure()
+            DROP_FIRST_N_EPOCHS = 100
+            TOTAL_EPOCH_NUMBER = len(self.train_loss_avg)
+            X_AXIS = np.arange(DROP_FIRST_N_EPOCHS, TOTAL_EPOCH_NUMBER)
+            plt.figure(figsize=(45,15))
             legend_labels = []
             
             # Total Training Loss (sum of all terms)
-            plt.semilogy(self.train_loss_avg, fmt = '-k') # black solid line
+            plt.semilogy(X_AXIS, self.train_loss_avg[DROP_FIRST_N_EPOCHS:], '-k') # black solid line
             legend_labels.append('Training Loss')
             
             # Total Validation Loss (sum of all terms)
-            plt.semilogy(self.val_loss_avg, fmt = '-m') # magenta solid line
+            plt.semilogy(X_AXIS, self.val_loss_avg[DROP_FIRST_N_EPOCHS:], '--m') # magenta solid line
             legend_labels.append('Validation Loss')
                         
             # semilogy also the individual loss terms for both training and validaiton sets            
@@ -1390,21 +1394,21 @@ class Model_Trainer:
                 # Training Loss Terms:
                 
                 # Reconstruction Loss Term
-                marker, line, color = 'o', '--', 'r'
+                marker, line, color = '', '-', 'r'
                 fmt = marker + line + color
-                plt.semilogy(self.train_multiple_losses_avg['reconstruction_loss'], fmt = fmt)
+                plt.semilogy(X_AXIS, self.train_multiple_losses_avg['reconstruction_loss'][DROP_FIRST_N_EPOCHS:], fmt)
                 legend_labels.append('Training Reconstruction Loss := || X - X_recon || ^ 2')
                 
                 # beta * Commitment Loss Term
-                marker, line, color = 'o', '-.', 'g'
+                marker, line, color = '', '-', 'g'
                 fmt = marker + line + color
-                plt.semilogy(self.model.args_VQ['beta'] * self.train_multiple_losses_avg['commitment_loss'], fmt = fmt)
+                plt.semilogy(X_AXIS, self.model.args_VQ['beta'] * self.train_multiple_losses_avg['commitment_loss'][DROP_FIRST_N_EPOCHS:], fmt)
                 legend_labels.append('Training Commitment Loss := ' + r'$\beta$' + ' * || Z_e - Z_q.detach() || ^ 2')
                 
                 # VQ_codebook_loss
-                marker, line, color = 'o', ':', 'b'
+                marker, line, color = '', '-', 'b'
                 fmt = marker + line + color
-                plt.semilogy(self.train_multiple_losses_avg['VQ_codebook_loss'], fmt = fmt)
+                plt.semilogy(X_AXIS, self.train_multiple_losses_avg['VQ_codebook_loss'][DROP_FIRST_N_EPOCHS:], fmt)
                 legend_labels.append('Training VQ Loss := || Z_e.detach() - Z_q || ^ 2')
                 
                 # Validation Loss Terms:
@@ -1412,27 +1416,27 @@ class Model_Trainer:
                 # Reconstruction Loss Term
                 marker, line, color = 'o', '--', 'r'
                 fmt = marker + line + color
-                plt.semilogy(self.val_multiple_losses_avg['reconstruction_loss'], fmt = fmt)
-                legend_labels.append('Training Reconstruction Loss := || X - X_recon || ^ 2')
+                plt.semilogy(X_AXIS, self.val_multiple_losses_avg['reconstruction_loss'][DROP_FIRST_N_EPOCHS:], fmt)
+                legend_labels.append('Validation Reconstruction Loss := || X - X_recon || ^ 2')
                 
                 # beta * Commitment Loss Term
-                marker, line, color = 'o', '-.', 'g'
+                marker, line, color = 'o', '--', 'g'
                 fmt = marker + line + color
-                plt.semilogy(self.model.args_VQ['beta'] * self.val_multiple_losses_avg['commitment_loss'], fmt = fmt)
-                legend_labels.append('Training Commitment Loss := ' + r'$\beta$' + ' * || Z_e - Z_q.detach() || ^ 2')
+                plt.semilogy(X_AXIS, self.model.args_VQ['beta'] * self.val_multiple_losses_avg['commitment_loss'][DROP_FIRST_N_EPOCHS:], fmt)
+                legend_labels.append('Validation Commitment Loss := ' + r'$\beta$' + ' * || Z_e - Z_q.detach() || ^ 2')
                 
                 # VQ_codebook_loss
-                marker, line, color = 'o', ':', 'b'
+                marker, line, color = 'o', '--', 'b'
                 fmt = marker + line + color
-                plt.semilogy(self.val_multiple_losses_avg['VQ_codebook_loss'], fmt = fmt)
-                legend_labels.append('Training VQ Loss := || Z_e.detach() - Z_q || ^ 2')
+                plt.semilogy(X_AXIS, self.val_multiple_losses_avg['VQ_codebook_loss'][DROP_FIRST_N_EPOCHS:], fmt)
+                legend_labels.append('Validation VQ Loss := || Z_e.detach() - Z_q || ^ 2')
             
             plt.title(f'Train (Min. = {self.train_loss_avg.min() *1e3: .2f} e-3) & '\
                     + f'Validation (Min. = {self.val_loss_avg.min() *1e3: .2f} e-3) \n '\
                     + f'Loss Averaged across Mini-Batch per epoch')
             plt.xlabel('Epochs')
             plt.ylabel('Mini-Batch Avg. Train & Validation Loss')
-            plt.legend(legend_labels)
+            plt.legend(legend_labels, loc='center left', bbox_to_anchor=(1, 0.5))
             plt.grid()
             plt.savefig(self.main_folder_path + '/semilog_train_val_per_loss_terms_per_epoch.png')
             plt.close()
@@ -1740,12 +1744,14 @@ class Model_Trainer:
     def visualize_model_as_graph_image(self) -> None:   
         # when running on VSCode run the below command
         # svg format on vscode does not give desired result
-        graphviz.set_jupyter_format('png')
+        #graphviz.set_jupyter_format('png')
         
         # draw_graph
         B = self.loaders['train'].batch_size
         C, H, W = self.model.C_in, self.model.H_in, self.model.W_in
-        filename = f"visualize_model_as_graph_image" # + ".png"     
+        filename = f"visualize_model_as_graph_image" # + ".png"
+        #filename = f"visualize_model_as_graph_image.png"     
+        # taken from https://github.com/mert-kurttutan/torchview
         vq_vae_implemented_model_graph = draw_graph(model = self.model, 
                                                     input_size= (B,C,H,W), 
                                                     graph_name = self.model_name,

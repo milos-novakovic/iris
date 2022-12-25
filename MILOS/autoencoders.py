@@ -659,7 +659,7 @@ else:
     ##########################    
     # Use a pretrained model #
     ##########################
-    current_time_str = "2022_12_15_13_45_59"#"2022_12_15_02_13_36"#"2022_12_03_19_39_08"#'2022_12_02_17_59_16' # 17h 13min 14 sec 20th Nov. 2022
+    current_time_str = "2022_12_25_21_47_48" #"2022_12_15_13_45_59"#"2022_12_15_02_13_36"#"2022_12_03_19_39_08"#'2022_12_02_17_59_16' # 17h 13min 14 sec 20th Nov. 2022
     
     # load model that was trained at newly given current_time_str 
     trainer.load_model(current_time_str = current_time_str, 
@@ -672,7 +672,7 @@ else:
     trainer.val_loss_avg = np.load(trainer.main_folder_path + '/' + trainer.model_name + '_val_loss_avg_' + trainer.current_time_str + '.npy')
     
     # Load individual loss terms for both training and validation datasets
-    
+    trainer.usage_of_multiple_terms_loss_function = True
     # Training Loss data per term
     trainer.train_multiple_losses_avg = {}
     
@@ -687,10 +687,10 @@ else:
     
     for loss_term in ['reconstruction_loss','commitment_loss', 'VQ_codebook_loss']:
         # Training Loss data per term file path
-        trainer.train_multiple_losses_avg_path[loss_term] = trainer.main_folder_path + '/' + trainer.model_name + '_train_multiple_losses_avg_' + loss_term + '_'  + current_time_str + '.npy'
+        trainer.train_multiple_losses_avg_path[loss_term] = trainer.main_folder_path + '/' + trainer.model_name + '_train_multiple_losses_avg_' + loss_term + '_'  + trainer.current_time_str + '.npy'
         
         # Validation Loss data per term file path
-        trainer.val_multiple_losses_avg_path[loss_term]   = trainer.main_folder_path + '/' + trainer.model_name + '_val_multiple_losses_avg_' + loss_term + '_'  + current_time_str + '.npy'
+        trainer.val_multiple_losses_avg_path[loss_term]   = trainer.main_folder_path + '/' + trainer.model_name + '_val_multiple_losses_avg_' + loss_term + '_'  + trainer.current_time_str + '.npy'
         
         # Training Loss data per term
         trainer.train_multiple_losses_avg[loss_term] = np.load(trainer.train_multiple_losses_avg_path[loss_term])
@@ -763,5 +763,12 @@ visualise_output(images             = trainer.top_images,
                  imgs_losses        = trainer.imgs_losses,
                  savefig_path       = trainer.main_folder_path + '/BEST_RECONSTRUCTED_TEST_IMAGES.png',
                  device = trainer.device)
+
+
+###################################
+### Graph of a model visualized ###
+###################################
+
+trainer.visualize_model_as_graph_image()
 
 debug =0

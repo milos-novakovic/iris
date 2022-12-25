@@ -1132,3 +1132,22 @@ Min.  Avg. Val   Loss across Mini-Batch =  3601.2 e-6;
 
 ----------------------------------------------------------------------------------
 
+The model is learning, for K = 64, D= 256, M = 1
+Epoch 400/400;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:7 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:0 h/m/s;
+Total elapsed time from begining        = 0:52:19 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  1576.1 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  3178.2 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  1392.2 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  2896.8 e-6;
+
+----------------------------------------------------------------------------------
+
+The model is learning, for K = 64, D= 256, M = 1
+----- 21:47:52 25.12.2022 END RUN -----
+
+****************************************************************************************************************
+
