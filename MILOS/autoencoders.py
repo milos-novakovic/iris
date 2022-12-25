@@ -666,18 +666,38 @@ else:
                        autoencoder_config_params_wrapped_sorted= autoencoder_config_params_wrapped_sorted)
 
     # load avg. training loss of the training proceedure for a model that was trained at newly given current_time_str 
-    trainer.train_loss_avg = np.load(trainer.main_folder_path
-                                     + '/'
-                                     + trainer.model_name 
-                                     + '_train_loss_avg_'
-                                     + trainer.current_time_str + '.npy')
+    trainer.train_loss_avg = np.load(trainer.main_folder_path + '/' + trainer.model_name + '_train_loss_avg_' + trainer.current_time_str + '.npy')
     
     # load avg. validation loss of the validating proceedure for a model that was trained at newly given current_time_str 
-    trainer.val_loss_avg = np.load(trainer.main_folder_path
-                                    + '/'
-                                    + trainer.model_name 
-                                    + '_val_loss_avg_'
-                                    + trainer.current_time_str + '.npy')
+    trainer.val_loss_avg = np.load(trainer.main_folder_path + '/' + trainer.model_name + '_val_loss_avg_' + trainer.current_time_str + '.npy')
+    
+    # Load individual loss terms for both training and validation datasets
+    
+    # Training Loss data per term
+    trainer.train_multiple_losses_avg = {}
+    
+    # Validation Loss data per term
+    trainer.val_multiple_losses_avg = {}
+    
+    # Training Loss data per term file path
+    trainer.train_multiple_losses_avg_path = {}
+    
+    # Validation Loss data per term file path
+    trainer.val_multiple_losses_avg_path = {}
+    
+    for loss_term in ['reconstruction_loss','commitment_loss', 'VQ_codebook_loss']:
+        # Training Loss data per term file path
+        trainer.train_multiple_losses_avg_path[loss_term] = trainer.main_folder_path + '/' + trainer.model_name + '_train_multiple_losses_avg_' + loss_term + '_'  + current_time_str + '.npy'
+        
+        # Validation Loss data per term file path
+        trainer.val_multiple_losses_avg_path[loss_term]   = trainer.main_folder_path + '/' + trainer.model_name + '_val_multiple_losses_avg_' + loss_term + '_'  + current_time_str + '.npy'
+        
+        # Training Loss data per term
+        trainer.train_multiple_losses_avg[loss_term] = np.load(trainer.train_multiple_losses_avg_path[loss_term])
+        
+        # Validation Loss data per term
+        trainer.val_multiple_losses_avg[loss_term]   = np.load(trainer.val_multiple_losses_avg_path[loss_term])
+
 ######################    
 # Testing the model #
 ######################

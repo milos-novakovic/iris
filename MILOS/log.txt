@@ -832,3 +832,217 @@ The model is learning, for K = 32768, D= 256, M = 0
 
 ****************************************************************************************************************
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+EPOCHS = 400 from now on
+
+****************************************************************************************************************
+
+----- 11:03:35 25.12.2022 BEGIN RUN -----
+
+The model is learning, for K = 1048576, D= 256, M = 0
+Epoch 200/400;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 0:59:56 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  12980.7 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  12935.3 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12301.5 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12003.0 e-6;
+
+----------------------------------------------------------------------------------
+
+The model is learning, for K = 1048576, D= 256, M = 0
+Epoch 400/400;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 1:59:50 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  10737.1 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  10927.6 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  10410.5 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  10495.3 e-6;
+
+----------------------------------------------------------------------------------
+
+The model is learning, for K = 1048576, D= 256, M = 0
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+EPOCHS = 1000 from now on****************************************************************************************************************
+
+----- 13:24:58 25.12.2022 BEGIN RUN -----
+
+The model is learning, for K = 1048576, D= 256, M = 0
+Epoch 500/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 2:28:54 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  14248.4 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  14560.6 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12498.4 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12418.4 e-6;
+
+----------------------------------------------------------------------------------
+
+The model is learning, for K = 1048576, D= 256, M = 0
+Epoch 1000/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 4:57:44 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  15658.3 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  15668.1 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12498.4 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12418.4 e-6;
+
+----------------------------------------------------------------------------------
+
+The model is learning, for K = 1048576, D= 256, M = 0
+****************************************************************************************************************
+
+----- 19:52:31 25.12.2022 BEGIN RUN -----
+
+----- 19:52:34 25.12.2022 END RUN -----
+
+****************************************************************************************************************
+
+****************************************************************************************************************
+
+----- 19:53:10 25.12.2022 BEGIN RUN -----
+
+----- 19:53:28 25.12.2022 END RUN -----
+
+****************************************************************************************************************
+

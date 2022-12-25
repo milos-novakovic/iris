@@ -5978,3 +5978,2100 @@ Total training time is = 0:0:49 h/m/s.
 
 --------------------------------------------------- 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+EPOCHS = 400 from now on
+
+[11:03:35 25.12.2022] 1) Started running for K = 1048576 & D = 256 & M = 0 (i.e. bits = 20):
+
+--------------------------------------------------- 
+
+
+ Total Trainable Params in thousands: 292124 
+
+                                                         Module Name  # of params in thousands  # of params [%]
+0                                  encoder.sequential_convs.0.weight                        12             0.00
+1                                    encoder.sequential_convs.0.bias                         0             0.00
+2                                  encoder.sequential_convs.2.weight                      1048             0.36
+3                                    encoder.sequential_convs.2.bias                         0             0.00
+4   encoder.residual_stack.residual_blocks.0.residual_block.1.weight                       589             0.20
+5   encoder.residual_stack.residual_blocks.0.residual_block.3.weight                        65             0.02
+6   encoder.residual_stack.residual_blocks.1.residual_block.1.weight                       589             0.20
+7   encoder.residual_stack.residual_blocks.1.residual_block.3.weight                        65             0.02
+8                              encoder.channel_adjusting_conv.weight                     16777             5.74
+9                                encoder.channel_adjusting_conv.bias                         0             0.00
+10                                                       VQ.E.weight                    268435            91.89
+11                             decoder.channel_adjusting_conv.weight                        65             0.02
+12                               decoder.channel_adjusting_conv.bias                         0             0.00
+13  decoder.residual_stack.residual_blocks.0.residual_block.1.weight                       589             0.20
+14  decoder.residual_stack.residual_blocks.0.residual_block.3.weight                        65             0.02
+15  decoder.residual_stack.residual_blocks.1.residual_block.1.weight                       589             0.20
+16  decoder.residual_stack.residual_blocks.1.residual_block.3.weight                        65             0.02
+17                    decoder.sequential_trans_convs.conv2d_1.weight                      1048             0.36
+18                      decoder.sequential_trans_convs.conv2d_1.bias                         0             0.00
+19                    decoder.sequential_trans_convs.conv2d_2.weight                      1048             0.36
+20                      decoder.sequential_trans_convs.conv2d_2.bias                         0             0.00
+21                    decoder.sequential_trans_convs.conv2d_3.weight                      1048             0.36
+22                      decoder.sequential_trans_convs.conv2d_3.bias                         0             0.00
+23                    decoder.sequential_trans_convs.conv2d_4.weight                        27             0.01
+24                      decoder.sequential_trans_convs.conv2d_4.bias                         0             0.00
+
+Epoch 10/400;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 0:3:1 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  18319.1 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  14166.3 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  16861.7 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  14166.3 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 20/400;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 0:6:0 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  14910.1 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  13081.5 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  14910.1 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  13081.5 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 30/400;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 0:9:0 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  13738.3 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  12654.5 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  13460.5 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12453.5 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 40/400;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 0:12:0 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  13939.3 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  13333.6 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  13283.5 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12453.5 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 50/400;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 0:14:59 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  13451.0 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  12812.9 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  13208.7 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12453.5 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 60/400;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 0:17:59 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  13194.3 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  12725.5 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12930.3 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12453.5 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 70/400;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 0:20:59 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  13352.4 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  12749.2 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12930.3 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12453.5 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 80/400;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 0:23:58 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  14287.3 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  14050.0 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12930.3 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12453.5 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 90/400;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 0:26:58 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  13472.4 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  13756.5 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12930.3 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12453.5 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 100/400;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 0:29:58 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  13505.7 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  13621.9 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12930.3 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12453.5 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 110/400;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 0:32:57 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  12655.0 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  12934.1 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12655.0 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12453.5 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 120/400;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 0:35:58 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  14008.4 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  13178.4 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12621.6 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12453.5 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 130/400;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 0:38:57 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  13505.2 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  12712.0 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12621.6 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12453.5 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 140/400;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 0:41:57 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  13190.8 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  12554.8 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12621.6 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12341.2 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 150/400;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 0:44:57 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  12304.5 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  12003.0 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12304.5 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12003.0 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 160/400;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 0:47:56 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  12817.3 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  12655.1 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12301.5 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12003.0 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 170/400;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 0:50:56 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  12731.0 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  12653.6 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12301.5 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12003.0 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 180/400;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 0:53:56 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  12520.7 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  12745.1 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12301.5 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12003.0 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 190/400;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 0:56:56 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  12984.3 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  13137.4 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12301.5 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12003.0 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 200/400;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 0:59:56 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  12980.7 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  12935.3 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12301.5 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12003.0 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 210/400;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 1:2:55 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  12655.7 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  13012.4 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12301.5 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12003.0 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 220/400;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 1:5:55 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  13214.0 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  13065.0 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12301.5 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12003.0 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 230/400;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 1:8:55 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  13029.2 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  12968.8 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12301.5 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12003.0 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 240/400;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 1:11:55 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  13719.5 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  13350.2 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12301.5 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12003.0 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 250/400;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 1:14:54 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  13410.4 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  13410.5 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12301.5 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12003.0 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 260/400;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 1:17:54 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  12988.9 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  12614.6 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12301.5 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12003.0 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 270/400;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 1:20:54 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  12784.4 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  12708.8 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12301.5 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12003.0 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 280/400;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 1:23:53 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  12936.7 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  12769.0 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12301.5 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12003.0 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 290/400;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 1:26:53 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  12617.3 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  12691.3 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12301.5 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12003.0 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 300/400;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 1:29:53 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  12288.7 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  12314.2 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12288.7 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12003.0 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 310/400;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 1:32:53 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  11852.8 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  11812.1 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  11852.8 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  11812.1 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 320/400;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 1:35:52 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  11897.1 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  12049.2 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  11836.8 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  11812.1 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 330/400;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 1:38:52 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  11963.0 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  12169.3 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  11779.0 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  11812.1 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 340/400;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 1:41:52 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  11797.8 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  12248.2 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  11667.5 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  11581.9 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 350/400;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 1:44:51 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  11958.5 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  12302.3 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  11667.5 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  11581.9 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 360/400;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 1:47:51 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  11256.0 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  11385.5 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  11256.0 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  11231.0 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 370/400;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 1:50:51 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  10986.8 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  11066.6 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  10979.0 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  11066.6 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 380/400;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 1:53:51 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  10754.8 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  10960.5 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  10678.5 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  10698.8 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 390/400;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 1:56:50 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  10530.4 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  10527.3 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  10530.4 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  10527.3 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 400/400;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 1:59:50 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  10737.1 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  10927.6 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  10410.5 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  10495.3 e-6;
+
+----------------------------------------------------------------------------------
+
+[13:04:04 25.12.2022] 1) Finished running for K = 1048576 & D = 256 & M = 0 (i.e. bits = 20):
+Total training time is = 0:0:29 h/m/s. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+EPOCHS = 1000 from now on
+[13:24:58 25.12.2022] 1) Started running for K = 1048576 & D = 256 & M = 0 (i.e. bits = 20):
+
+--------------------------------------------------- 
+
+
+ Total Trainable Params in thousands: 292124 
+
+                                                         Module Name  # of params in thousands  # of params [%]
+0                                  encoder.sequential_convs.0.weight                        12             0.00
+1                                    encoder.sequential_convs.0.bias                         0             0.00
+2                                  encoder.sequential_convs.2.weight                      1048             0.36
+3                                    encoder.sequential_convs.2.bias                         0             0.00
+4   encoder.residual_stack.residual_blocks.0.residual_block.1.weight                       589             0.20
+5   encoder.residual_stack.residual_blocks.0.residual_block.3.weight                        65             0.02
+6   encoder.residual_stack.residual_blocks.1.residual_block.1.weight                       589             0.20
+7   encoder.residual_stack.residual_blocks.1.residual_block.3.weight                        65             0.02
+8                              encoder.channel_adjusting_conv.weight                     16777             5.74
+9                                encoder.channel_adjusting_conv.bias                         0             0.00
+10                                                       VQ.E.weight                    268435            91.89
+11                             decoder.channel_adjusting_conv.weight                        65             0.02
+12                               decoder.channel_adjusting_conv.bias                         0             0.00
+13  decoder.residual_stack.residual_blocks.0.residual_block.1.weight                       589             0.20
+14  decoder.residual_stack.residual_blocks.0.residual_block.3.weight                        65             0.02
+15  decoder.residual_stack.residual_blocks.1.residual_block.1.weight                       589             0.20
+16  decoder.residual_stack.residual_blocks.1.residual_block.3.weight                        65             0.02
+17                    decoder.sequential_trans_convs.conv2d_1.weight                      1048             0.36
+18                      decoder.sequential_trans_convs.conv2d_1.bias                         0             0.00
+19                    decoder.sequential_trans_convs.conv2d_2.weight                      1048             0.36
+20                      decoder.sequential_trans_convs.conv2d_2.bias                         0             0.00
+21                    decoder.sequential_trans_convs.conv2d_3.weight                      1048             0.36
+22                      decoder.sequential_trans_convs.conv2d_3.bias                         0             0.00
+23                    decoder.sequential_trans_convs.conv2d_4.weight                        27             0.01
+24                      decoder.sequential_trans_convs.conv2d_4.bias                         0             0.00
+
+Epoch 10/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 0:2:59 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  25854.7 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  21822.3 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  16582.0 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  15976.8 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 20/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 0:5:58 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  16117.4 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  16501.1 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  16117.4 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  14479.7 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 30/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 0:8:57 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  13639.6 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  13370.9 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  13639.6 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  13166.2 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 40/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 0:11:55 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  13735.1 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  13569.7 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  13443.1 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12524.7 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 50/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 0:14:54 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  13168.7 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  12960.5 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  13168.7 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12524.7 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 60/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 0:17:53 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  13345.0 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  12891.7 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  13110.6 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12524.7 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 70/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 0:20:51 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  13040.0 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  12757.2 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  13040.0 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12524.7 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 80/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 0:23:50 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  13546.4 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  13485.9 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  13032.3 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12524.7 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 90/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 0:26:49 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  13089.1 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  12974.6 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  13032.3 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12524.7 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 100/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 0:29:48 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  13061.6 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  12984.1 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12761.2 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12524.7 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 110/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 0:32:46 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  13109.4 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  13113.2 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12761.2 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12524.7 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 120/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 0:35:45 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  13771.5 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  13377.2 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12761.2 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12524.7 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 130/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 0:38:44 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  13642.0 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  13522.5 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12761.2 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12524.7 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 140/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 0:41:42 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  13581.9 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  13439.7 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12761.2 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12524.7 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 150/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 0:44:41 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  13552.9 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  13502.8 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12761.2 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12524.7 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 160/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 0:47:40 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  13693.6 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  13876.1 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12761.2 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12524.7 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 170/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 0:50:38 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  13514.6 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  13840.4 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12761.2 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12524.7 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 180/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 0:53:37 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  14001.2 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  14123.3 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12761.2 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12524.7 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 190/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 0:56:35 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  13919.9 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  14008.5 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12761.2 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12524.7 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 200/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 0:59:34 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  14019.2 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  14188.2 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12761.2 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12524.7 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 210/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 1:2:33 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  14058.1 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  14237.2 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12761.2 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12524.7 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 220/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 1:5:31 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  13963.5 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  14110.0 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12761.2 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12524.7 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 230/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 1:8:30 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  13636.9 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  13758.9 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12761.2 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12524.7 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 240/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 1:11:29 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  13921.3 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  13798.0 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12761.2 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12524.7 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 250/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 1:14:27 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  13913.0 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  14103.3 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12761.2 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12524.7 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 260/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 1:17:26 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  13934.0 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  13965.8 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12761.2 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12524.7 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 270/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 1:20:24 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  13915.5 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  13778.3 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12761.2 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12524.7 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 280/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 1:23:23 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  14042.2 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  13823.6 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12761.2 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12524.7 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 290/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 1:26:22 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  14190.6 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  13873.5 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12761.2 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12524.7 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 300/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 1:29:20 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  14187.7 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  14003.9 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12761.2 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12524.7 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 310/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 1:32:19 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  14250.3 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  14049.5 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12761.2 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12524.7 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 320/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 1:35:18 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  14392.4 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  13851.1 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12761.2 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12524.7 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 330/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 1:38:16 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  13319.6 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  13003.4 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12761.2 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12524.7 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 340/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 1:41:15 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  12904.4 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  12793.3 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12761.2 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12524.7 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 350/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 1:44:14 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  13288.4 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  13260.9 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12761.2 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12524.7 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 360/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 1:47:13 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  13646.1 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  13375.3 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12761.2 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12524.7 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 370/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 1:50:11 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  13113.7 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  13151.4 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12761.2 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12524.7 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 380/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 1:53:10 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  14253.5 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  13592.8 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12761.2 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12524.7 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 390/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 1:56:9 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  13031.7 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  12749.1 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12761.2 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12524.7 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 400/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 1:59:8 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  12764.5 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  12736.9 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12698.5 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12524.7 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 410/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 2:2:6 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  12818.6 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  12786.7 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12498.4 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12418.4 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 420/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 2:5:5 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  13573.9 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  13439.0 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12498.4 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12418.4 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 430/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 2:8:3 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  13482.4 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  13911.9 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12498.4 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12418.4 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 440/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 2:11:2 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  13606.3 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  14005.7 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12498.4 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12418.4 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 450/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 2:14:1 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  13960.6 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  14190.6 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12498.4 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12418.4 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 460/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 2:16:59 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  13968.3 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  14296.9 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12498.4 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12418.4 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 470/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 2:19:58 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  13960.1 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  14406.8 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12498.4 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12418.4 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 480/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 2:22:57 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  13919.2 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  14301.4 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12498.4 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12418.4 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 490/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 2:25:55 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  14153.3 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  14506.3 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12498.4 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12418.4 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 500/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 2:28:54 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  14248.4 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  14560.6 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12498.4 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12418.4 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 510/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 2:31:53 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  14414.0 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  14674.3 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12498.4 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12418.4 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 520/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 2:34:51 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  14921.6 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  14957.0 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12498.4 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12418.4 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 530/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 2:37:50 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  14982.0 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  15066.1 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12498.4 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12418.4 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 540/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 2:40:48 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  15000.6 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  15080.0 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12498.4 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12418.4 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 550/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 2:43:47 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  14984.9 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  15111.6 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12498.4 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12418.4 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 560/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 2:46:46 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  14997.9 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  15110.2 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12498.4 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12418.4 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 570/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 2:49:44 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  15003.7 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  15049.3 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12498.4 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12418.4 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 580/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 2:52:43 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  15003.5 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  15131.6 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12498.4 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12418.4 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 590/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 2:55:41 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  15045.2 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  15097.1 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12498.4 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12418.4 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 600/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 2:58:40 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  15020.8 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  15158.9 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12498.4 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12418.4 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 610/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 3:1:38 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  15015.7 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  15144.1 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12498.4 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12418.4 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 620/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 3:4:37 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  15083.9 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  15321.0 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12498.4 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12418.4 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 630/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 3:7:36 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  15053.7 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  15147.9 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12498.4 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12418.4 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 640/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 3:10:34 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  15178.1 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  15170.5 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12498.4 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12418.4 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 650/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 3:13:33 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  15203.9 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  15231.2 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12498.4 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12418.4 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 660/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 3:16:31 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  15214.5 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  15245.9 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12498.4 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12418.4 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 670/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 3:19:30 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  15253.9 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  15219.6 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12498.4 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12418.4 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 680/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 3:22:29 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  15288.9 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  15280.9 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12498.4 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12418.4 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 690/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 3:25:27 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  15313.7 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  15357.4 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12498.4 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12418.4 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 700/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 3:28:26 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  15333.8 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  15353.7 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12498.4 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12418.4 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 710/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 3:31:24 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  15299.4 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  15170.4 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12498.4 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12418.4 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 720/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 3:34:23 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  15329.1 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  15330.2 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12498.4 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12418.4 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 730/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 3:37:22 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  15339.3 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  15365.5 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12498.4 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12418.4 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 740/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 3:40:20 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  15367.5 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  15448.3 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12498.4 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12418.4 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 750/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 3:43:19 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  15422.4 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  15299.6 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12498.4 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12418.4 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 760/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 3:46:17 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  15456.0 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  15315.6 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12498.4 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12418.4 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 770/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 3:49:16 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  15475.9 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  15339.5 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12498.4 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12418.4 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 780/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 3:52:14 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  15489.1 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  15413.1 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12498.4 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12418.4 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 790/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 3:55:13 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  15536.6 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  15446.9 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12498.4 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12418.4 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 800/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 3:58:12 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  15550.8 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  15512.3 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12498.4 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12418.4 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 810/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 4:1:10 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  15550.3 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  15413.1 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12498.4 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12418.4 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 820/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 4:4:9 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  15552.8 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  15414.5 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12498.4 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12418.4 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 830/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 4:7:8 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  15552.4 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  15414.7 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12498.4 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12418.4 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 840/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 4:10:6 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  15552.4 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  15479.8 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12498.4 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12418.4 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 850/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 4:13:5 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  15649.7 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  15633.9 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12498.4 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12418.4 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 860/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 4:16:3 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  15658.9 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  15533.8 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12498.4 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12418.4 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 870/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 4:19:2 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  15658.9 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  15564.6 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12498.4 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12418.4 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 880/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 4:22:1 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  15658.8 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  15568.1 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12498.4 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12418.4 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 890/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 4:24:59 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  15658.6 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  15632.1 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12498.4 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12418.4 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 900/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 4:27:58 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  15663.9 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  15532.7 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12498.4 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12418.4 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 910/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 4:30:57 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  15658.3 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  15600.0 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12498.4 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12418.4 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 920/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 4:33:55 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  15658.6 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  15532.9 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12498.4 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12418.4 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 930/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 4:36:54 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  15658.6 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  15665.4 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12498.4 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12418.4 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 940/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 4:39:52 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  15658.7 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  15534.1 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12498.4 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12418.4 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 950/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 4:42:51 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  15658.7 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  15663.1 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12498.4 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12418.4 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 960/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 4:45:50 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  15659.0 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  15598.3 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12498.4 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12418.4 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 970/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 4:48:48 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  15731.9 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  15435.5 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12498.4 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12418.4 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 980/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 4:51:47 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  15643.9 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  15677.2 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12498.4 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12418.4 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 990/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 4:54:45 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  15651.1 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  15675.8 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12498.4 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12418.4 e-6;
+
+----------------------------------------------------------------------------------
+
+Epoch 1000/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:16 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:1 h/m/s;
+Total elapsed time from begining        = 4:57:44 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  15658.3 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  15668.1 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  12498.4 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  12418.4 e-6;
+
+----------------------------------------------------------------------------------
+
+[18:23:20 25.12.2022] 1) Finished running for K = 1048576 & D = 256 & M = 0 (i.e. bits = 20):
+Total training time is = 0:0:21 h/m/s. 
+
+--------------------------------------------------- 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[19:52:31 25.12.2022] 1) Started running for K = 128 & D = 256 & M = 1 (i.e. bits = 28):
+
+--------------------------------------------------- 
+
+
+ Total Trainable Params in thousands: 21689 
+
+                                                         Module Name  # of params in thousands  # of params [%]
+0                                  encoder.sequential_convs.0.weight                        12             0.06
+1                                    encoder.sequential_convs.0.bias                         0             0.00
+2                                  encoder.sequential_convs.2.weight                      1048             4.83
+3                                    encoder.sequential_convs.2.bias                         0             0.00
+4   encoder.residual_stack.residual_blocks.0.residual_block.1.weight                       589             2.72
+5   encoder.residual_stack.residual_blocks.0.residual_block.3.weight                        65             0.30
+6   encoder.residual_stack.residual_blocks.1.residual_block.1.weight                       589             2.72
+7   encoder.residual_stack.residual_blocks.1.residual_block.3.weight                        65             0.30
+8                              encoder.channel_adjusting_conv.weight                     14745            67.98
+9                                encoder.channel_adjusting_conv.bias                         0             0.00
+10                                                       VQ.E.weight                        32             0.15
+11                             decoder.channel_adjusting_conv.weight                        65             0.30
+12                               decoder.channel_adjusting_conv.bias                         0             0.00
+13  decoder.residual_stack.residual_blocks.0.residual_block.1.weight                       589             2.72
+14  decoder.residual_stack.residual_blocks.0.residual_block.3.weight                        65             0.30
+15  decoder.residual_stack.residual_blocks.1.residual_block.1.weight                       589             2.72
+16  decoder.residual_stack.residual_blocks.1.residual_block.3.weight                        65             0.30
+17                    decoder.sequential_trans_convs.conv2d_1.weight                      1048             4.83
+18                      decoder.sequential_trans_convs.conv2d_1.bias                         0             0.00
+19                    decoder.sequential_trans_convs.conv2d_2.weight                      1048             4.83
+20                      decoder.sequential_trans_convs.conv2d_2.bias                         0             0.00
+21                    decoder.sequential_trans_convs.conv2d_3.weight                      1048             4.83
+22                      decoder.sequential_trans_convs.conv2d_3.bias                         0             0.00
+23                    decoder.sequential_trans_convs.conv2d_4.weight                        27             0.12
+24                      decoder.sequential_trans_convs.conv2d_4.bias                         0             0.00
+
+[19:52:34 25.12.2022] 1) Finished running for K = 128 & D = 256 & M = 1 (i.e. bits = 28):
+Total training time is = 0:1:3 h/m/s. 
+
+--------------------------------------------------- 
+
+[19:53:10 25.12.2022] 1) Started running for K = 128 & D = 256 & M = 1 (i.e. bits = 28):
+
+--------------------------------------------------- 
+
+
+ Total Trainable Params in thousands: 21689 
+
+                                                         Module Name  # of params in thousands  # of params [%]
+0                                  encoder.sequential_convs.0.weight                        12             0.06
+1                                    encoder.sequential_convs.0.bias                         0             0.00
+2                                  encoder.sequential_convs.2.weight                      1048             4.83
+3                                    encoder.sequential_convs.2.bias                         0             0.00
+4   encoder.residual_stack.residual_blocks.0.residual_block.1.weight                       589             2.72
+5   encoder.residual_stack.residual_blocks.0.residual_block.3.weight                        65             0.30
+6   encoder.residual_stack.residual_blocks.1.residual_block.1.weight                       589             2.72
+7   encoder.residual_stack.residual_blocks.1.residual_block.3.weight                        65             0.30
+8                              encoder.channel_adjusting_conv.weight                     14745            67.98
+9                                encoder.channel_adjusting_conv.bias                         0             0.00
+10                                                       VQ.E.weight                        32             0.15
+11                             decoder.channel_adjusting_conv.weight                        65             0.30
+12                               decoder.channel_adjusting_conv.bias                         0             0.00
+13  decoder.residual_stack.residual_blocks.0.residual_block.1.weight                       589             2.72
+14  decoder.residual_stack.residual_blocks.0.residual_block.3.weight                        65             0.30
+15  decoder.residual_stack.residual_blocks.1.residual_block.1.weight                       589             2.72
+16  decoder.residual_stack.residual_blocks.1.residual_block.3.weight                        65             0.30
+17                    decoder.sequential_trans_convs.conv2d_1.weight                      1048             4.83
+18                      decoder.sequential_trans_convs.conv2d_1.bias                         0             0.00
+19                    decoder.sequential_trans_convs.conv2d_2.weight                      1048             4.83
+20                      decoder.sequential_trans_convs.conv2d_2.bias                         0             0.00
+21                    decoder.sequential_trans_convs.conv2d_3.weight                      1048             4.83
+22                      decoder.sequential_trans_convs.conv2d_3.bias                         0             0.00
+23                    decoder.sequential_trans_convs.conv2d_4.weight                        27             0.12
+24                      decoder.sequential_trans_convs.conv2d_4.bias                         0             0.00
+
+[19:53:28 25.12.2022] 1) Finished running for K = 128 & D = 256 & M = 1 (i.e. bits = 28):
+Total training time is = 0:1:18 h/m/s. 
+
+--------------------------------------------------- 
+
