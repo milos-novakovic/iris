@@ -2,6 +2,7 @@ from torchview import draw_graph
 #from torchvision.models import resnet18, GoogLeNet, densenet, vit_b_16
 import graphviz
 #K,D,run_id,M = 2**20, 256, 999, 1
+#C,H,W = 3,64,64
 #! pip install -q torchview
 #! pip install -q -U graphviz
 

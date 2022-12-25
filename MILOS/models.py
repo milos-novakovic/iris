@@ -1009,6 +1009,7 @@ class Model_Trainer:
         self.val_duration_per_epoch_seconds = [None]*self.NUM_EPOCHS
         
         # epochs loop
+
         for epoch in range(self.NUM_EPOCHS):
             
             ###################
@@ -1069,7 +1070,7 @@ class Model_Trainer:
                 
                 # sum up the current training loss in the last element of array for every loss in training part
                 if self.usage_of_multiple_terms_loss_function:
-                    self.train_multiple_losses_avg['reconstruction_loss'][-1] += recon_error
+                    self.train_multiple_losses_avg['reconstruction_loss'][-1] += recon_error.item()
                     self.train_multiple_losses_avg['commitment_loss'][-1]     += e_latent_loss #e_latent_loss = || Z_e() - E.detach() || ^ 2
                     self.train_multiple_losses_avg['VQ_codebook_loss'][-1]    += q_latent_loss #q_latent_loss = || Z_e.detach() - E || ^ 2
             
@@ -1143,7 +1144,7 @@ class Model_Trainer:
                 
                 # sum up the current validation loss in the last element of array for every loss in validation part
                 if self.usage_of_multiple_terms_loss_function:
-                    self.val_multiple_losses_avg['reconstruction_loss'][-1] += recon_error
+                    self.val_multiple_losses_avg['reconstruction_loss'][-1] += recon_error.item()
                     self.val_multiple_losses_avg['commitment_loss'][-1]     += e_latent_loss #e_latent_loss = || Z_e() - E.detach() || ^ 2
                     self.val_multiple_losses_avg['VQ_codebook_loss'][-1]    += q_latent_loss #q_latent_loss = || Z_e.detach() - E || ^ 2
             

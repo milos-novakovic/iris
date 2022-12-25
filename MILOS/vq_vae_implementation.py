@@ -7,6 +7,25 @@ import torch.nn.functional as F
 import sys
 import os
 import pandas as pd
+
+# EMPTY CACHE BEFORE RUNNING!
+#torch.cuda.empty_cache()
+def report_cuda_memory_status():
+    t = torch.cuda.get_device_properties(0).total_memory
+    r = torch.cuda.memory_reserved(0)
+    a = torch.cuda.memory_allocated(0)
+    f = r-a  # free inside reserved
+    print("\n" + f"Total Memory = {t/1e9 : .2f} GB.")
+    print(f"Reserved Memory = {r/1e9 : .2f} GB.")
+    print(f"Allocated inside Reserved Memory = {a/1e9 : .2f} GB.")
+    print(f"Free inside Reserved Memory = {f/1e9 : .2f} GB.\n")
+
+    global_free, total_gpu_memory_occupied = torch.cuda.mem_get_info('cuda:0') #for a given device 'cuda:' using cudaMemGetInfo  
+    print(f'Global Free memory on the cuda:0 = {global_free/1e9 : .2f} GB.')
+    print(f'Total GPU Memory occupied on the cuda:0 = {total_gpu_memory_occupied/1e9 : .2f} GB.\n')
+
+
+
 class VectorQuantizer(nn.Module):
     def __init__(self, args_VQ):
         super(VectorQuantizer, self).__init__()
@@ -432,7 +451,11 @@ def count_parameters(model):
     return total_params
     
 count_parameters(vq_vae_implemented_model)
+
 print(vq_vae_implemented_model(torch.empty(1,3,64,64).normal_())[1].size())
+
+report_cuda_memory_status()
+
 d=0
 # We use the ADAM optimiser [21] with learning rate 2e-4 and evaluate
 # the performance after 250,000 steps with batch-size 128. For VIMCO we use 50 samples in the
