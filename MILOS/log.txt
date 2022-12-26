@@ -1151,3 +1151,162 @@ The model is learning, for K = 64, D= 256, M = 1
 
 ****************************************************************************************************************
 
+The model is learning, for K = 64, D= 256, M = 1
+Epoch 750/1500;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:7 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:0 h/m/s;
+Total elapsed time from begining        = 1:37:49 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  474.9 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  2093.9 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  127.8 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  1661.3 e-6;
+
+----------------------------------------------------------------------------------
+
+The model is learning, for K = 64, D= 256, M = 1
+Epoch 1500/1500;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:7 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:0 h/m/s;
+Total elapsed time from begining        = 3:15:36 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  143.1 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  1870.7 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  37.8 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  1559.1 e-6;
+
+----------------------------------------------------------------------------------
+
+The model is learning, for K = 64, D= 256, M = 1
+The model is learning, for K = 64, D= 256, M = 1
+Epoch 500/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:7 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:0 h/m/s;
+Total elapsed time from begining        = 1:5:21 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  1900.5 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  3488.2 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  1479.0 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  3188.3 e-6;
+
+----------------------------------------------------------------------------------
+
+The model is learning, for K = 64, D= 256, M = 1
+Epoch 1000/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:7 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:0 h/m/s;
+Total elapsed time from begining        = 2:10:40 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  1387.1 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  3077.2 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  1352.2 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  3077.2 e-6;
+
+----------------------------------------------------------------------------------
+
+The model is learning, for K = 64, D= 256, M = 1
+The model is learning, for K = 64, D= 256, M = 1
+Epoch 250/500;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:7 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:0 h/m/s;
+Total elapsed time from begining        = 0:32:37 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  3237.3 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  5151.9 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  3067.5 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  4963.0 e-6;
+
+----------------------------------------------------------------------------------
+
+The model is learning, for K = 64, D= 256, M = 1
+Epoch 500/500;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:7 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:0 h/m/s;
+Total elapsed time from begining        = 1:5:13 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  820.6 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  3811.3 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  820.6 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  3689.5 e-6;
+
+----------------------------------------------------------------------------------
+
+The model is learning, for K = 64, D= 256, M = 1
+The model is learning, for K = 64, D= 256, M = 1
+Epoch 750/1500;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:7 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:0 h/m/s;
+Total elapsed time from begining        = 1:37:44 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  285.4 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  2618.3 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  210.1 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  2540.8 e-6;
+
+----------------------------------------------------------------------------------
+
+The model is learning, for K = 64, D= 256, M = 1
+Epoch 1500/1500;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:7 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:0 h/m/s;
+Total elapsed time from begining        = 3:15:29 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  278.5 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  2327.1 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  63.1 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  2173.5 e-6;
+
+----------------------------------------------------------------------------------
+
+The model is learning, for K = 64, D= 256, M = 1
+The model is learning, for K = 32, D= 256, M = 1
+Epoch 150/300;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:7 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:0 h/m/s;
+Total elapsed time from begining        = 0:19:17 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  5182.7 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  6161.0 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  5182.7 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  6161.0 e-6;
+
+----------------------------------------------------------------------------------
+
+The model is learning, for K = 32, D= 256, M = 1
+Epoch 300/300;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:7 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:0 h/m/s;
+Total elapsed time from begining        = 0:38:33 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  3029.4 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  4887.0 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  2842.7 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  4848.7 e-6;
+
+----------------------------------------------------------------------------------
+
+The model is learning, for K = 32, D= 256, M = 1
+The model is learning, for K = 131072, D= 256, M = 0
+Epoch 150/300;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:8 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:0 h/m/s;
+Total elapsed time from begining        = 0:23:9 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  16582.3 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  15976.8 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  16163.7 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  15538.0 e-6;
+
+----------------------------------------------------------------------------------
+

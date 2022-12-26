@@ -271,6 +271,7 @@ BATCH_SIZE_VAL =                        get_config_data(config_dict['training_hy
 BATCH_SIZE_TEST =                       get_config_data(config_dict['training_hyperparams'], 'BATCH_SIZE_TEST')
 
 LEARNING_RATE =                         get_config_data(config_dict['training_hyperparams'], 'LEARNING_RATE')
+LEARNING_RATE /= 1e6
 
 TRAIN_DATA_PATH =                       get_config_data(config_dict['training_hyperparams'], 'TRAIN_DATA_PATH')
 VAL_DATA_PATH =                         get_config_data(config_dict['training_hyperparams'], 'VAL_DATA_PATH')
@@ -278,6 +279,9 @@ TEST_DATA_PATH =                        get_config_data(config_dict['training_hy
 
 TRAIN_IMAGES_MEAN_FILE_PATH =           get_config_data(config_dict['training_hyperparams'], 'TRAIN_IMAGES_MEAN_FILE_PATH')
 TRAIN_IMAGES_STD_FILE_PATH  =           get_config_data(config_dict['training_hyperparams'], 'TRAIN_IMAGES_STD_FILE_PATH')
+
+TRAIN_IMAGES_TOTAL_MEAN_FILE_PATH =           get_config_data(config_dict['training_hyperparams'], 'TRAIN_IMAGES_TOTAL_MEAN_FILE_PATH')
+TRAIN_IMAGES_TOTAL_STD_FILE_PATH  =           get_config_data(config_dict['training_hyperparams'], 'TRAIN_IMAGES_TOTAL_STD_FILE_PATH')
 
 zero_mean_unit_std_transform = transforms.Compose([
 #    transforms.Resize(256),
@@ -628,6 +632,11 @@ training_args['model']              = model
 training_args['model_name']         = model_name
 training_args['loaders']            = loaders
 training_args['optimizer_settings'] = optimizer_settings #torch.optim.Adam(params=model.parameters(), lr=LEARNING_RATE)#, weight_decay=1e-5)
+ 
+# .item() because it is one element np.array; and we square it because we want variance and not the standard deviation
+training_args['train_data_variance'] = np.load(TRAIN_IMAGES_TOTAL_STD_FILE_PATH).item() **2
+ # because we divided the chanells with TRANSFORM_IMG.std[0] we have to correct the total training data variance for that in other words training_args['train_data_variance'] was VAR[X] but because we did linear transform TRANSFORM_IMG so that X -> (X - MEAN_TRANSFORM_IMG) / STD_TRANSFORM_IMG we need to adjust the total variance of the data from VAR[X] -> VAR[(X - MEAN_TRANSFORM_IMG) / STD_TRANSFORM_IMG] = VAR[X] / STD_TRANSFORM_IMG**2 and that is precicely what we are doing here
+training_args['train_data_variance'] /= (TRANSFORM_IMG.transforms[0].std[0]**2)
 
 # create a Folder where one will save everything relevant and important for trainer model
 # old

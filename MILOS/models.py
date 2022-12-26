@@ -18,7 +18,7 @@ import time
 # for functionvisualize_model_as_graph_image
 # taken from https://github.com/mert-kurttutan/torchview
 from torchview import draw_graph
-import graphviz
+import graphviz # conda install graphviz
 
 import os
 import pandas as pd
@@ -921,6 +921,7 @@ class Model_Trainer:
         self.loaders =          args['loaders'] # loaders = {'train' : train_data_loader, 'val' : val_data_loader, 'test' : test_data_loader}
         self.optimizer_settings=args['optimizer_settings'] #torch.optim.Adam(params=vanilla_autoencoder_v02.parameters(), lr=LEARNING_RATE)
         self.main_folder_path = args['main_folder_path']#'/home/novakovm/iris/MILOS'
+        self.train_data_variance=args['train_data_variance']#float32 number represents the variance of all the training images across all chanels and pixels
         
         # create and init self.optimizer
         if self.optimizer_settings['optimization_algorithm'] == 'Adam':
@@ -1002,16 +1003,17 @@ class Model_Trainer:
             self.train_multiple_losses_avg = {}
             self.val_multiple_losses_avg = {}
             self.train_multiple_losses_avg['reconstruction_loss'] = []
-            self.train_multiple_losses_avg['commitment_loss'] = []#e_latent_loss = || Z_e() - E.detach() || ^ 2
-            self.train_multiple_losses_avg['VQ_codebook_loss'] = []#q_latent_loss = || Z_e.detach() - E || ^ 2
+            self.train_multiple_losses_avg['commitment_loss'] = []#e_latent_loss = || Z_e - Z_q.detach() || ^ 2
+            self.train_multiple_losses_avg['VQ_codebook_loss'] = []#q_latent_loss = || Z_e.detach() - Z_q || ^ 2
             self.val_multiple_losses_avg['reconstruction_loss'] = []
-            self.val_multiple_losses_avg['commitment_loss'] = []#e_latent_loss = || Z_e() - E.detach() || ^ 2
-            self.val_multiple_losses_avg['VQ_codebook_loss'] = []#q_latent_loss = || Z_e.detach() - E || ^ 2
+            self.val_multiple_losses_avg['commitment_loss'] = []#e_latent_loss = || Z_e - Z_q.detach() || ^ 2
+            self.val_multiple_losses_avg['VQ_codebook_loss'] = []#q_latent_loss = || Z_e.detach() - Z_q || ^ 2
         
         
         # training and validation duration in seconds per epoch
         self.train_duration_per_epoch_seconds = [None]*self.NUM_EPOCHS
         self.val_duration_per_epoch_seconds = [None]*self.NUM_EPOCHS
+        
         
         # epochs loop
 
@@ -1029,8 +1031,8 @@ class Model_Trainer:
             
             # init the avaraged training multiple losses in training part
             self.train_multiple_losses_avg['reconstruction_loss'].append(0.)
-            self.train_multiple_losses_avg['commitment_loss'].append(0.)#e_latent_loss = || Z_e() - E.detach() || ^ 2
-            self.train_multiple_losses_avg['VQ_codebook_loss'].append(0.)#q_latent_loss = || Z_e.detach() - E || ^ 2
+            self.train_multiple_losses_avg['commitment_loss'].append(0.)#e_latent_loss = || Z_e - Z_q.detach() || ^ 2
+            self.train_multiple_losses_avg['VQ_codebook_loss'].append(0.)#q_latent_loss = || Z_e.detach() - Z_q || ^ 2
                         
             # init the number of mini-batches covered in the current epoch
             num_batches = 0
@@ -1042,6 +1044,7 @@ class Model_Trainer:
             self.model.train()
             
             for image_batch, image_ids_batch  in self.loaders['train']:
+                #train_data_variance = torch.var(image_batch).item()
                 
                 #torch.Size([BATCH_SIZE_TRAIN, 3 (RGB), H, W])
                 image_batch = image_batch.to(self.device)
@@ -1053,7 +1056,7 @@ class Model_Trainer:
                 # reconstruction error: calculate the batch loss
                 if len(image_batch_recon) == 4:
                     e_and_q_latent_loss, image_batch_recon_, e_latent_loss, q_latent_loss = image_batch_recon                                       
-                    recon_error = F.mse_loss(image_batch_recon_, image_batch)# / data_variance
+                    recon_error = F.mse_loss(image_batch_recon_, image_batch) / self.train_data_variance
                     loss = recon_error + e_and_q_latent_loss
                     
                 else:
@@ -1076,8 +1079,8 @@ class Model_Trainer:
                 # sum up the current training loss in the last element of array for every loss in training part
                 if self.usage_of_multiple_terms_loss_function:
                     self.train_multiple_losses_avg['reconstruction_loss'][-1] += recon_error.item()
-                    self.train_multiple_losses_avg['commitment_loss'][-1]     += e_latent_loss #e_latent_loss = || Z_e() - E.detach() || ^ 2
-                    self.train_multiple_losses_avg['VQ_codebook_loss'][-1]    += q_latent_loss #q_latent_loss = || Z_e.detach() - E || ^ 2
+                    self.train_multiple_losses_avg['commitment_loss'][-1]     += e_latent_loss #e_latent_loss = || Z_e - Z_q.detach() || ^ 2
+                    self.train_multiple_losses_avg['VQ_codebook_loss'][-1]    += q_latent_loss #q_latent_loss = || Z_e.detach() - Z_q || ^ 2
             
                 
                 # count the number of batches
@@ -1110,8 +1113,8 @@ class Model_Trainer:
             
             # init the avaraged val. multiple losses in validation part
             self.val_multiple_losses_avg['reconstruction_loss'].append(0.)
-            self.val_multiple_losses_avg['commitment_loss'].append(0.)#e_latent_loss = || Z_e() - E.detach() || ^ 2
-            self.val_multiple_losses_avg['VQ_codebook_loss'].append(0.)#q_latent_loss = || Z_e.detach() - E || ^ 2
+            self.val_multiple_losses_avg['commitment_loss'].append(0.)#e_latent_loss = || Z_e - Z_q.detach() || ^ 2
+            self.val_multiple_losses_avg['VQ_codebook_loss'].append(0.)#q_latent_loss = || Z_e.detach() - Z_q || ^ 2
            
             
             # init the number of mini-batches covered in the current epoch
@@ -1136,7 +1139,7 @@ class Model_Trainer:
                 # calculate the batch loss
                 if len(image_batch_recon) == 4:
                     e_and_q_latent_loss, image_batch_recon_, e_latent_loss, q_latent_loss = image_batch_recon                                       
-                    recon_error = F.mse_loss(image_batch_recon_, image_batch)# / data_variance
+                    recon_error = F.mse_loss(image_batch_recon_, image_batch) / self.train_data_variance
                     loss = recon_error + e_and_q_latent_loss
                 else:
                     loss = self.loss_fn(image_batch_recon, image_batch)
@@ -1150,8 +1153,8 @@ class Model_Trainer:
                 # sum up the current validation loss in the last element of array for every loss in validation part
                 if self.usage_of_multiple_terms_loss_function:
                     self.val_multiple_losses_avg['reconstruction_loss'][-1] += recon_error.item()
-                    self.val_multiple_losses_avg['commitment_loss'][-1]     += e_latent_loss #e_latent_loss = || Z_e() - E.detach() || ^ 2
-                    self.val_multiple_losses_avg['VQ_codebook_loss'][-1]    += q_latent_loss #q_latent_loss = || Z_e.detach() - E || ^ 2
+                    self.val_multiple_losses_avg['commitment_loss'][-1]     += e_latent_loss #e_latent_loss = || Z_e - Z_q.detach() || ^ 2
+                    self.val_multiple_losses_avg['VQ_codebook_loss'][-1]    += q_latent_loss #q_latent_loss = || Z_e.detach() - Z_q || ^ 2
             
                 
                 # count the number of batches
@@ -1226,12 +1229,12 @@ class Model_Trainer:
         self.train_multiple_losses_avg_path = {}
         self.val_multiple_losses_avg_path = {}
         for loss_term in ['reconstruction_loss','commitment_loss', 'VQ_codebook_loss']:
+            #'reconstruction_loss' = || x - x_recon || ^ 2
+            #'commitment_loss'     = e_latent_loss = || Z_e - Z_q.detach() || ^ 2
+            #'VQ_codebook_loss'    = q_latent_loss = || Z_e.detach() - Z_q || ^ 2
             self.train_multiple_losses_avg_path[loss_term] = self.main_folder_path + '/' + self.model_name + '_train_multiple_losses_avg_' + loss_term + '_'  + self.current_time_str + '.npy'
             self.val_multiple_losses_avg_path[loss_term] = self.main_folder_path + '/' + self.model_name + '_val_multiple_losses_avg_' + loss_term + '_'  + self.current_time_str + '.npy'
-        #'reconstruction_loss' = || x - x_recon || ^ 2
-        #'commitment_loss'     = e_latent_loss = || Z_e() - E.detach() || ^ 2
-        #'VQ_codebook_loss'    = q_latent_loss = || Z_e.detach() - E || ^ 2
-        
+
         # create training/validation avg. losses as numpy arrays to the above specified file paths
         self.train_loss_avg = np.array(self.train_loss_avg)
         self.val_loss_avg = np.array(self.val_loss_avg)
@@ -1246,8 +1249,8 @@ class Model_Trainer:
                 np.save(self.val_multiple_losses_avg_path[loss_term], self.val_multiple_losses_avg[loss_term])
         
         # Message that the training/validation avg. losses are saved and the corresponding paths
-        print(f"Autoencoder Training Loss Average saved here\n{self.train_loss_avg_path}", end = '\n\n')
-        print(f"Autoencoder Validation Loss Average saved here\n{self.val_loss_avg_path}", end = '\n\n')
+        #print(f"Autoencoder Training Loss Average saved here\n{self.train_loss_avg_path}", end = '\n\n')
+        #print(f"Autoencoder Validation Loss Average saved here\n{self.val_loss_avg_path}", end = '\n\n')
 
         # example of self.model_path:=            
         #/home/novakovm/iris/MILOS
@@ -1331,7 +1334,7 @@ class Model_Trainer:
                 # reconstruction error (loss calculation)
                 if len(image_batch_recon) == 4:
                     e_and_q_latent_loss, image_batch_recon_, e_latent_loss, q_latent_loss = image_batch_recon                                       
-                    recon_error = F.mse_loss(image_batch_recon_, image_batch)# / data_variance
+                    recon_error = F.mse_loss(image_batch_recon_, image_batch)/ self.train_data_variance
                     loss = recon_error + e_and_q_latent_loss
                 else:
                     loss = self.loss_fn(image_batch_recon, image_batch)
@@ -1373,7 +1376,7 @@ class Model_Trainer:
             plt.close()
             
             
-            # SEMILOG-Y SCALE for individual Loss terms applied to both validation and training loss
+            # SEMILOG-Y SCALE for individual Loss terms applied to training loss
             DROP_FIRST_N_EPOCHS = 100
             TOTAL_EPOCH_NUMBER = len(self.train_loss_avg)
             X_AXIS = np.arange(DROP_FIRST_N_EPOCHS, TOTAL_EPOCH_NUMBER)
@@ -1385,8 +1388,8 @@ class Model_Trainer:
             legend_labels.append('Training Loss')
             
             # Total Validation Loss (sum of all terms)
-            plt.semilogy(X_AXIS, self.val_loss_avg[DROP_FIRST_N_EPOCHS:], '--m') # magenta solid line
-            legend_labels.append('Validation Loss')
+            # plt.semilogy(X_AXIS, self.val_loss_avg[DROP_FIRST_N_EPOCHS:], '--m') # magenta solid line
+            # legend_labels.append('Validation Loss')
                         
             # semilogy also the individual loss terms for both training and validaiton sets            
             if self.usage_of_multiple_terms_loss_function:
@@ -1411,39 +1414,100 @@ class Model_Trainer:
                 plt.semilogy(X_AXIS, self.train_multiple_losses_avg['VQ_codebook_loss'][DROP_FIRST_N_EPOCHS:], fmt)
                 legend_labels.append('Training VQ Loss := || Z_e.detach() - Z_q || ^ 2')
                 
+                # # Validation Loss Terms:
+                
+                # # Reconstruction Loss Term
+                # marker, line, color = 'o', '--', 'r'
+                # fmt = marker + line + color
+                # plt.semilogy(X_AXIS, self.val_multiple_losses_avg['reconstruction_loss'][DROP_FIRST_N_EPOCHS:], fmt)
+                # legend_labels.append('Validation Reconstruction Loss := || X - X_recon || ^ 2')
+                
+                # # beta * Commitment Loss Term
+                # marker, line, color = 'o', '--', 'g'
+                # fmt = marker + line + color
+                # plt.semilogy(X_AXIS, self.model.args_VQ['beta'] * self.val_multiple_losses_avg['commitment_loss'][DROP_FIRST_N_EPOCHS:], fmt)
+                # legend_labels.append('Validation Commitment Loss := ' + r'$\beta$' + ' * || Z_e - Z_q.detach() || ^ 2')
+                
+                # # VQ_codebook_loss
+                # marker, line, color = 'o', '--', 'b'
+                # fmt = marker + line + color
+                # plt.semilogy(X_AXIS, self.val_multiple_losses_avg['VQ_codebook_loss'][DROP_FIRST_N_EPOCHS:], fmt)
+                # legend_labels.append('Validation VQ Loss := || Z_e.detach() - Z_q || ^ 2')
+            
+            plt.title(f'Training Loss Averaged across Mini-Batch per epoch (Min. = {self.train_loss_avg.min() *1e3: .2f} e-3)')
+            plt.xlabel('Epochs')
+            plt.ylabel('Mini-Batch Avg. Train Loss')
+            plt.legend(legend_labels, loc='center left', bbox_to_anchor=(1, 0.5))
+            plt.grid()
+            plt.savefig(self.main_folder_path + '/semilog_train_per_loss_terms_per_epoch.png')
+            plt.close()
+            
+            
+            # SEMILOG-Y SCALE for individual Loss terms applied to validation loss
+            DROP_FIRST_N_EPOCHS = 100
+            TOTAL_EPOCH_NUMBER = len(self.train_loss_avg)
+            X_AXIS = np.arange(DROP_FIRST_N_EPOCHS, TOTAL_EPOCH_NUMBER)
+            plt.figure(figsize=(45,15))
+            legend_labels = []
+            
+            # # Total Training Loss (sum of all terms)
+            # plt.semilogy(X_AXIS, self.train_loss_avg[DROP_FIRST_N_EPOCHS:], '-k') # black solid line
+            # legend_labels.append('Training Loss')
+            
+            # Total Validation Loss (sum of all terms)
+            plt.semilogy(X_AXIS, self.val_loss_avg[DROP_FIRST_N_EPOCHS:], '--m') # magenta solid line
+            legend_labels.append('Validation Loss')
+                        
+            # semilogy also the individual loss terms for both training and validaiton sets            
+            if self.usage_of_multiple_terms_loss_function:
+                # fmt = '[marker][line][color]' look here for full table of descriptors for plots: https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html#matplotlib.pyplot.plot
+                # Training Loss Terms:
+                
+                # # Reconstruction Loss Term
+                # marker, line, color = '', '-', 'r'
+                # fmt = marker + line + color
+                # plt.semilogy(X_AXIS, self.train_multiple_losses_avg['reconstruction_loss'][DROP_FIRST_N_EPOCHS:], fmt)
+                # legend_labels.append('Training Reconstruction Loss := || X - X_recon || ^ 2')
+                
+                # # beta * Commitment Loss Term
+                # marker, line, color = '', '-', 'g'
+                # fmt = marker + line + color
+                # plt.semilogy(X_AXIS, self.model.args_VQ['beta'] * self.train_multiple_losses_avg['commitment_loss'][DROP_FIRST_N_EPOCHS:], fmt)
+                # legend_labels.append('Training Commitment Loss := ' + r'$\beta$' + ' * || Z_e - Z_q.detach() || ^ 2')
+                
+                # # VQ_codebook_loss
+                # marker, line, color = '', '-', 'b'
+                # fmt = marker + line + color
+                # plt.semilogy(X_AXIS, self.train_multiple_losses_avg['VQ_codebook_loss'][DROP_FIRST_N_EPOCHS:], fmt)
+                # legend_labels.append('Training VQ Loss := || Z_e.detach() - Z_q || ^ 2')
+                
                 # Validation Loss Terms:
                 
                 # Reconstruction Loss Term
-                marker, line, color = 'o', '--', 'r'
+                marker, line, color = '', '-', 'r'
                 fmt = marker + line + color
                 plt.semilogy(X_AXIS, self.val_multiple_losses_avg['reconstruction_loss'][DROP_FIRST_N_EPOCHS:], fmt)
                 legend_labels.append('Validation Reconstruction Loss := || X - X_recon || ^ 2')
                 
                 # beta * Commitment Loss Term
-                marker, line, color = 'o', '--', 'g'
+                marker, line, color = '', '-', 'g'
                 fmt = marker + line + color
                 plt.semilogy(X_AXIS, self.model.args_VQ['beta'] * self.val_multiple_losses_avg['commitment_loss'][DROP_FIRST_N_EPOCHS:], fmt)
                 legend_labels.append('Validation Commitment Loss := ' + r'$\beta$' + ' * || Z_e - Z_q.detach() || ^ 2')
                 
                 # VQ_codebook_loss
-                marker, line, color = 'o', '--', 'b'
+                marker, line, color = '', '-', 'b'
                 fmt = marker + line + color
                 plt.semilogy(X_AXIS, self.val_multiple_losses_avg['VQ_codebook_loss'][DROP_FIRST_N_EPOCHS:], fmt)
                 legend_labels.append('Validation VQ Loss := || Z_e.detach() - Z_q || ^ 2')
             
-            plt.title(f'Train (Min. = {self.train_loss_avg.min() *1e3: .2f} e-3) & '\
-                    + f'Validation (Min. = {self.val_loss_avg.min() *1e3: .2f} e-3) \n '\
-                    + f'Loss Averaged across Mini-Batch per epoch')
+            plt.title(f'Validation Loss Averaged across Mini-Batch per epoch (Min. = {self.val_loss_avg.min() *1e3: .2f} e-3)')
             plt.xlabel('Epochs')
-            plt.ylabel('Mini-Batch Avg. Train & Validation Loss')
+            plt.ylabel('Mini-Batch Avg. Validation Loss')
             plt.legend(legend_labels, loc='center left', bbox_to_anchor=(1, 0.5))
             plt.grid()
-            plt.savefig(self.main_folder_path + '/semilog_train_val_per_loss_terms_per_epoch.png')
+            plt.savefig(self.main_folder_path + '/semilog_val_per_loss_terms_per_epoch.png')
             plt.close()
-            
-            
-            
-            
             
         if test_plot:
             # Plot Test Loss for every sample in the Test set
@@ -1746,11 +1810,11 @@ class Model_Trainer:
         # svg format on vscode does not give desired result
         #graphviz.set_jupyter_format('png')
         
-        # draw_graph
+        # draw_graph arguments
         B = self.loaders['train'].batch_size
         C, H, W = self.model.C_in, self.model.H_in, self.model.W_in
         filename = f"visualize_model_as_graph_image" # + ".png"
-        #filename = f"visualize_model_as_graph_image.png"     
+
         # taken from https://github.com/mert-kurttutan/torchview
         vq_vae_implemented_model_graph = draw_graph(model = self.model, 
                                                     input_size= (B,C,H,W), 
@@ -1762,7 +1826,7 @@ class Model_Trainer:
                                                     save_graph = True,
                                                     filename = filename,
                                                     directory = self.main_folder_path)
-        # visualize graph
+        # visualize graph with .visual_graph() if in Jupyter Notebook
         # vq_vae_implemented_model_graph.visual_graph
         
         
