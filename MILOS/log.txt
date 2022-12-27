@@ -1310,3 +1310,371 @@ Min.  Avg. Val   Loss across Mini-Batch =  15538.0 e-6;
 
 ----------------------------------------------------------------------------------
 
+The model is learning, for K = 64, D= 256, M = 1
+Epoch 250/500;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:7 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:0 h/m/s;
+Total elapsed time from begining        = 0:32:40 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  155646.5 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  302398.4 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  151401.5 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  291213.0 e-6;
+
+----------------------------------------------------------------------------------
+
+The model is learning, for K = 64, D= 256, M = 1
+Epoch 500/500;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:7 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:0 h/m/s;
+Total elapsed time from begining        = 1:5:19 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  51449.9 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  233121.3 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  50533.5 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  231874.3 e-6;
+
+----------------------------------------------------------------------------------
+
+The model is learning, for K = 64, D= 256, M = 1
+The model is learning, for K = 64, D= 256, M = 1
+Epoch 250/500;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:7 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:0 h/m/s;
+Total elapsed time from begining        = 0:32:11 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  245338.7 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  317046.3 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  225500.8 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  301200.6 e-6;
+
+----------------------------------------------------------------------------------
+
+The model is learning, for K = 64, D= 256, M = 1
+Epoch 500/500;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:7 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:0 h/m/s;
+Total elapsed time from begining        = 1:4:22 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  128652.2 e-6;
+Curr. Avg. Val   Loss across Mini-Batch =  279730.3 e-6;
+Min.  Avg. Train Loss across Mini-Batch =  120624.3 e-6;
+Min.  Avg. Val   Loss across Mini-Batch =  263901.6 e-6;
+
+----------------------------------------------------------------------------------
+
+The model is learning, for K = 64, D= 256, M = 1
+The model is learning, for K = 64, D= 256, M = 1
+Epoch 250/500;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:3 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:0 h/m/s;
+Total elapsed time from begining        = 0:16:21 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  216552.7 e-6; = (1/var)*||X-X_r||^2 =  177125.7 e-6 = 81.8 %; (1+beta)*||Z_e-Z_q||^2 =  39427.0 e-6 = 18.2 %)
+Curr. Avg. Val   Loss across Mini-Batch =  285732.4 e-6; = (1/var)*||X-X_r||^2 =  235075.6 e-6 = 82.3 %; (1+beta)*||Z_e-Z_q||^2 =  50656.8 e-6 = 17.7 %)
+Min.  Avg. Train Loss across Mini-Batch =  214646.1 e-6; 
+Min.  Avg. Val   Loss across Mini-Batch =  285434.8 e-6; 
+Curr. Avg. (Val-Train) overfit gap      =   69179.8 e-6; 
+
+----------------------------------------------------------------------------------
+
+The model is learning, for K = 64, D= 256, M = 1
+Epoch 500/500;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:3 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:0 h/m/s;
+Total elapsed time from begining        = 0:32:42 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  159458.9 e-6; = (1/var)*||X-X_r||^2 =  100759.1 e-6 = 63.2 %; (1+beta)*||Z_e-Z_q||^2 =  58699.9 e-6 = 36.8 %)
+Curr. Avg. Val   Loss across Mini-Batch =  276560.5 e-6; = (1/var)*||X-X_r||^2 =  202454.7 e-6 = 73.2 %; (1+beta)*||Z_e-Z_q||^2 =  74105.8 e-6 = 26.8 %)
+Min.  Avg. Train Loss across Mini-Batch =  159458.9 e-6; 
+Min.  Avg. Val   Loss across Mini-Batch =  261410.4 e-6; 
+Curr. Avg. (Val-Train) overfit gap      =   117101.6 e-6; 
+
+----------------------------------------------------------------------------------
+
+The model is learning, for K = 64, D= 256, M = 1
+The model is learning, for K = 64, D= 256, M = 1
+Epoch 250/500;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:2 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:0 h/m/s;
+Total elapsed time from begining        = 0:10:24 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  313552.4 e-6; = (1/var)*||X-X_r||^2 =  166944.3 e-6 = 53.2 %; (1+beta)*||Z_e-Z_q||^2 =  146608.1 e-6 = 46.8 %)
+Curr. Avg. Val   Loss across Mini-Batch =  389872.2 e-6; = (1/var)*||X-X_r||^2 =  220807.2 e-6 = 56.6 %; (1+beta)*||Z_e-Z_q||^2 =  169064.9 e-6 = 43.4 %)
+Min.  Avg. Train Loss across Mini-Batch =  307393.5 e-6; 
+Min.  Avg. Val   Loss across Mini-Batch =  372198.4 e-6; 
+Curr. Avg. (Val-Train) overfit gap      =   76319.8 e-6; = (1/var)*||X-X_r||^2 val-train = 53862.9 e-6 and (1+beta)*||Z_e-Z_q||^2 val-train = 22456.9 e-6 
+
+----------------------------------------------------------------------------------
+
+The model is learning, for K = 64, D= 256, M = 1
+Epoch 500/500;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:2 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:0 h/m/s;
+Total elapsed time from begining        = 0:20:48 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  240344.7 e-6; = (1/var)*||X-X_r||^2 =  126317.0 e-6 = 52.6 %; (1+beta)*||Z_e-Z_q||^2 =  114027.6 e-6 = 47.4 %)
+Curr. Avg. Val   Loss across Mini-Batch =  388247.7 e-6; = (1/var)*||X-X_r||^2 =  224115.2 e-6 = 57.7 %; (1+beta)*||Z_e-Z_q||^2 =  164132.5 e-6 = 42.3 %)
+Min.  Avg. Train Loss across Mini-Batch =  214841.9 e-6; 
+Min.  Avg. Val   Loss across Mini-Batch =  317993.0 e-6; 
+Curr. Avg. (Val-Train) overfit gap      =   147903.0 e-6; = (1/var)*||X-X_r||^2 val-train = 97798.1 e-6 and (1+beta)*||Z_e-Z_q||^2 val-train = 50104.9 e-6 
+
+----------------------------------------------------------------------------------
+
+The model is learning, for K = 64, D= 256, M = 1
+The model is learning, for K = 64, D= 128, M = 1
+Epoch 250/500;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:2 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:0 h/m/s;
+Total elapsed time from begining        = 0:12:50 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  209282.5 e-6; = (1/var)*||X-X_r||^2 =  99498.2 e-6 = 47.5 %; (1+beta)*||Z_e-Z_q||^2 =  109784.3 e-6 = 52.5 %)
+Curr. Avg. Val   Loss across Mini-Batch =  326292.4 e-6; = (1/var)*||X-X_r||^2 =  189786.9 e-6 = 58.2 %; (1+beta)*||Z_e-Z_q||^2 =  136505.5 e-6 = 41.8 %)
+Min.  Avg. Train Loss across Mini-Batch =  205062.4 e-6; 
+Min.  Avg. Val   Loss across Mini-Batch =  318911.7 e-6; 
+Curr. Avg. (Val-Train) overfit gap      =   117010.0 e-6; = (1/var)*||X-X_r||^2 val-train = 90288.7 e-6 and (1+beta)*||Z_e-Z_q||^2 val-train = 26721.3 e-6 
+
+----------------------------------------------------------------------------------
+
+The model is learning, for K = 64, D= 128, M = 1
+Epoch 500/500;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:2 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:0 h/m/s;
+Total elapsed time from begining        = 0:25:40 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  109400.1 e-6; = (1/var)*||X-X_r||^2 =  53443.9 e-6 = 48.9 %; (1+beta)*||Z_e-Z_q||^2 =  55956.1 e-6 = 51.1 %)
+Curr. Avg. Val   Loss across Mini-Batch =  261201.5 e-6; = (1/var)*||X-X_r||^2 =  187783.9 e-6 = 71.9 %; (1+beta)*||Z_e-Z_q||^2 =  73417.6 e-6 = 28.1 %)
+Min.  Avg. Train Loss across Mini-Batch =  92493.6 e-6; 
+Min.  Avg. Val   Loss across Mini-Batch =  245343.9 e-6; 
+Curr. Avg. (Val-Train) overfit gap      =   151801.4 e-6; = (1/var)*||X-X_r||^2 val-train = 134339.9 e-6 and (1+beta)*||Z_e-Z_q||^2 val-train = 17461.5 e-6 
+
+----------------------------------------------------------------------------------
+
+The model is learning, for K = 64, D= 128, M = 1
+The model is learning, for K = 64, D= 128, M = 1
+Epoch 250/500;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:1 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:0 h/m/s;
+Total elapsed time from begining        = 0:9:8 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  211770.6 e-6; = (1/var)*||X-X_r||^2 =  103287.5 e-6 = 48.8 %; (1+beta)*||Z_e-Z_q||^2 =  108483.1 e-6 = 51.2 %)
+Curr. Avg. Val   Loss across Mini-Batch =  288924.4 e-6; = (1/var)*||X-X_r||^2 =  164828.1 e-6 = 57.0 %; (1+beta)*||Z_e-Z_q||^2 =  124096.4 e-6 = 43.0 %)
+Min.  Avg. Train Loss across Mini-Batch =  211770.6 e-6; 
+Min.  Avg. Val   Loss across Mini-Batch =  288924.4 e-6; 
+Curr. Avg. (Val-Train) overfit gap      =   77153.8 e-6; = (1/var)*||X-X_r||^2 val-train = 61540.5 e-6 and (1+beta)*||Z_e-Z_q||^2 val-train = 15613.3 e-6 
+
+----------------------------------------------------------------------------------
+
+The model is learning, for K = 64, D= 128, M = 1
+Epoch 500/500;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:1 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:0 h/m/s;
+Total elapsed time from begining        = 0:18:14 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  100660.1 e-6; = (1/var)*||X-X_r||^2 =  48943.0 e-6 = 48.6 %; (1+beta)*||Z_e-Z_q||^2 =  51717.0 e-6 = 51.4 %)
+Curr. Avg. Val   Loss across Mini-Batch =  222647.2 e-6; = (1/var)*||X-X_r||^2 =  156895.1 e-6 = 70.5 %; (1+beta)*||Z_e-Z_q||^2 =  65752.1 e-6 = 29.5 %)
+Min.  Avg. Train Loss across Mini-Batch =  99772.7 e-6; 
+Min.  Avg. Val   Loss across Mini-Batch =  220005.9 e-6; 
+Curr. Avg. (Val-Train) overfit gap      =   121987.1 e-6; = (1/var)*||X-X_r||^2 val-train = 107952.1 e-6 and (1+beta)*||Z_e-Z_q||^2 val-train = 14035.0 e-6 
+
+----------------------------------------------------------------------------------
+
+The model is learning, for K = 64, D= 128, M = 1
+The model is learning, for K = 64, D= 128, M = 1
+Epoch 250/500;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:1 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:0 h/m/s;
+Total elapsed time from begining        = 0:8:52 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  132535.0 e-6; = (1/var)*||X-X_r||^2 =  70698.8 e-6 = 53.3 %; (1+beta)*||Z_e-Z_q||^2 =  61836.2 e-6 = 46.7 %)
+Curr. Avg. Val   Loss across Mini-Batch =  192849.4 e-6; = (1/var)*||X-X_r||^2 =  126067.8 e-6 = 65.4 %; (1+beta)*||Z_e-Z_q||^2 =  66781.6 e-6 = 34.6 %)
+Min.  Avg. Train Loss across Mini-Batch =  132131.8 e-6; 
+Min.  Avg. Val   Loss across Mini-Batch =  192849.4 e-6; 
+Curr. Avg. (Val-Train) overfit gap      =   60314.4 e-6; = (1/var)*||X-X_r||^2 val-train = 55369.0 e-6 and (1+beta)*||Z_e-Z_q||^2 val-train = 4945.4 e-6 
+
+----------------------------------------------------------------------------------
+
+The model is learning, for K = 64, D= 128, M = 1
+Epoch 500/500;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:1 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:0 h/m/s;
+Total elapsed time from begining        = 0:17:43 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  52985.4 e-6; = (1/var)*||X-X_r||^2 =  31875.3 e-6 = 60.2 %; (1+beta)*||Z_e-Z_q||^2 =  21110.1 e-6 = 39.8 %)
+Curr. Avg. Val   Loss across Mini-Batch =  146661.9 e-6; = (1/var)*||X-X_r||^2 =  115569.5 e-6 = 78.8 %; (1+beta)*||Z_e-Z_q||^2 =  31092.4 e-6 = 21.2 %)
+Min.  Avg. Train Loss across Mini-Batch =  51940.0 e-6; 
+Min.  Avg. Val   Loss across Mini-Batch =  142752.3 e-6; 
+Curr. Avg. (Val-Train) overfit gap      =   93676.5 e-6; = (1/var)*||X-X_r||^2 val-train = 83694.2 e-6 and (1+beta)*||Z_e-Z_q||^2 val-train = 9982.3 e-6 
+
+----------------------------------------------------------------------------------
+
+The model is learning, for K = 64, D= 128, M = 1
+The model is learning, for K = 64, D= 64, M = 1
+Epoch 250/500;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:1 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:0 h/m/s;
+Total elapsed time from begining        = 0:8:45 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  218446.5 e-6; = (1/var)*||X-X_r||^2 =  105530.3 e-6 = 48.3 %; (1+beta)*||Z_e-Z_q||^2 =  112916.1 e-6 = 51.7 %)
+Curr. Avg. Val   Loss across Mini-Batch =  282659.8 e-6; = (1/var)*||X-X_r||^2 =  164878.6 e-6 = 58.3 %; (1+beta)*||Z_e-Z_q||^2 =  117781.3 e-6 = 41.7 %)
+Min.  Avg. Train Loss across Mini-Batch =  201445.1 e-6; 
+Min.  Avg. Val   Loss across Mini-Batch =  270804.6 e-6; 
+Curr. Avg. (Val-Train) overfit gap      =   64213.4 e-6; = (1/var)*||X-X_r||^2 val-train = 59348.2 e-6 and (1+beta)*||Z_e-Z_q||^2 val-train = 4865.1 e-6 
+
+----------------------------------------------------------------------------------
+
+The model is learning, for K = 64, D= 64, M = 1
+Epoch 500/500;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:1 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:0 h/m/s;
+Total elapsed time from begining        = 0:17:30 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  86747.9 e-6; = (1/var)*||X-X_r||^2 =  48236.0 e-6 = 55.6 %; (1+beta)*||Z_e-Z_q||^2 =  38511.9 e-6 = 44.4 %)
+Curr. Avg. Val   Loss across Mini-Batch =  195764.8 e-6; = (1/var)*||X-X_r||^2 =  143428.0 e-6 = 73.3 %; (1+beta)*||Z_e-Z_q||^2 =  52336.8 e-6 = 26.7 %)
+Min.  Avg. Train Loss across Mini-Batch =  83964.4 e-6; 
+Min.  Avg. Val   Loss across Mini-Batch =  194316.6 e-6; 
+Curr. Avg. (Val-Train) overfit gap      =   109016.9 e-6; = (1/var)*||X-X_r||^2 val-train = 95192.0 e-6 and (1+beta)*||Z_e-Z_q||^2 val-train = 13824.9 e-6 
+
+----------------------------------------------------------------------------------
+
+The model is learning, for K = 64, D= 64, M = 1
+The model is learning, for K = 64, D= 256, M = 1
+Epoch 250/500;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:1 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:0 h/m/s;
+Total elapsed time from begining        = 0:8:51 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  187004.9 e-6; = (1/var)*||X-X_r||^2 =  110172.8 e-6 = 58.9 %; (1+beta)*||Z_e-Z_q||^2 =  76832.1 e-6 = 41.1 %)
+Curr. Avg. Val   Loss across Mini-Batch =  225294.6 e-6; = (1/var)*||X-X_r||^2 =  148640.4 e-6 = 66.0 %; (1+beta)*||Z_e-Z_q||^2 =  76654.2 e-6 = 34.0 %)
+Min.  Avg. Train Loss across Mini-Batch =  175090.0 e-6; 
+Min.  Avg. Val   Loss across Mini-Batch =  221277.2 e-6; 
+Curr. Avg. (Val-Train) overfit gap      =   38289.7 e-6; = (1/var)*||X-X_r||^2 val-train = 38467.6 e-6 and (1+beta)*||Z_e-Z_q||^2 val-train = -177.9 e-6 
+
+----------------------------------------------------------------------------------
+
+The model is learning, for K = 64, D= 256, M = 1
+Epoch 500/500;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:1 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:0 h/m/s;
+Total elapsed time from begining        = 0:17:42 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  80901.1 e-6; = (1/var)*||X-X_r||^2 =  56815.9 e-6 = 70.2 %; (1+beta)*||Z_e-Z_q||^2 =  24085.2 e-6 = 29.8 %)
+Curr. Avg. Val   Loss across Mini-Batch =  155795.0 e-6; = (1/var)*||X-X_r||^2 =  125168.6 e-6 = 80.3 %; (1+beta)*||Z_e-Z_q||^2 =  30626.5 e-6 = 19.7 %)
+Min.  Avg. Train Loss across Mini-Batch =  80901.1 e-6; 
+Min.  Avg. Val   Loss across Mini-Batch =  155795.0 e-6; 
+Curr. Avg. (Val-Train) overfit gap      =   74893.9 e-6; = (1/var)*||X-X_r||^2 val-train = 68352.6 e-6 and (1+beta)*||Z_e-Z_q||^2 val-train = 6541.3 e-6 
+
+----------------------------------------------------------------------------------
+
+The model is learning, for K = 64, D= 256, M = 1
+The model is learning, for K = 64, D= 128, M = 1
+Epoch 500/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:1 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:0 h/m/s;
+Total elapsed time from begining        = 0:17:41 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  66626.5 e-6; = (1/var)*||X-X_r||^2 =  32194.7 e-6 = 48.3 %; (1+beta)*||Z_e-Z_q||^2 =  34431.7 e-6 = 51.7 %)
+Curr. Avg. Val   Loss across Mini-Batch =  177614.9 e-6; = (1/var)*||X-X_r||^2 =  129472.5 e-6 = 72.9 %; (1+beta)*||Z_e-Z_q||^2 =  48142.4 e-6 = 27.1 %)
+Min.  Avg. Train Loss across Mini-Batch =  64108.0 e-6; 
+Min.  Avg. Val   Loss across Mini-Batch =  175928.4 e-6; 
+Curr. Avg. (Val-Train) overfit gap      =   110988.4 e-6; = (1/var)*||X-X_r||^2 val-train = 97277.8 e-6 and (1+beta)*||Z_e-Z_q||^2 val-train = 13710.6 e-6 
+
+----------------------------------------------------------------------------------
+
+The model is learning, for K = 64, D= 128, M = 1
+Epoch 1000/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:1 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:0 h/m/s;
+Total elapsed time from begining        = 0:35:20 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  66603.8 e-6; = (1/var)*||X-X_r||^2 =  36630.4 e-6 = 55.0 %; (1+beta)*||Z_e-Z_q||^2 =  29973.4 e-6 = 45.0 %)
+Curr. Avg. Val   Loss across Mini-Batch =  190866.6 e-6; = (1/var)*||X-X_r||^2 =  147756.4 e-6 = 77.4 %; (1+beta)*||Z_e-Z_q||^2 =  43110.1 e-6 = 22.6 %)
+Min.  Avg. Train Loss across Mini-Batch =  26881.9 e-6; 
+Min.  Avg. Val   Loss across Mini-Batch =  154027.6 e-6; 
+Curr. Avg. (Val-Train) overfit gap      =   124262.8 e-6; = (1/var)*||X-X_r||^2 val-train = 111126.0 e-6 and (1+beta)*||Z_e-Z_q||^2 val-train = 13136.7 e-6 
+
+----------------------------------------------------------------------------------
+
+The model is learning, for K = 64, D= 128, M = 1
+The model is learning, for K = 64, D= 128, M = 1
+Epoch 500/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:1 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:0 h/m/s;
+Total elapsed time from begining        = 0:14:41 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  170062.7 e-6; = (1/var)*||X-X_r||^2 =  106759.7 e-6 = 62.8 %; (1+beta)*||Z_e-Z_q||^2 =  63303.0 e-6 = 37.2 %)
+Curr. Avg. Val   Loss across Mini-Batch =  231028.5 e-6; = (1/var)*||X-X_r||^2 =  157209.0 e-6 = 68.0 %; (1+beta)*||Z_e-Z_q||^2 =  73819.5 e-6 = 32.0 %)
+Min.  Avg. Train Loss across Mini-Batch =  170062.7 e-6; 
+Min.  Avg. Val   Loss across Mini-Batch =  230452.2 e-6; 
+Curr. Avg. (Val-Train) overfit gap      =   60965.8 e-6; = (1/var)*||X-X_r||^2 val-train = 50449.3 e-6 and (1+beta)*||Z_e-Z_q||^2 val-train = 10516.5 e-6 
+
+----------------------------------------------------------------------------------
+
+The model is learning, for K = 64, D= 128, M = 1
+Epoch 1000/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:1 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:0 h/m/s;
+Total elapsed time from begining        = 0:29:24 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  125796.1 e-6; = (1/var)*||X-X_r||^2 =  80331.3 e-6 = 63.9 %; (1+beta)*||Z_e-Z_q||^2 =  45464.8 e-6 = 36.1 %)
+Curr. Avg. Val   Loss across Mini-Batch =  216793.9 e-6; = (1/var)*||X-X_r||^2 =  156894.2 e-6 = 72.4 %; (1+beta)*||Z_e-Z_q||^2 =  59899.8 e-6 = 27.6 %)
+Min.  Avg. Train Loss across Mini-Batch =  123769.8 e-6; 
+Min.  Avg. Val   Loss across Mini-Batch =  210548.8 e-6; 
+Curr. Avg. (Val-Train) overfit gap      =   90997.8 e-6; = (1/var)*||X-X_r||^2 val-train = 76562.8 e-6 and (1+beta)*||Z_e-Z_q||^2 val-train = 14435.0 e-6 
+
+----------------------------------------------------------------------------------
+
+The model is learning, for K = 64, D= 128, M = 1
+The model is learning, for K = 64, D= 128, M = 1
+Epoch 500/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:1 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:0 h/m/s;
+Total elapsed time from begining        = 0:17:49 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  1246.8 e-6; = (1/var)*||X-X_r||^2 =  931.6 e-6 = 74.7 %; (1+beta)*||Z_e-Z_q||^2 =  315.2 e-6 = 25.3 %)
+Curr. Avg. Val   Loss across Mini-Batch =  2275.8 e-6; = (1/var)*||X-X_r||^2 =  1807.6 e-6 = 79.4 %; (1+beta)*||Z_e-Z_q||^2 =  468.2 e-6 = 20.6 %)
+Min.  Avg. Train Loss across Mini-Batch =  1196.7 e-6; 
+Min.  Avg. Val   Loss across Mini-Batch =  2234.6 e-6; 
+Curr. Avg. (Val-Train) overfit gap      =   1029.0 e-6; = (1/var)*||X-X_r||^2 val-train = 876.0 e-6 and (1+beta)*||Z_e-Z_q||^2 val-train = 153.1 e-6 
+
+----------------------------------------------------------------------------------
+
+The model is learning, for K = 64, D= 128, M = 1
+Epoch 1000/1000;
+Training   Samples Mini-Batch size      = 64;
+Validation Samples Mini-Batch size      = 64;
+Total elapsed time in Training Epoch    = 0:0:1 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:0 h/m/s;
+Total elapsed time from begining        = 0:35:36 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  854.6 e-6; = (1/var)*||X-X_r||^2 =  629.3 e-6 = 73.6 %; (1+beta)*||Z_e-Z_q||^2 =  225.3 e-6 = 26.4 %)
+Curr. Avg. Val   Loss across Mini-Batch =  2124.0 e-6; = (1/var)*||X-X_r||^2 =  1750.2 e-6 = 82.4 %; (1+beta)*||Z_e-Z_q||^2 =  373.7 e-6 = 17.6 %)
+Min.  Avg. Train Loss across Mini-Batch =  809.5 e-6; 
+Min.  Avg. Val   Loss across Mini-Batch =  2048.7 e-6; 
+Curr. Avg. (Val-Train) overfit gap      =   1269.3 e-6; = (1/var)*||X-X_r||^2 val-train = 1120.9 e-6 and (1+beta)*||Z_e-Z_q||^2 val-train = 148.4 e-6 
+
+----------------------------------------------------------------------------------
+
+The model is learning, for K = 64, D= 128, M = 1

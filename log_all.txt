@@ -448,3 +448,273 @@
 23                    decoder.sequential_trans_convs.conv2d_4.weight                        27             0.12
 24                      decoder.sequential_trans_convs.conv2d_4.bias                         0             0.00
 
+
+ Total Trainable Params in thousands: 21673 
+
+                                                         Module Name  # of params in thousands  # of params [%]
+0                                  encoder.sequential_convs.0.weight                        12             0.06
+1                                    encoder.sequential_convs.0.bias                         0             0.00
+2                                  encoder.sequential_convs.2.weight                      1048             4.84
+3                                    encoder.sequential_convs.2.bias                         0             0.00
+4   encoder.residual_stack.residual_blocks.0.residual_block.1.weight                       589             2.72
+5   encoder.residual_stack.residual_blocks.0.residual_block.3.weight                        65             0.30
+6   encoder.residual_stack.residual_blocks.1.residual_block.1.weight                       589             2.72
+7   encoder.residual_stack.residual_blocks.1.residual_block.3.weight                        65             0.30
+8                              encoder.channel_adjusting_conv.weight                     14745            68.03
+9                                encoder.channel_adjusting_conv.bias                         0             0.00
+10                                                       VQ.E.weight                        16             0.07
+11                             decoder.channel_adjusting_conv.weight                        65             0.30
+12                               decoder.channel_adjusting_conv.bias                         0             0.00
+13  decoder.residual_stack.residual_blocks.0.residual_block.1.weight                       589             2.72
+14  decoder.residual_stack.residual_blocks.0.residual_block.3.weight                        65             0.30
+15  decoder.residual_stack.residual_blocks.1.residual_block.1.weight                       589             2.72
+16  decoder.residual_stack.residual_blocks.1.residual_block.3.weight                        65             0.30
+17                    decoder.sequential_trans_convs.conv2d_1.weight                      1048             4.84
+18                      decoder.sequential_trans_convs.conv2d_1.bias                         0             0.00
+19                    decoder.sequential_trans_convs.conv2d_2.weight                      1048             4.84
+20                      decoder.sequential_trans_convs.conv2d_2.bias                         0             0.00
+21                    decoder.sequential_trans_convs.conv2d_3.weight                      1048             4.84
+22                      decoder.sequential_trans_convs.conv2d_3.bias                         0             0.00
+23                    decoder.sequential_trans_convs.conv2d_4.weight                        27             0.12
+24                      decoder.sequential_trans_convs.conv2d_4.bias                         0             0.00
+
+
+ Total Trainable Params in thousands: 21673 
+
+                                                         Module Name  # of params in thousands  # of params [%]
+0                                  encoder.sequential_convs.0.weight                        12             0.06
+1                                    encoder.sequential_convs.0.bias                         0             0.00
+2                                  encoder.sequential_convs.2.weight                      1048             4.84
+3                                    encoder.sequential_convs.2.bias                         0             0.00
+4   encoder.residual_stack.residual_blocks.0.residual_block.1.weight                       589             2.72
+5   encoder.residual_stack.residual_blocks.0.residual_block.3.weight                        65             0.30
+6   encoder.residual_stack.residual_blocks.1.residual_block.1.weight                       589             2.72
+7   encoder.residual_stack.residual_blocks.1.residual_block.3.weight                        65             0.30
+8                              encoder.channel_adjusting_conv.weight                     14745            68.03
+9                                encoder.channel_adjusting_conv.bias                         0             0.00
+10                                                       VQ.E.weight                        16             0.07
+11                             decoder.channel_adjusting_conv.weight                        65             0.30
+12                               decoder.channel_adjusting_conv.bias                         0             0.00
+13  decoder.residual_stack.residual_blocks.0.residual_block.1.weight                       589             2.72
+14  decoder.residual_stack.residual_blocks.0.residual_block.3.weight                        65             0.30
+15  decoder.residual_stack.residual_blocks.1.residual_block.1.weight                       589             2.72
+16  decoder.residual_stack.residual_blocks.1.residual_block.3.weight                        65             0.30
+17                    decoder.sequential_trans_convs.conv2d_1.weight                      1048             4.84
+18                      decoder.sequential_trans_convs.conv2d_1.bias                         0             0.00
+19                    decoder.sequential_trans_convs.conv2d_2.weight                      1048             4.84
+20                      decoder.sequential_trans_convs.conv2d_2.bias                         0             0.00
+21                    decoder.sequential_trans_convs.conv2d_3.weight                      1048             4.84
+22                      decoder.sequential_trans_convs.conv2d_3.bias                         0             0.00
+23                    decoder.sequential_trans_convs.conv2d_4.weight                        27             0.12
+24                      decoder.sequential_trans_convs.conv2d_4.bias                         0             0.00
+
+
+ Total Trainable Params in thousands: 21673 
+
+                                                         Module Name  # of params in thousands  # of params [%]
+0                                  encoder.sequential_convs.0.weight                        12             0.06
+1                                    encoder.sequential_convs.0.bias                         0             0.00
+2                                  encoder.sequential_convs.2.weight                      1048             4.84
+3                                    encoder.sequential_convs.2.bias                         0             0.00
+4   encoder.residual_stack.residual_blocks.0.residual_block.1.weight                       589             2.72
+5   encoder.residual_stack.residual_blocks.0.residual_block.3.weight                        65             0.30
+6   encoder.residual_stack.residual_blocks.1.residual_block.1.weight                       589             2.72
+7   encoder.residual_stack.residual_blocks.1.residual_block.3.weight                        65             0.30
+8                              encoder.channel_adjusting_conv.weight                     14745            68.03
+9                                encoder.channel_adjusting_conv.bias                         0             0.00
+10                                                       VQ.E.weight                        16             0.07
+11                             decoder.channel_adjusting_conv.weight                        65             0.30
+12                               decoder.channel_adjusting_conv.bias                         0             0.00
+13  decoder.residual_stack.residual_blocks.0.residual_block.1.weight                       589             2.72
+14  decoder.residual_stack.residual_blocks.0.residual_block.3.weight                        65             0.30
+15  decoder.residual_stack.residual_blocks.1.residual_block.1.weight                       589             2.72
+16  decoder.residual_stack.residual_blocks.1.residual_block.3.weight                        65             0.30
+17                    decoder.sequential_trans_convs.conv2d_1.weight                      1048             4.84
+18                      decoder.sequential_trans_convs.conv2d_1.bias                         0             0.00
+19                    decoder.sequential_trans_convs.conv2d_2.weight                      1048             4.84
+20                      decoder.sequential_trans_convs.conv2d_2.bias                         0             0.00
+21                    decoder.sequential_trans_convs.conv2d_3.weight                      1048             4.84
+22                      decoder.sequential_trans_convs.conv2d_3.bias                         0             0.00
+23                    decoder.sequential_trans_convs.conv2d_4.weight                        27             0.12
+24                      decoder.sequential_trans_convs.conv2d_4.bias                         0             0.00
+
+
+ Total Trainable Params in thousands: 21673 
+
+                                                         Module Name  # of params in thousands  # of params [%]
+0                                  encoder.sequential_convs.0.weight                        12             0.06
+1                                    encoder.sequential_convs.0.bias                         0             0.00
+2                                  encoder.sequential_convs.2.weight                      1048             4.84
+3                                    encoder.sequential_convs.2.bias                         0             0.00
+4   encoder.residual_stack.residual_blocks.0.residual_block.1.weight                       589             2.72
+5   encoder.residual_stack.residual_blocks.0.residual_block.3.weight                        65             0.30
+6   encoder.residual_stack.residual_blocks.1.residual_block.1.weight                       589             2.72
+7   encoder.residual_stack.residual_blocks.1.residual_block.3.weight                        65             0.30
+8                              encoder.channel_adjusting_conv.weight                     14745            68.03
+9                                encoder.channel_adjusting_conv.bias                         0             0.00
+10                                                       VQ.E.weight                        16             0.07
+11                             decoder.channel_adjusting_conv.weight                        65             0.30
+12                               decoder.channel_adjusting_conv.bias                         0             0.00
+13  decoder.residual_stack.residual_blocks.0.residual_block.1.weight                       589             2.72
+14  decoder.residual_stack.residual_blocks.0.residual_block.3.weight                        65             0.30
+15  decoder.residual_stack.residual_blocks.1.residual_block.1.weight                       589             2.72
+16  decoder.residual_stack.residual_blocks.1.residual_block.3.weight                        65             0.30
+17                    decoder.sequential_trans_convs.conv2d_1.weight                      1048             4.84
+18                      decoder.sequential_trans_convs.conv2d_1.bias                         0             0.00
+19                    decoder.sequential_trans_convs.conv2d_2.weight                      1048             4.84
+20                      decoder.sequential_trans_convs.conv2d_2.bias                         0             0.00
+21                    decoder.sequential_trans_convs.conv2d_3.weight                      1048             4.84
+22                      decoder.sequential_trans_convs.conv2d_3.bias                         0             0.00
+23                    decoder.sequential_trans_convs.conv2d_4.weight                        27             0.12
+24                      decoder.sequential_trans_convs.conv2d_4.bias                         0             0.00
+
+
+ Total Trainable Params in thousands: 21673 
+
+                                                         Module Name  # of params in thousands  # of params [%]
+0                                  encoder.sequential_convs.0.weight                        12             0.06
+1                                    encoder.sequential_convs.0.bias                         0             0.00
+2                                  encoder.sequential_convs.2.weight                      1048             4.84
+3                                    encoder.sequential_convs.2.bias                         0             0.00
+4   encoder.residual_stack.residual_blocks.0.residual_block.1.weight                       589             2.72
+5   encoder.residual_stack.residual_blocks.0.residual_block.3.weight                        65             0.30
+6   encoder.residual_stack.residual_blocks.1.residual_block.1.weight                       589             2.72
+7   encoder.residual_stack.residual_blocks.1.residual_block.3.weight                        65             0.30
+8                              encoder.channel_adjusting_conv.weight                     14745            68.03
+9                                encoder.channel_adjusting_conv.bias                         0             0.00
+10                                                       VQ.E.weight                        16             0.07
+11                             decoder.channel_adjusting_conv.weight                        65             0.30
+12                               decoder.channel_adjusting_conv.bias                         0             0.00
+13  decoder.residual_stack.residual_blocks.0.residual_block.1.weight                       589             2.72
+14  decoder.residual_stack.residual_blocks.0.residual_block.3.weight                        65             0.30
+15  decoder.residual_stack.residual_blocks.1.residual_block.1.weight                       589             2.72
+16  decoder.residual_stack.residual_blocks.1.residual_block.3.weight                        65             0.30
+17                    decoder.sequential_trans_convs.conv2d_1.weight                      1048             4.84
+18                      decoder.sequential_trans_convs.conv2d_1.bias                         0             0.00
+19                    decoder.sequential_trans_convs.conv2d_2.weight                      1048             4.84
+20                      decoder.sequential_trans_convs.conv2d_2.bias                         0             0.00
+21                    decoder.sequential_trans_convs.conv2d_3.weight                      1048             4.84
+22                      decoder.sequential_trans_convs.conv2d_3.bias                         0             0.00
+23                    decoder.sequential_trans_convs.conv2d_4.weight                        27             0.12
+24                      decoder.sequential_trans_convs.conv2d_4.bias                         0             0.00
+
+
+ Total Trainable Params in thousands: 21673 
+
+                                                         Module Name  # of params in thousands  # of params [%]
+0                                  encoder.sequential_convs.0.weight                        12             0.06
+1                                    encoder.sequential_convs.0.bias                         0             0.00
+2                                  encoder.sequential_convs.2.weight                      1048             4.84
+3                                    encoder.sequential_convs.2.bias                         0             0.00
+4   encoder.residual_stack.residual_blocks.0.residual_block.1.weight                       589             2.72
+5   encoder.residual_stack.residual_blocks.0.residual_block.3.weight                        65             0.30
+6   encoder.residual_stack.residual_blocks.1.residual_block.1.weight                       589             2.72
+7   encoder.residual_stack.residual_blocks.1.residual_block.3.weight                        65             0.30
+8                              encoder.channel_adjusting_conv.weight                     14745            68.03
+9                                encoder.channel_adjusting_conv.bias                         0             0.00
+10                                                       VQ.E.weight                        16             0.07
+11                             decoder.channel_adjusting_conv.weight                        65             0.30
+12                               decoder.channel_adjusting_conv.bias                         0             0.00
+13  decoder.residual_stack.residual_blocks.0.residual_block.1.weight                       589             2.72
+14  decoder.residual_stack.residual_blocks.0.residual_block.3.weight                        65             0.30
+15  decoder.residual_stack.residual_blocks.1.residual_block.1.weight                       589             2.72
+16  decoder.residual_stack.residual_blocks.1.residual_block.3.weight                        65             0.30
+17                    decoder.sequential_trans_convs.conv2d_1.weight                      1048             4.84
+18                      decoder.sequential_trans_convs.conv2d_1.bias                         0             0.00
+19                    decoder.sequential_trans_convs.conv2d_2.weight                      1048             4.84
+20                      decoder.sequential_trans_convs.conv2d_2.bias                         0             0.00
+21                    decoder.sequential_trans_convs.conv2d_3.weight                      1048             4.84
+22                      decoder.sequential_trans_convs.conv2d_3.bias                         0             0.00
+23                    decoder.sequential_trans_convs.conv2d_4.weight                        27             0.12
+24                      decoder.sequential_trans_convs.conv2d_4.bias                         0             0.00
+
+
+ Total Trainable Params in thousands: 21673 
+
+                                                         Module Name  # of params in thousands  # of params [%]
+0                                  encoder.sequential_convs.0.weight                        12             0.06
+1                                    encoder.sequential_convs.0.bias                         0             0.00
+2                                  encoder.sequential_convs.2.weight                      1048             4.84
+3                                    encoder.sequential_convs.2.bias                         0             0.00
+4   encoder.residual_stack.residual_blocks.0.residual_block.1.weight                       589             2.72
+5   encoder.residual_stack.residual_blocks.0.residual_block.3.weight                        65             0.30
+6   encoder.residual_stack.residual_blocks.1.residual_block.1.weight                       589             2.72
+7   encoder.residual_stack.residual_blocks.1.residual_block.3.weight                        65             0.30
+8                              encoder.channel_adjusting_conv.weight                     14745            68.03
+9                                encoder.channel_adjusting_conv.bias                         0             0.00
+10                                                       VQ.E.weight                        16             0.07
+11                             decoder.channel_adjusting_conv.weight                        65             0.30
+12                               decoder.channel_adjusting_conv.bias                         0             0.00
+13  decoder.residual_stack.residual_blocks.0.residual_block.1.weight                       589             2.72
+14  decoder.residual_stack.residual_blocks.0.residual_block.3.weight                        65             0.30
+15  decoder.residual_stack.residual_blocks.1.residual_block.1.weight                       589             2.72
+16  decoder.residual_stack.residual_blocks.1.residual_block.3.weight                        65             0.30
+17                    decoder.sequential_trans_convs.conv2d_1.weight                      1048             4.84
+18                      decoder.sequential_trans_convs.conv2d_1.bias                         0             0.00
+19                    decoder.sequential_trans_convs.conv2d_2.weight                      1048             4.84
+20                      decoder.sequential_trans_convs.conv2d_2.bias                         0             0.00
+21                    decoder.sequential_trans_convs.conv2d_3.weight                      1048             4.84
+22                      decoder.sequential_trans_convs.conv2d_3.bias                         0             0.00
+23                    decoder.sequential_trans_convs.conv2d_4.weight                        27             0.12
+24                      decoder.sequential_trans_convs.conv2d_4.bias                         0             0.00
+
+
+ Total Trainable Params in thousands: 21673 
+
+                                                         Module Name  # of params in thousands  # of params [%]
+0                                  encoder.sequential_convs.0.weight                        12             0.06
+1                                    encoder.sequential_convs.0.bias                         0             0.00
+2                                  encoder.sequential_convs.2.weight                      1048             4.84
+3                                    encoder.sequential_convs.2.bias                         0             0.00
+4   encoder.residual_stack.residual_blocks.0.residual_block.1.weight                       589             2.72
+5   encoder.residual_stack.residual_blocks.0.residual_block.3.weight                        65             0.30
+6   encoder.residual_stack.residual_blocks.1.residual_block.1.weight                       589             2.72
+7   encoder.residual_stack.residual_blocks.1.residual_block.3.weight                        65             0.30
+8                              encoder.channel_adjusting_conv.weight                     14745            68.03
+9                                encoder.channel_adjusting_conv.bias                         0             0.00
+10                                                       VQ.E.weight                        16             0.07
+11                             decoder.channel_adjusting_conv.weight                        65             0.30
+12                               decoder.channel_adjusting_conv.bias                         0             0.00
+13  decoder.residual_stack.residual_blocks.0.residual_block.1.weight                       589             2.72
+14  decoder.residual_stack.residual_blocks.0.residual_block.3.weight                        65             0.30
+15  decoder.residual_stack.residual_blocks.1.residual_block.1.weight                       589             2.72
+16  decoder.residual_stack.residual_blocks.1.residual_block.3.weight                        65             0.30
+17                    decoder.sequential_trans_convs.conv2d_1.weight                      1048             4.84
+18                      decoder.sequential_trans_convs.conv2d_1.bias                         0             0.00
+19                    decoder.sequential_trans_convs.conv2d_2.weight                      1048             4.84
+20                      decoder.sequential_trans_convs.conv2d_2.bias                         0             0.00
+21                    decoder.sequential_trans_convs.conv2d_3.weight                      1048             4.84
+22                      decoder.sequential_trans_convs.conv2d_3.bias                         0             0.00
+23                    decoder.sequential_trans_convs.conv2d_4.weight                        27             0.12
+24                      decoder.sequential_trans_convs.conv2d_4.bias                         0             0.00
+
+
+ Total Trainable Params in thousands: 21673 
+
+                                                         Module Name  # of params in thousands  # of params [%]
+0                                  encoder.sequential_convs.0.weight                        12             0.06
+1                                    encoder.sequential_convs.0.bias                         0             0.00
+2                                  encoder.sequential_convs.2.weight                      1048             4.84
+3                                    encoder.sequential_convs.2.bias                         0             0.00
+4   encoder.residual_stack.residual_blocks.0.residual_block.1.weight                       589             2.72
+5   encoder.residual_stack.residual_blocks.0.residual_block.3.weight                        65             0.30
+6   encoder.residual_stack.residual_blocks.1.residual_block.1.weight                       589             2.72
+7   encoder.residual_stack.residual_blocks.1.residual_block.3.weight                        65             0.30
+8                              encoder.channel_adjusting_conv.weight                     14745            68.03
+9                                encoder.channel_adjusting_conv.bias                         0             0.00
+10                                                       VQ.E.weight                        16             0.07
+11                             decoder.channel_adjusting_conv.weight                        65             0.30
+12                               decoder.channel_adjusting_conv.bias                         0             0.00
+13  decoder.residual_stack.residual_blocks.0.residual_block.1.weight                       589             2.72
+14  decoder.residual_stack.residual_blocks.0.residual_block.3.weight                        65             0.30
+15  decoder.residual_stack.residual_blocks.1.residual_block.1.weight                       589             2.72
+16  decoder.residual_stack.residual_blocks.1.residual_block.3.weight                        65             0.30
+17                    decoder.sequential_trans_convs.conv2d_1.weight                      1048             4.84
+18                      decoder.sequential_trans_convs.conv2d_1.bias                         0             0.00
+19                    decoder.sequential_trans_convs.conv2d_2.weight                      1048             4.84
+20                      decoder.sequential_trans_convs.conv2d_2.bias                         0             0.00
+21                    decoder.sequential_trans_convs.conv2d_3.weight                      1048             4.84
+22                      decoder.sequential_trans_convs.conv2d_3.bias                         0             0.00
+23                    decoder.sequential_trans_convs.conv2d_4.weight                        27             0.12
+24                      decoder.sequential_trans_convs.conv2d_4.bias                         0             0.00
+

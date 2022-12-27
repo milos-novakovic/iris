@@ -12,6 +12,15 @@ class VectorQuantizer(nn.Module):
         self.E = nn.Embedding(self.K, self.D)
         self.E.weight.data.uniform_(-1/self.K, 1/self.K)
         
+        # self.use_EMA = args_VQ['use_EMA']
+        
+        # if self.use_EMA:
+        #     # decay in the Exp. Moving Average
+        #     self.gamma = args_VQ['gamma']
+            
+            
+            
+        
     def forward(self, inputs):
         # convert inputs from BCHW -> BHWC
         # C = D
@@ -43,13 +52,26 @@ class VectorQuantizer(nn.Module):
         # Combination of two losses
         e_and_q_latent_loss = q_latent_loss + self.beta * e_latent_loss
         
-        
         # in + (out - in).detach() 
         Zq_tensor = Ze_tensor + (Zq_tensor - Ze_tensor).detach()        
         
         # BHWC -> BCHW
         Zq_tensor = Zq_tensor.permute(0, 3, 1, 2).contiguous()
-        return e_and_q_latent_loss, Zq_tensor, e_latent_loss.item(), q_latent_loss.item()
+        
+        # calculate the avg. estimated probably of the quantized index 1,..,K occuring
+        # https://pytorch.org/docs/stable/generated/torch.unique.html 
+        # https://stackoverflow.com/questions/10741346/frequency-counts-for-unique-values-in-a-numpy-array
+        _, estimate_codebook_words_freq = torch.unique(input = encoding_indices.detach(), 
+                                                        sorted=True, 
+                                                        return_inverse=False,
+                                                        return_counts=True,
+                                                        dim=0) 
+        estimate_codebook_words_prob = estimate_codebook_words_freq / torch.sum(estimate_codebook_words_freq)
+        log_estimate_codebook_words_prob = torch.log2(estimate_codebook_words_prob + 1e-10)
+        estimate_codebook_words_entropy_bits = - torch.sum(estimate_codebook_words_prob * log_estimate_codebook_words_prob)
+        estimate_codebook_words = 2**(estimate_codebook_words_entropy_bits)
+        
+        return e_and_q_latent_loss, Zq_tensor, e_latent_loss.item(), q_latent_loss.item(), estimate_codebook_words
     
 class Residual(nn.Module):
     def __init__(self, res_block_args):
@@ -117,13 +139,19 @@ class Encoder(nn.Module):
                                                             out_channels=args_encoder['conv2_Cout'],#128
                                                             kernel_size=args_encoder['conv2_k'],#4
                                                             stride=args_encoder['conv2_s'],#2
-                                                            padding=args_encoder['conv2_p']) #, #1
-                                                # nn.ReLU(True),
-                                                # nn.Conv2d(  in_channels=args_encoder['conv3_Cin'],#128
-                                                #             out_channels=args_encoder['conv3_Cout'],#128
-                                                #             kernel_size=args_encoder['conv3_k'],#3
-                                                #             stride=args_encoder['conv3_s'],#1
-                                                #             padding=args_encoder['conv3_p'])#1
+                                                            padding=args_encoder['conv2_p']), #, #1
+                                                nn.ReLU(True),
+                                                nn.Conv2d(  in_channels=args_encoder['conv3_Cin'],#128
+                                                            out_channels=args_encoder['conv3_Cout'],#128
+                                                            kernel_size=args_encoder['conv3_k'],#4
+                                                            stride=args_encoder['conv3_s'],#2
+                                                            padding=args_encoder['conv3_p']),#1
+                                                nn.ReLU(True),
+                                                nn.Conv2d(  in_channels=args_encoder['conv4_Cin'],#128
+                                                            out_channels=args_encoder['conv4_Cout'],#128
+                                                            kernel_size=args_encoder['conv4_k'],#4
+                                                            stride=args_encoder['conv4_s'],#2
+                                                            padding=args_encoder['conv4_p'])#1
                                                 #nn.ReLU(True)#input to the residual stack already has ReLU at the input, so we dont put it here (applying ReLU two times does not change anything but increases the computational time)                                            
                                             )
         
@@ -216,8 +244,8 @@ class VQ_VAE(nn.Module):
 
     def forward(self, x):                       #torch.Size([128, 3, 64, 64])
         Ze = self.encoder(x)                    #torch.Size([128, 64, 16, 16])
-        e_and_q_latent_loss, Zq, e_latent_loss, q_latent_loss = self.VQ(Ze)   #torch.Size([128, 64, 16, 16])
+        e_and_q_latent_loss, Zq, e_latent_loss, q_latent_loss, estimate_codebook_words_exp_entropy = self.VQ(Ze)   #torch.Size([128, 64, 16, 16])
         # use this for simple countinous vanilla AE (i.e. to bypass the VQ class forward pass)
         #e_and_q_latent_loss, Zq,  e_latent_loss, q_latent_loss = 0,Ze, 0, 0         #torch.Size([128, 64, 16, 16])
         x_recon = self.decoder(Zq)              #torch.Size([128, 3, 64, 64])
-        return e_and_q_latent_loss, x_recon, e_latent_loss, q_latent_loss
+        return e_and_q_latent_loss, x_recon, e_latent_loss, q_latent_loss, estimate_codebook_words_exp_entropy

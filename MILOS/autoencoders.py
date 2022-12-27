@@ -92,7 +92,7 @@ def visualise_output(images, model, compose_transforms, imgs_ids, imgs_losses, s
         reconstructed_images = images.to(device)
         model = model.to(device)
         reconstructed_images = model(reconstructed_images)
-        if len(reconstructed_images) == 4:
+        if len(reconstructed_images) == 5:
             reconstructed_images = reconstructed_images[1]
         
         # put reconstructed mini-batch of images to cpu
@@ -637,6 +637,9 @@ training_args['optimizer_settings'] = optimizer_settings #torch.optim.Adam(param
 training_args['train_data_variance'] = np.load(TRAIN_IMAGES_TOTAL_STD_FILE_PATH).item() **2
  # because we divided the chanells with TRANSFORM_IMG.std[0] we have to correct the total training data variance for that in other words training_args['train_data_variance'] was VAR[X] but because we did linear transform TRANSFORM_IMG so that X -> (X - MEAN_TRANSFORM_IMG) / STD_TRANSFORM_IMG we need to adjust the total variance of the data from VAR[X] -> VAR[(X - MEAN_TRANSFORM_IMG) / STD_TRANSFORM_IMG] = VAR[X] / STD_TRANSFORM_IMG**2 and that is precicely what we are doing here
 training_args['train_data_variance'] /= (TRANSFORM_IMG.transforms[0].std[0]**2)
+training_args['train_data_variance']=1.
+
+print(f"Inverse of training data variance term is equal to =  {1. / training_args['train_data_variance']:.1f}")
 
 # create a Folder where one will save everything relevant and important for trainer model
 # old

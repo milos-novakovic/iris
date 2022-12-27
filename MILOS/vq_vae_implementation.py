@@ -90,6 +90,7 @@ args_VQ['D'] = D # 64 #embedding dimension
 args_VQ['K'] = K # 512 #number of embeddings
 args_VQ['beta'] = 0.25 #64 #embedding dimension
 args_VQ['M'] = M
+channel_number_in_hidden_layers = 128 #64 #128 #128 #256
 
 #####################
 # Encoder arguments # # floor[ (H + 2p - d(k-1) -1)/s + 1]
@@ -104,49 +105,54 @@ args_encoder = {}
 args_encoder['M']=M #neccecary because of zero padding layer
 args_encoder['C_in'], args_encoder['H_in'], args_encoder['W_in'] = C, H, W
 args_encoder['conv1_Cin'] = args_encoder['C_in'] #Cin
-args_encoder['conv1_Cout'] = 256 #64 #64
+args_encoder['conv1_Cout'] = channel_number_in_hidden_layers #64 #64
 args_encoder['conv1_k'] = 4 #4
 args_encoder['conv1_s'] = 2 #2
 args_encoder['conv1_p'] = 1 #1
-# floor[H/2]= H/2; if H is even        
+# floor[H/2]= H/2; if H is even (H_out = 32)
 
 args_encoder['conv2_Cin'] = args_encoder['conv1_Cout']#64
-args_encoder['conv2_Cout'] = 256 #128 #128
+args_encoder['conv2_Cout'] = channel_number_in_hidden_layers #128 #128
 args_encoder['conv2_k'] = 4 #4
 args_encoder['conv2_s'] = 2 #2
 args_encoder['conv2_p'] = 1 #1
-# floor[H/4] = H/4; if H/2 is even
+# floor[H/4] = H/4; if H/2 is even (H_out = 16)
+
+args_encoder['conv3_Cin'] = args_encoder['conv2_Cout']#64
+args_encoder['conv3_Cout'] = channel_number_in_hidden_layers #128 #128
+args_encoder['conv3_k'] = 4 #4
+args_encoder['conv3_s'] = 2 #2
+args_encoder['conv3_p'] = 1 #1
+# floor[H/8] = H/8; if H/4 is even (H_out = 8)
+
+args_encoder['conv4_Cin'] = args_encoder['conv3_Cout']#64
+args_encoder['conv4_Cout'] = channel_number_in_hidden_layers #128 #128
+args_encoder['conv4_k'] = 4 #4
+args_encoder['conv4_s'] = 2 #2
+args_encoder['conv4_p'] = 1 #1
+# floor[H/16] = H/16; if H/8 is even (H_out = 4)
+
 
 # args_encoder['conv3_Cin'] = args_encoder['conv2_Cout'] #128
 # args_encoder['conv3_Cout'] = 128 #128
 # args_encoder['conv3_k'] = 3 #3
 # args_encoder['conv3_s'] = 1 #1
 # args_encoder['conv3_p'] = 1 #1
-# floor[ H/4 - 5] = H/4 - 5; if H is div. by 4
+# floor[ H/4] = H/4; if H is div. by 4
 # ([128, 128, 16, 16])     
 
 # Same for Encoder and Decoder        
 res_block_args={}
 res_block_args['block_size'] = 2 #2
 res_block_args['C_in'] = args_encoder['conv2_Cout'] #args_encoder['conv3_Cout'] # 128
-res_block_args['C_mid'] = 256#32
+res_block_args['C_mid'] = channel_number_in_hidden_layers#32
 
 args_encoder['channel_adjusting_conv_Cin'] = res_block_args['C_in'] #C_enc, 128
 args_encoder['channel_adjusting_conv_Cout'] = args_VQ['D'] #D,
-args_encoder['channel_adjusting_conv_k'] = H//4 - args_VQ['M'] #H//4 #1 # kernel size has to be 1 because this (linear) conv layer just changes the chanell dimension
+args_encoder['channel_adjusting_conv_k'] = H//16 - args_VQ['M'] #H//4 #1 # kernel size has to be 1 because this (linear) conv layer just changes the chanell dimension
 args_encoder['channel_adjusting_conv_s'] = 1
 args_encoder['channel_adjusting_conv_p'] = 0
-# Size = [B, D, 1, 1]
-
-# Encoder
-# x = self.sequential_convs(x)
-# x = self.residual_stack(x) 
-# x = self.channel_adjusting_conv(x)
-# Vector Quantizer
-# Decoder
-# x = self.channel_adjusting_conv(x)
-# x = self.residual_stack(x)        
-# x = self.sequential_trans_convs(x)
+# Size = [B, D, M+1, M+1]
 
 #####################
 # Decoder arguments #
@@ -192,7 +198,7 @@ TRANS_CONV_KERNEL_SIZE, TRANS_CONV_LAYER_NUMBER = M_2_TRANS_CONV_KERNEL_SIZE[M],
 args_decoder = {}
 
 args_decoder['channel_adjusting_conv_Cin'] = args_VQ['D'] #Cin
-args_decoder['channel_adjusting_conv_Cout'] = 256#128#128
+args_decoder['channel_adjusting_conv_Cout'] = channel_number_in_hidden_layers#128#128
 args_decoder['channel_adjusting_conv_k'] = 1#H//4#1#3 #; TRY WITH KERNEL SIZE 1 AND PADDING 0
 args_decoder['channel_adjusting_conv_s'] = 1
 args_decoder['channel_adjusting_conv_p'] = 0#1 #; TRY WITH KERNEL SIZE 1 AND PADDING 0
@@ -201,7 +207,7 @@ args_decoder['channel_adjusting_conv_p'] = 0#1 #; TRY WITH KERNEL SIZE 1 AND PAD
 res_block_args={}
 res_block_args['block_size'] = 2 #2
 res_block_args['C_in'] = args_decoder['channel_adjusting_conv_Cout'] # 128
-res_block_args['C_mid'] = 256#32
+res_block_args['C_mid'] = channel_number_in_hidden_layers#32
 
 #CONV_LAYERS = 4#int(np.log2(H))
 args_decoder['CONV_LAYERS'] = 4#TRANS_CONV_LAYER_NUMBER
@@ -215,7 +221,7 @@ for i in range(1,args_decoder['CONV_LAYERS']+1):
         args_decoder[f'trans_conv{i}_Cout'] = 3 # last conv layer C_out
         args_decoder[f'trans_conv{i}_k'] += 2 #8#4 #4
     else:
-        args_decoder[f'trans_conv{i}_Cout'] = 256#64#64
+        args_decoder[f'trans_conv{i}_Cout'] = channel_number_in_hidden_layers#64#64
 
 # args_decoder['trans_conv2_Cin'] = args_decoder['trans_conv1_Cout']#64
 # args_decoder['trans_conv2_Cout'] = 3#3

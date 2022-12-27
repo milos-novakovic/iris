@@ -935,16 +935,13 @@ class Model_Trainer:
 
     def get_intermediate_training_stats_str(  self,\
                                             current_epoch, \
-                                            total_nb_epochs, \
-                                            train_duration_sec, \
-                                            val_duration_sec, \
                                             start_time_training,\
-                                            batch_size_train,\
-                                            batch_size_val,\
-                                            current_avg_train_loss,\
-                                            current_avg_val_loss, \
-                                            min_avg_train_loss, \
-                                            min_avg_val_loss) -> str:
+                                            ) -> str:
+        train_duration_sec      = self.train_duration_per_epoch_seconds[current_epoch]
+        val_duration_sec        = self.val_duration_per_epoch_seconds[current_epoch]
+        
+        current_avg_train_loss  = self.train_loss_avg[-1]
+        current_avg_val_loss    = self.val_loss_avg[-1]
         
         # training duration to str
         m, s = divmod(train_duration_sec, 60)
@@ -961,18 +958,18 @@ class Model_Trainer:
         h, m = divmod(m, 60)
         duration_sec_str = f"{h}:{m}:{s} h/m/s"
         
-        
         intermediate_training_stats : str = \
-                 f"Epoch {current_epoch+1}/{total_nb_epochs};\n"\
-                +f"Training   Samples Mini-Batch size      = {batch_size_train};\n"\
-                +f"Validation Samples Mini-Batch size      = {batch_size_val};\n"\
+                 f"Epoch {current_epoch+1}/{self.NUM_EPOCHS};\n"\
+                +f"Training   Samples Mini-Batch size      = {self.loaders['train'].batch_size};\n"\
+                +f"Validation Samples Mini-Batch size      = {self.loaders['val'].batch_size};\n"\
                 +f"Total elapsed time in Training Epoch    = {train_duration_sec_str};\n"\
                 +f"Total elapsed time in Validation Epoch  = {val_duration_sec_str};\n"\
                 +f"Total elapsed time from begining        = {duration_sec_str};\n"\
-                +f"Curr. Avg. Train Loss across Mini-Batch = {current_avg_train_loss *1e6 : .1f} e-6;\n"\
-                +f"Curr. Avg. Val   Loss across Mini-Batch = {current_avg_val_loss *1e6 : .1f} e-6;\n"\
-                +f"Min.  Avg. Train Loss across Mini-Batch = {min_avg_train_loss *1e6 : .1f} e-6;\n"\
-                +f"Min.  Avg. Val   Loss across Mini-Batch = {min_avg_val_loss *1e6 : .1f} e-6;\n"\
+                +f"Curr. Avg. Train Loss across Mini-Batch = {current_avg_train_loss *1e6 : .1f} e-6; = (1/var)*||X-X_r||^2 = {self.train_multiple_losses_avg['reconstruction_loss'][-1] *1e6 : .1f} e-6 = {self.train_multiple_losses_avg['reconstruction_loss'][-1]/current_avg_train_loss*100:.1f} %; (1+beta)*||Z_e-Z_q||^2 = {(1 +  self.model.args_VQ['beta']) * self.train_multiple_losses_avg['commitment_loss'][-1] *1e6 : .1f} e-6 = {(1 +  self.model.args_VQ['beta']) * self.train_multiple_losses_avg['commitment_loss'][-1]/current_avg_train_loss*100:.1f} %)\n"\
+                +f"Curr. Avg. Val   Loss across Mini-Batch = {current_avg_val_loss *1e6 : .1f} e-6; = (1/var)*||X-X_r||^2 = {self.val_multiple_losses_avg['reconstruction_loss'][-1] *1e6 : .1f} e-6 = {self.val_multiple_losses_avg['reconstruction_loss'][-1]/current_avg_val_loss*100:.1f} %; (1+beta)*||Z_e-Z_q||^2 = {(1 +  self.model.args_VQ['beta']) * self.val_multiple_losses_avg['commitment_loss'][-1] *1e6 : .1f} e-6 = {(1 +  self.model.args_VQ['beta']) * self.val_multiple_losses_avg['commitment_loss'][-1]/current_avg_val_loss*100:.1f} %)\n"\
+                +f"Min.  Avg. Train Loss across Mini-Batch = {self.min_train_loss *1e6 : .1f} e-6; \n"\
+                +f"Min.  Avg. Val   Loss across Mini-Batch = {self.min_val_loss *1e6 : .1f} e-6; \n"\
+                +f"Curr. Avg. (Val-Train) overfit gap      =  {(current_avg_val_loss - current_avg_train_loss) *1e6 : .1f} e-6; = (1/var)*||X-X_r||^2 val-train = {(self.val_multiple_losses_avg['reconstruction_loss'][-1] - self.train_multiple_losses_avg['reconstruction_loss'][-1])*1e6 :.1f} e-6 and (1+beta)*||Z_e-Z_q||^2 val-train = {(1 +  self.model.args_VQ['beta']) *(self.val_multiple_losses_avg['commitment_loss'][-1] - self.train_multiple_losses_avg['commitment_loss'][-1])*1e6 :.1f} e-6 \n"\
                 +f"\n----------------------------------------------------------------------------------\n"
         
         return intermediate_training_stats
@@ -1043,22 +1040,27 @@ class Model_Trainer:
             # set the model to the train state
             self.model.train()
             
+            
+            
             for image_batch, image_ids_batch  in self.loaders['train']:
                 #train_data_variance = torch.var(image_batch).item()
                 
                 #torch.Size([BATCH_SIZE_TRAIN, 3 (RGB), H, W])
                 image_batch = image_batch.to(self.device)
                 
+                
+                
                 # autoencoder reconstruction
                 # forward pass: compute predicted outputs by passing inputs to the model
                 image_batch_recon = self.model(image_batch)
                 
+                
+                
                 # reconstruction error: calculate the batch loss
-                if len(image_batch_recon) == 4:
-                    e_and_q_latent_loss, image_batch_recon_, e_latent_loss, q_latent_loss = image_batch_recon                                       
+                if len(image_batch_recon) == 5:
+                    e_and_q_latent_loss, image_batch_recon_, e_latent_loss, q_latent_loss, estimate_codebook_words_exp_entropy = image_batch_recon                                       
                     recon_error = F.mse_loss(image_batch_recon_, image_batch) / self.train_data_variance
                     loss = recon_error + e_and_q_latent_loss
-                    
                 else:
                     loss = self.loss_fn(image_batch_recon, image_batch)
                     
@@ -1126,6 +1128,7 @@ class Model_Trainer:
             # set the model to the evaluation state
             self.model.eval()
             
+
             for image_batch, image_ids_batch in self.loaders['val']:
                 
                 #torch.Size([BATCH_SIZE_VAL, 3 (RGB), H, W])
@@ -1137,8 +1140,8 @@ class Model_Trainer:
                 
                 # reconstruction error
                 # calculate the batch loss
-                if len(image_batch_recon) == 4:
-                    e_and_q_latent_loss, image_batch_recon_, e_latent_loss, q_latent_loss = image_batch_recon                                       
+                if len(image_batch_recon) == 5:
+                    e_and_q_latent_loss, image_batch_recon_, e_latent_loss, q_latent_loss, estimate_codebook_words_exp_entropy = image_batch_recon                                       
                     recon_error = F.mse_loss(image_batch_recon_, image_batch) / self.train_data_variance
                     loss = recon_error + e_and_q_latent_loss
                 else:
@@ -1160,7 +1163,6 @@ class Model_Trainer:
                 # count the number of batches
                 num_batches += 1
             
-            
             # calculate the current avg. validation loss
             self.val_loss_avg[-1] /= (1.*num_batches)
             
@@ -1177,23 +1179,17 @@ class Model_Trainer:
             # calculate validation elapsed time in the current epoch
             self.val_duration_per_epoch_seconds[epoch] = int(time.time() - start_time_epoch)
             
+            
             # every 10th epoch print intermediate training/validation statistics
             if (epoch+1) % 10 == 0:
                 message = self.get_intermediate_training_stats_str(\
-                    current_epoch           = epoch, \
-                    total_nb_epochs         = self.NUM_EPOCHS, \
-                    train_duration_sec      = self.train_duration_per_epoch_seconds[epoch], \
-                    val_duration_sec        = self.val_duration_per_epoch_seconds[epoch], \
-                    start_time_training     = START_TIME_TRAINING, \
-                    batch_size_train        = self.loaders['train'].batch_size,\
-                    batch_size_val          = self.loaders['val'].batch_size,\
-                    current_avg_train_loss  = self.train_loss_avg[-1],\
-                    current_avg_val_loss    = self.val_loss_avg[-1], \
-                    min_avg_train_loss      = self.min_train_loss, \
-                    min_avg_val_loss        = self.min_val_loss)
+                    current_epoch           = epoch,
+                    start_time_training     = START_TIME_TRAINING)
                 #print(message)
                 with open('log_all.txt', 'a') as f:
-                        f.write(f"{message}\n")
+                    
+                    f.write(f"current perplexity = 2^( H( PMF of codebook words occurance ) bits ) = {estimate_codebook_words_exp_entropy:.2f}; perplexity/K = {estimate_codebook_words_exp_entropy / self.model.args_VQ['K'] * 100 :.2f}%\n")
+                    f.write(f"{message}\n")
                 
                 if (epoch+1)==int(0.2 * self.NUM_EPOCHS):
                     if (self.train_loss_avg[epoch]/self.train_loss_avg[epoch-int(0.05 * self.NUM_EPOCHS)]) > 1.0: # self.train_loss_avg[-1]> 16000*1e-6: #self.train_loss_avg[-1] > 16000*1e-6
@@ -1332,8 +1328,8 @@ class Model_Trainer:
                 image_batch_recon = self.model(image_batch)
 
                 # reconstruction error (loss calculation)
-                if len(image_batch_recon) == 4:
-                    e_and_q_latent_loss, image_batch_recon_, e_latent_loss, q_latent_loss = image_batch_recon                                       
+                if len(image_batch_recon) == 5:
+                    e_and_q_latent_loss, image_batch_recon_, e_latent_loss, q_latent_loss, estimate_codebook_words_exp_entropy = image_batch_recon                                       
                     recon_error = F.mse_loss(image_batch_recon_, image_batch)/ self.train_data_variance
                     loss = recon_error + e_and_q_latent_loss
                 else:
@@ -1829,4 +1825,9 @@ class Model_Trainer:
         # visualize graph with .visual_graph() if in Jupyter Notebook
         # vq_vae_implemented_model_graph.visual_graph
         
+    def codebook_visualization(self) -> None:
+        pass
+    
+    #Visualizing interpolations
+    #Visualizing reconstructions
         
