@@ -303,6 +303,7 @@ minus_one_min_one_max_transform = transforms.Compose([
 
 # Pick one transform that is applied
 TRANSFORM_IMG = zero_min_one_max_transform#zero_mean_unit_std_transform # zero_min_one_max_transform
+TRANSFORM_IMG = minus_one_min_one_max_transform#zero_mean_unit_std_transform # zero_min_one_max_transform
 
 # Train Data & Train data Loader
 train_data = CustomImageDataset(args = args_train, root=TRAIN_DATA_PATH, transform=TRANSFORM_IMG)
@@ -637,7 +638,7 @@ training_args['optimizer_settings'] = optimizer_settings #torch.optim.Adam(param
 training_args['train_data_variance'] = np.load(TRAIN_IMAGES_TOTAL_STD_FILE_PATH).item() **2
  # because we divided the chanells with TRANSFORM_IMG.std[0] we have to correct the total training data variance for that in other words training_args['train_data_variance'] was VAR[X] but because we did linear transform TRANSFORM_IMG so that X -> (X - MEAN_TRANSFORM_IMG) / STD_TRANSFORM_IMG we need to adjust the total variance of the data from VAR[X] -> VAR[(X - MEAN_TRANSFORM_IMG) / STD_TRANSFORM_IMG] = VAR[X] / STD_TRANSFORM_IMG**2 and that is precicely what we are doing here
 training_args['train_data_variance'] /= (TRANSFORM_IMG.transforms[0].std[0]**2)
-training_args['train_data_variance']=1.
+# training_args['train_data_variance']=1.
 
 print(f"Inverse of training data variance term is equal to =  {1. / training_args['train_data_variance']:.1f}")
 
@@ -670,8 +671,8 @@ if not USE_PRETRAINED_VANILLA_AUTOENCODER:
 else:
     ##########################    
     # Use a pretrained model #
-    ##########################
-    current_time_str = "2022_12_25_21_47_48" #"2022_12_15_13_45_59"#"2022_12_15_02_13_36"#"2022_12_03_19_39_08"#'2022_12_02_17_59_16' # 17h 13min 14 sec 20th Nov. 2022
+    ########################## 
+    current_time_str = "2022_12_28_00_35_37" #"2022_12_25_21_47_48" #"2022_12_15_13_45_59"#"2022_12_15_02_13_36"#"2022_12_03_19_39_08"#'2022_12_02_17_59_16' # 17h 13min 14 sec 20th Nov. 2022
     
     # load model that was trained at newly given current_time_str 
     trainer.load_model(current_time_str = current_time_str, 
@@ -780,7 +781,13 @@ visualise_output(images             = trainer.top_images,
 ###################################
 ### Graph of a model visualized ###
 ###################################
-
 trainer.visualize_model_as_graph_image()
+
+################################################
+### Training & Validation metrics visualized ###
+################################################
+trainer.plot_perlexity()
+
+trainer.codebook_visualization()
 
 debug =0

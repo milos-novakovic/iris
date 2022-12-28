@@ -20,6 +20,11 @@ import time
 from torchview import draw_graph
 import graphviz # conda install graphviz
 
+# projections from high dim. space to a lower one
+import umap
+from sklearn.decomposition import PCA
+#import sklearn
+
 import os
 import pandas as pd
 from torchvision.io import read_image
@@ -958,6 +963,9 @@ class Model_Trainer:
         h, m = divmod(m, 60)
         duration_sec_str = f"{h}:{m}:{s} h/m/s"
         
+        # if we use EMA update of the codebook then we do not have || Z_e.detach() - Z_q ||^2 loss term (i.e. self.train_multiple_losses_avg['VQ_codebook_loss'] = self.val_multiple_losses_avg['VQ_codebook_loss'] = 0)
+        non_reconstruction_loss_str = 'beta' if self.model.args_VQ['use_EMA'] else '(1+beta)'
+        
         intermediate_training_stats : str = \
                  f"Epoch {current_epoch+1}/{self.NUM_EPOCHS};\n"\
                 +f"Training   Samples Mini-Batch size      = {self.loaders['train'].batch_size};\n"\
@@ -965,8 +973,12 @@ class Model_Trainer:
                 +f"Total elapsed time in Training Epoch    = {train_duration_sec_str};\n"\
                 +f"Total elapsed time in Validation Epoch  = {val_duration_sec_str};\n"\
                 +f"Total elapsed time from begining        = {duration_sec_str};\n"\
-                +f"Curr. Avg. Train Loss across Mini-Batch = {current_avg_train_loss *1e6 : .1f} e-6; = (1/var)*||X-X_r||^2 = {self.train_multiple_losses_avg['reconstruction_loss'][-1] *1e6 : .1f} e-6 = {self.train_multiple_losses_avg['reconstruction_loss'][-1]/current_avg_train_loss*100:.1f} %; (1+beta)*||Z_e-Z_q||^2 = {(1 +  self.model.args_VQ['beta']) * self.train_multiple_losses_avg['commitment_loss'][-1] *1e6 : .1f} e-6 = {(1 +  self.model.args_VQ['beta']) * self.train_multiple_losses_avg['commitment_loss'][-1]/current_avg_train_loss*100:.1f} %)\n"\
-                +f"Curr. Avg. Val   Loss across Mini-Batch = {current_avg_val_loss *1e6 : .1f} e-6; = (1/var)*||X-X_r||^2 = {self.val_multiple_losses_avg['reconstruction_loss'][-1] *1e6 : .1f} e-6 = {self.val_multiple_losses_avg['reconstruction_loss'][-1]/current_avg_val_loss*100:.1f} %; (1+beta)*||Z_e-Z_q||^2 = {(1 +  self.model.args_VQ['beta']) * self.val_multiple_losses_avg['commitment_loss'][-1] *1e6 : .1f} e-6 = {(1 +  self.model.args_VQ['beta']) * self.val_multiple_losses_avg['commitment_loss'][-1]/current_avg_val_loss*100:.1f} %)\n"\
+                +f"Curr. Avg. Train Loss across Mini-Batch = {current_avg_train_loss *1e6 : .1f} e-6; = "\
+                                    +f"(1/var)*||X-X_r||^2 = {self.train_multiple_losses_avg['reconstruction_loss'][-1] *1e6 : .1f} e-6 = {self.train_multiple_losses_avg['reconstruction_loss'][-1]/current_avg_train_loss*100:.1f} %; "\
+                                    +f"{non_reconstruction_loss_str}*||Z_e-Z_q||^2 = {(self.train_multiple_losses_avg['VQ_codebook_loss'][-1] +  self.model.args_VQ['beta'] * self.train_multiple_losses_avg['commitment_loss'][-1]) *1e6 : .1f} e-6 = {(self.train_multiple_losses_avg['VQ_codebook_loss'][-1] +  self.model.args_VQ['beta'] * self.train_multiple_losses_avg['commitment_loss'][-1])/current_avg_train_loss*100:.1f} %)\n"\
+                +f"Curr. Avg. Val   Loss across Mini-Batch = {current_avg_val_loss *1e6 : .1f} e-6; = "\
+                                    +f"(1/var)*||X-X_r||^2 = {self.val_multiple_losses_avg['reconstruction_loss'][-1] *1e6 : .1f} e-6 = {self.val_multiple_losses_avg['reconstruction_loss'][-1]/current_avg_val_loss*100:.1f} %; "\
+                                    +f"{non_reconstruction_loss_str}*||Z_e-Z_q||^2 = {(self.val_multiple_losses_avg['VQ_codebook_loss'][-1] +  self.model.args_VQ['beta'] * self.val_multiple_losses_avg['commitment_loss'][-1]) *1e6 : .1f} e-6 = {(self.val_multiple_losses_avg['VQ_codebook_loss'][-1] +  self.model.args_VQ['beta'] * self.val_multiple_losses_avg['commitment_loss'][-1])/current_avg_val_loss*100:.1f} %)\n" \
                 +f"Min.  Avg. Train Loss across Mini-Batch = {self.min_train_loss *1e6 : .1f} e-6; \n"\
                 +f"Min.  Avg. Val   Loss across Mini-Batch = {self.min_val_loss *1e6 : .1f} e-6; \n"\
                 +f"Curr. Avg. (Val-Train) overfit gap      =  {(current_avg_val_loss - current_avg_train_loss) *1e6 : .1f} e-6; = (1/var)*||X-X_r||^2 val-train = {(self.val_multiple_losses_avg['reconstruction_loss'][-1] - self.train_multiple_losses_avg['reconstruction_loss'][-1])*1e6 :.1f} e-6 and (1+beta)*||Z_e-Z_q||^2 val-train = {(1 +  self.model.args_VQ['beta']) *(self.val_multiple_losses_avg['commitment_loss'][-1] - self.train_multiple_losses_avg['commitment_loss'][-1])*1e6 :.1f} e-6 \n"\
@@ -1006,14 +1018,19 @@ class Model_Trainer:
             self.val_multiple_losses_avg['commitment_loss'] = []#e_latent_loss = || Z_e - Z_q.detach() || ^ 2
             self.val_multiple_losses_avg['VQ_codebook_loss'] = []#q_latent_loss = || Z_e.detach() - Z_q || ^ 2
         
+        # init the additional metrics for training and validation
+        self.train_metrics = {}
+        self.val_metrics = {}
+        
+        # init the perplexity array
+        self.train_metrics['perplexity'] = []
+        self.val_metrics['perplexity'] = []
         
         # training and validation duration in seconds per epoch
         self.train_duration_per_epoch_seconds = [None]*self.NUM_EPOCHS
         self.val_duration_per_epoch_seconds = [None]*self.NUM_EPOCHS
         
-        
         # epochs loop
-
         for epoch in range(self.NUM_EPOCHS):
             
             ###################
@@ -1030,7 +1047,10 @@ class Model_Trainer:
             self.train_multiple_losses_avg['reconstruction_loss'].append(0.)
             self.train_multiple_losses_avg['commitment_loss'].append(0.)#e_latent_loss = || Z_e - Z_q.detach() || ^ 2
             self.train_multiple_losses_avg['VQ_codebook_loss'].append(0.)#q_latent_loss = || Z_e.detach() - Z_q || ^ 2
-                        
+            
+            # init train perplexity
+            self.train_metrics['perplexity'].append(0.)
+            
             # init the number of mini-batches covered in the current epoch
             num_batches = 0
             
@@ -1040,21 +1060,15 @@ class Model_Trainer:
             # set the model to the train state
             self.model.train()
             
-            
-            
             for image_batch, image_ids_batch  in self.loaders['train']:
                 #train_data_variance = torch.var(image_batch).item()
                 
                 #torch.Size([BATCH_SIZE_TRAIN, 3 (RGB), H, W])
                 image_batch = image_batch.to(self.device)
                 
-                
-                
                 # autoencoder reconstruction
                 # forward pass: compute predicted outputs by passing inputs to the model
                 image_batch_recon = self.model(image_batch)
-                
-                
                 
                 # reconstruction error: calculate the batch loss
                 if len(image_batch_recon) == 5:
@@ -1083,7 +1097,10 @@ class Model_Trainer:
                     self.train_multiple_losses_avg['reconstruction_loss'][-1] += recon_error.item()
                     self.train_multiple_losses_avg['commitment_loss'][-1]     += e_latent_loss #e_latent_loss = || Z_e - Z_q.detach() || ^ 2
                     self.train_multiple_losses_avg['VQ_codebook_loss'][-1]    += q_latent_loss #q_latent_loss = || Z_e.detach() - Z_q || ^ 2
-            
+                    
+                    # save additional metric - perplexity = exp(entropy)
+                    self.train_metrics['perplexity'][-1] += estimate_codebook_words_exp_entropy
+                
                 
                 # count the number of batches
                 num_batches += 1
@@ -1096,6 +1113,8 @@ class Model_Trainer:
                 self.train_multiple_losses_avg['reconstruction_loss'][-1] /= (1.*num_batches)
                 self.train_multiple_losses_avg['commitment_loss'][-1]     /= (1.*num_batches)
                 self.train_multiple_losses_avg['VQ_codebook_loss'][-1]    /= (1.*num_batches)
+                
+                self.train_metrics['perplexity'][-1] /= (1.*num_batches)
             
             # calculate the current min. avg. training loss
             self.min_train_loss = np.min([self.min_train_loss, self.train_loss_avg[-1]])
@@ -1118,6 +1137,8 @@ class Model_Trainer:
             self.val_multiple_losses_avg['commitment_loss'].append(0.)#e_latent_loss = || Z_e - Z_q.detach() || ^ 2
             self.val_multiple_losses_avg['VQ_codebook_loss'].append(0.)#q_latent_loss = || Z_e.detach() - Z_q || ^ 2
            
+           # init val perplexity
+            self.val_metrics['perplexity'].append(0.)
             
             # init the number of mini-batches covered in the current epoch
             num_batches = 0
@@ -1158,6 +1179,9 @@ class Model_Trainer:
                     self.val_multiple_losses_avg['reconstruction_loss'][-1] += recon_error.item()
                     self.val_multiple_losses_avg['commitment_loss'][-1]     += e_latent_loss #e_latent_loss = || Z_e - Z_q.detach() || ^ 2
                     self.val_multiple_losses_avg['VQ_codebook_loss'][-1]    += q_latent_loss #q_latent_loss = || Z_e.detach() - Z_q || ^ 2
+                    
+                    # save additional metric - perplexity = exp(entropy)
+                    self.val_metrics['perplexity'][-1] += estimate_codebook_words_exp_entropy
             
                 
                 # count the number of batches
@@ -1171,6 +1195,8 @@ class Model_Trainer:
                 self.val_multiple_losses_avg['reconstruction_loss'][-1] /= (1.*num_batches)
                 self.val_multiple_losses_avg['commitment_loss'][-1]     /= (1.*num_batches)
                 self.val_multiple_losses_avg['VQ_codebook_loss'][-1]    /= (1.*num_batches)
+                
+                self.train_metrics['perplexity'][-1] /= (1.*num_batches)
 
             
             # calculate the current min. avg. validation loss
@@ -1188,7 +1214,8 @@ class Model_Trainer:
                 #print(message)
                 with open('log_all.txt', 'a') as f:
                     
-                    f.write(f"current perplexity = 2^( H( PMF of codebook words occurance ) bits ) = {estimate_codebook_words_exp_entropy:.2f}; perplexity/K = {estimate_codebook_words_exp_entropy / self.model.args_VQ['K'] * 100 :.2f}%\n")
+                    f.write(f"current train      perplexity = 2^( H( PMF of codebook words occurance ) bits ) = { self.train_metrics['perplexity'][-1] :.2f}; perplexity/K = {self.train_metrics['perplexity'][-1] / self.model.args_VQ['K'] * 100 :.2f}%\n")
+                    f.write(f"current validation perplexity = 2^( H( PMF of codebook words occurance ) bits ) = { self.val_metrics['perplexity'][-1] :.2f}; perplexity/K = {self.val_metrics['perplexity'][-1] / self.model.args_VQ['K'] * 100 :.2f}%\n")
                     f.write(f"{message}\n")
                 
                 if (epoch+1)==int(0.2 * self.NUM_EPOCHS):
@@ -1244,6 +1271,18 @@ class Model_Trainer:
                 np.save(self.train_multiple_losses_avg_path[loss_term], self.train_multiple_losses_avg[loss_term])
                 np.save(self.val_multiple_losses_avg_path[loss_term], self.val_multiple_losses_avg[loss_term])
         
+        self.train_metrics['perplexity'] = np.array(self.train_metrics['perplexity'])
+        self.val_metrics['perplexity'] = np.array(self.val_metrics['perplexity'])
+        
+        # save M_ema and N_ema
+        # if self.model.VQ.use_EMA:
+        #     torch.save(self.model.N_ema, self.main_folder_path + '/' \
+        #                                 + self.model_name + '_N_ema_' \
+        #                                 + self.current_time_str + '.pt')
+        #     torch.save(self.model.M_ema, self.main_folder_path + '/' \
+        #                                 + self.model_name + '_M_ema_' \
+        #                                 + self.current_time_str + '.pt')
+        
         # Message that the training/validation avg. losses are saved and the corresponding paths
         #print(f"Autoencoder Training Loss Average saved here\n{self.train_loss_avg_path}", end = '\n\n')
         #print(f"Autoencoder Validation Loss Average saved here\n{self.val_loss_avg_path}", end = '\n\n')
@@ -1282,7 +1321,13 @@ class Model_Trainer:
         
         # load the model state from the model path
         self.model.load_state_dict(torch.load(self.model_path))
-        
+    
+        # N_ema = torch.load(self.main_folder_path + '/' \
+        #                     + self.model_name + '_N_ema_' \
+        #                     + self.current_time_str + '.pt')
+        # M_ema = torch.load(self.main_folder_path + '/' \
+        #                     + self.model_name + '_M_ema_' \
+        #                     + self.current_time_str + '.pt')
         # move model to device
         self.model = self.model.to(device=self.device)
         
@@ -1522,6 +1567,37 @@ class Model_Trainer:
             plt.ylabel('Testing Loss')
             plt.savefig(self.main_folder_path + '/testing_loss_per_image_in_minibatch.png')
             plt.close()
+    
+    def plot_perlexity(self):
+        
+        # plot perplexity = 2^(estimated codewords entropy in bits)
+        plt.figure()
+        plt.plot(self.train_metrics['perplexity'], 'k', label = 'train perplexity')
+        plt.plot(self.val_metrics['perplexity'], 'm', label = 'validation perplexity')
+        y = self.model.args_VQ['K']
+        plt.axhline(y=y, color='r', linestyle='-', label = f'Ground Truth K = {y}')
+        plt.title(f'Training and validation perplexity (2 ^ (estimated codewords entropy))')
+        plt.grid()
+        plt.xlabel('Epoch number')
+        plt.ylabel('Perplexity')
+        plt.legend()
+        plt.savefig(self.main_folder_path + '/train_val_Perplexity.png')
+        plt.close()
+        
+        # plot estimated codewords entropy in bits
+        plt.figure()
+        plt.plot(np.log2(self.train_metrics['perplexity']), 'k', label = 'train entropy estimation [bits]')
+        plt.plot(np.log2(self.val_metrics['perplexity']), 'm', label = 'validation entropy estimation [bits]')
+        y = np.log2(self.model.args_VQ['K'])
+        plt.axhline(y=y, color='r', linestyle='-', label = f'Ground Truth log2(K) = {y} [bits]')
+        plt.title(f'Training and validation estimated codewords entropy H(E)')
+        plt.grid()
+        plt.xlabel('Epoch number')
+        plt.ylabel('Estimated codewords entropy H(E) in bits')
+        plt.legend()
+        plt.savefig(self.main_folder_path + '/train_val_estimated_codewords_entropy.png')
+        plt.close()
+        
             
     def scatter_plot_test_images_with_specific_classes(self, shape_features_of_interest) -> None:
         # scatter plot test images with specific classes [Plot Test Loss for every sample in the Test set]
@@ -1826,8 +1902,49 @@ class Model_Trainer:
         # vq_vae_implemented_model_graph.visual_graph
         
     def codebook_visualization(self) -> None:
-        pass
-    
+        if not self.model.args_VQ['train_with_quantization']:
+            return None
+        
+        E = self.model.VQ.E.weight.data.cpu() # dim = K x D matrix
+        # PCA
+        pca = PCA(n_components=2)
+        E_pca = pca.fit(E).transform(E) # dim = K x 2
+
+        # Percentage of variance explained for each components
+        print("Explained variance ratio (first two components): "+ str(pca.explained_variance_ratio_))
+        
+        plt.figure()
+        #colors = ["navy", "turquoise", "darkorange"]
+        lw = 2 #linewidth
+        # for color, i, target_name in zip(colors, [0, 1, 2], target_names):
+        target_name = ["$" +str(x+1)+ "$" for x in range(self.model.VQ.K)]
+        plt.figure()
+        plt.scatter(E_pca[:,0],E_pca[:,1], c=np.arange(self.model.VQ.K) , s=8, cmap='tab10', alpha=0.8, lw=lw, marker = target_name)#, label=target_name)
+        #plt.legend(loc="best", shadow=False, scatterpoints=1)
+        plt.title("PCA of the codebook E")
+        plt.xlabel('First PC')
+        plt.ylabel('Second PC')
+        plt.grid()
+        plt.savefig(self.main_folder_path + f"/E_PCA_1st_2nd_PCs.png")
+        plt.close()
+        
+        #LDA - requires labeled data
+        
+        #UMAP
+        umap_projection = umap.UMAP(n_neighbors=3, min_dist=0.1, metric='cosine').fit_transform(E)
+        plt.figure()
+        plt.scatter(umap_projection[:,0], umap_projection[:,1], alpha=0.3)
+        plt.title("UMAP of the codebook E")
+        plt.xlabel('First UMAP component')
+        plt.ylabel('Second UMAP component')
+        plt.grid()
+        plt.savefig(self.main_folder_path + f"/E_UMAP_1st_2nd_PCs.png")
+        plt.close()
+        
+        #TSNE
+        
+        # PLOT PCA TSNE UMAP
+
     #Visualizing interpolations
     #Visualizing reconstructions
         

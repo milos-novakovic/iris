@@ -86,10 +86,13 @@ print(f"So a reduction of {round(compression_gain,5)} bits is achieved")
 #         old_name, new_name = trainer_folder_path_old, trainer_folder_path_new
 #         os.system(f"mv {old_name} {new_name}")
 
+args_VQ['train_with_quantization'] = True #False
 args_VQ['D'] = D # 64 #embedding dimension
 args_VQ['K'] = K # 512 #number of embeddings
 args_VQ['beta'] = 0.25 #64 #embedding dimension
 args_VQ['M'] = M
+args_VQ['use_EMA'] = False #True#False
+args_VQ['gamma'] = 0.99 # float number between [0,1)
 channel_number_in_hidden_layers = 128 #64 #128 #128 #256
 
 #####################
@@ -239,7 +242,7 @@ vq_vae_implemented_model = VQ_VAE(args_encoder, args_VQ, args_decoder, res_block
     
 count_parameters(vq_vae_implemented_model)
 
-print(vq_vae_implemented_model(torch.empty(1,3,64,64).normal_())[1].size())
+#print(vq_vae_implemented_model(torch.empty(1,3,64,64).normal_())[1].size())
 
 report_cuda_memory_status()
 

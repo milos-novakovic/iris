@@ -5,6 +5,7 @@ class VectorQuantizer(nn.Module):
     def __init__(self, args_VQ):
         super(VectorQuantizer, self).__init__()
         
+        self.train_with_quantization = args_VQ['train_with_quantization']
         self.D = args_VQ['D']
         self.K = args_VQ['K']
         self.beta = args_VQ['beta']
@@ -12,15 +13,25 @@ class VectorQuantizer(nn.Module):
         self.E = nn.Embedding(self.K, self.D)
         self.E.weight.data.uniform_(-1/self.K, 1/self.K)
         
-        # self.use_EMA = args_VQ['use_EMA']
+        # specifices the usage of the VQ-VAE dictionary (codebook) E updates with Exponential Moving Average (EMA)
+        self.use_EMA = args_VQ['use_EMA']
         
-        # if self.use_EMA:
-        #     # decay in the Exp. Moving Average
-        #     self.gamma = args_VQ['gamma']
+        if self.use_EMA:
+            # decay in the Exp. Moving Average
+            self.gamma = args_VQ['gamma']
+            
+            #register_buffer(.) functionality is typically used to register a buffer that should not to be considered a model parameter. For example, BatchNorm’s running_mean is not a parameter, but is part of the persistent state. # https://stackoverflow.com/questions/57540745/what-is-the-difference-between-register-parameter-and-register-buffer-in-pytorch
+            #N_i^{(t)} - notation used in the paper "Neural Distance Representation Learning"
+            self.register_buffer('N_ema', torch.zeros(self.K)) 
+            #self.register_buffer('N_ema', torch.zeros(self.K).requires_grad_(False), persistent=False) 
+            
+            #m_i^{(t)} \in R^D - notation used in the paper "Neural Distance Representation Learning"
+            self.M_ema = nn.Parameter(torch.Tensor(self.K, self.D))
+            self.M_ema.data.normal_() 
+            #self.register_buffer('M_ema', torch.Tensor(self.K, self.D).normal_().requires_grad_(False), persistent=False) 
+            #self.register_buffer('M_ema', torch.empty(self.K, self.D).normal_().requires_grad_(True), persistent=False) 
             
             
-            
-        
     def forward(self, inputs):
         # convert inputs from BCHW -> BHWC
         # C = D
@@ -43,35 +54,60 @@ class VectorQuantizer(nn.Module):
         # put it into original shape of the tensor that VQ got from Encoder, i.e. Ze_tensor_shape
         Zq_tensor = self.E(encoding_indices).view(Ze_tensor_shape)# size = [B, H, W, C]
         
+        # calculate the avg. estimated probably of the quantized index 1,..,K occuring
+        # https://pytorch.org/docs/stable/generated/torch.unique.html 
+        # https://stackoverflow.com/questions/10741346/frequency-counts-for-unique-values-in-a-numpy-array
+        
+        # torch.unique gives back two arguments = 
+        # (sorted array of unique elements that are in the encoding_indices array) and
+        # (number of occurances of each i-th element in the sorted array without duplicates in the encoding_indices array)
+        estimate_codebook_words, estimate_codebook_words_freq = torch.unique(input = encoding_indices, #encoding_indices.detach(),
+                                                        sorted=True, 
+                                                        return_inverse=False,
+                                                        return_counts=True,
+                                                        dim=0) # size of K elements
+        # Try to use EMA VQ-VAE dict. update algorithm
+        if self.use_EMA:
+            if self.training:
+                # update the codebook words occurance counting freq. [K-sized array]
+                current_N_ema_estimate = torch.zeros(self.N_ema.size(), device=self.N_ema.device)
+                current_N_ema_estimate[estimate_codebook_words.view(-1)] = estimate_codebook_words_freq.view(-1).float()
+                self.N_ema = self.gamma*self.N_ema + (1-self.gamma)* current_N_ema_estimate #estimate_codebook_words_freq
+                
+                # Laplace smoothing of the cluster size (in case there is a cluster i \in {1,...K} that isn't occuring at all in the N_ema array)
+                # https://nbviewer.org/github/zalandoresearch/pytorch-vq-vae/blob/master/vq-vae.ipynb
+                N = torch.sum(self.N_ema.data)
+                self.N_ema = ((self.N_ema + 1e-5) / (N + self.K * 1e-5) * N)
+                
+                # update the online EMA-weighted average of closest vectors
+                self.M_ema = nn.Parameter(self.gamma * self.M_ema + (1-self.gamma) *  torch.matmul(torch.zeros(encoding_indices.shape[0], self.K, device=inputs.device).scatter_(1, encoding_indices, 1).t(), Ze) )
+                #self.M_ema = self.gamma * self.M_ema + (1-self.gamma) *  torch.matmul(torch.zeros(encoding_indices.shape[0], self.K, device=inputs.device).scatter_(1, encoding_indices.detach(), 1).t(), Ze.detach())
+
+                # update the codebook vectors (online EMA-weighted average of the closest vectors divided by their number of occurances)
+                self.E.weight = nn.Parameter(self.M_ema / self.N_ema.unsqueeze(1))
+                
         # Encoder distance tensor to Quantized vectors Loss calculation
         e_latent_loss = F.mse_loss(Zq_tensor.detach(), Ze_tensor) # commitment loss
         
-        # Quantized distance tensor to Encoder vectors Loss calculation
-        q_latent_loss = F.mse_loss(Zq_tensor,          Ze_tensor.detach())
+        # Quantized distance tensor to Encoder vectors Loss calculation (no loss term for updating the codebook discrete vectors if we are updating them already using EMA method)
+        q_latent_loss = torch.tensor(0) if self.use_EMA else F.mse_loss(Zq_tensor,          Ze_tensor.detach())
         
         # Combination of two losses
         e_and_q_latent_loss = q_latent_loss + self.beta * e_latent_loss
-        
+    
         # in + (out - in).detach() 
         Zq_tensor = Ze_tensor + (Zq_tensor - Ze_tensor).detach()        
         
         # BHWC -> BCHW
-        Zq_tensor = Zq_tensor.permute(0, 3, 1, 2).contiguous()
+        Zq = Zq_tensor.permute(0, 3, 1, 2).contiguous()
         
-        # calculate the avg. estimated probably of the quantized index 1,..,K occuring
-        # https://pytorch.org/docs/stable/generated/torch.unique.html 
-        # https://stackoverflow.com/questions/10741346/frequency-counts-for-unique-values-in-a-numpy-array
-        _, estimate_codebook_words_freq = torch.unique(input = encoding_indices.detach(), 
-                                                        sorted=True, 
-                                                        return_inverse=False,
-                                                        return_counts=True,
-                                                        dim=0) 
-        estimate_codebook_words_prob = estimate_codebook_words_freq / torch.sum(estimate_codebook_words_freq)
+        # calculate the rest of estimators to estimate perplexity = exp(entropy of codewords inside codebook E)
+        estimate_codebook_words_prob = estimate_codebook_words_freq.detach() / torch.sum(estimate_codebook_words_freq.detach())
         log_estimate_codebook_words_prob = torch.log2(estimate_codebook_words_prob + 1e-10)
         estimate_codebook_words_entropy_bits = - torch.sum(estimate_codebook_words_prob * log_estimate_codebook_words_prob)
         estimate_codebook_words = 2**(estimate_codebook_words_entropy_bits)
         
-        return e_and_q_latent_loss, Zq_tensor, e_latent_loss.item(), q_latent_loss.item(), estimate_codebook_words
+        return e_and_q_latent_loss, Zq, e_latent_loss.item(), q_latent_loss.item(), estimate_codebook_words.item()
     
 class Residual(nn.Module):
     def __init__(self, res_block_args):
@@ -238,14 +274,22 @@ class VQ_VAE(nn.Module):
         self.args_decoder=args_decoder
         self.res_block_args = res_block_args
         
+        self.train_with_quantization = args_VQ['train_with_quantization']
+        
         self.encoder =  Encoder(args_encoder, res_block_args)
-        self.VQ      =  VectorQuantizer(args_VQ)
+        if self.train_with_quantization:
+            self.VQ      =  VectorQuantizer(args_VQ)
         self.decoder =  Decoder(args_decoder, res_block_args)
 
     def forward(self, x):                       #torch.Size([128, 3, 64, 64])
         Ze = self.encoder(x)                    #torch.Size([128, 64, 16, 16])
-        e_and_q_latent_loss, Zq, e_latent_loss, q_latent_loss, estimate_codebook_words_exp_entropy = self.VQ(Ze)   #torch.Size([128, 64, 16, 16])
+        
+        e_and_q_latent_loss, Zq, e_latent_loss, q_latent_loss, estimate_codebook_words_exp_entropy = None, None, None, None, None
+        if self.train_with_quantization:
+            e_and_q_latent_loss, Zq, e_latent_loss, q_latent_loss, estimate_codebook_words_exp_entropy = self.VQ(Ze)   #torch.Size([128, 64, 16, 16])
+        else:
+            e_and_q_latent_loss, Zq, e_latent_loss, q_latent_loss, estimate_codebook_words_exp_entropy =  0, Ze, 0, 0, 0
         # use this for simple countinous vanilla AE (i.e. to bypass the VQ class forward pass)
-        #e_and_q_latent_loss, Zq,  e_latent_loss, q_latent_loss = 0,Ze, 0, 0         #torch.Size([128, 64, 16, 16])
+        #e_and_q_latent_loss, Zq,  e_latent_loss, q_latent_loss, estimate_codebook_words_exp_entropy = 0, Ze, 0, 0, 0         #torch.Size([128, 64, 16, 16])
         x_recon = self.decoder(Zq)              #torch.Size([128, 3, 64, 64])
         return e_and_q_latent_loss, x_recon, e_latent_loss, q_latent_loss, estimate_codebook_words_exp_entropy
