@@ -1049,10 +1049,7 @@ class Model_Trainer:
             self.train_multiple_losses_avg['reconstruction_loss'].append(0.)
             self.train_multiple_losses_avg['commitment_loss'].append(0.)#e_latent_loss = || Z_e - Z_q.detach() || ^ 2
             self.train_multiple_losses_avg['VQ_codebook_loss'].append(0.)#q_latent_loss = || Z_e.detach() - Z_q || ^ 2
-            
-            # init train perplexity
-            self.train_metrics['perplexity'].append(0.)
-            
+                        
             # init the number of mini-batches covered in the current epoch
             num_batches = 0
             
@@ -1099,11 +1096,7 @@ class Model_Trainer:
                     self.train_multiple_losses_avg['reconstruction_loss'][-1] += recon_error.item()
                     self.train_multiple_losses_avg['commitment_loss'][-1]     += e_latent_loss #e_latent_loss = || Z_e - Z_q.detach() || ^ 2
                     self.train_multiple_losses_avg['VQ_codebook_loss'][-1]    += q_latent_loss #q_latent_loss = || Z_e.detach() - Z_q || ^ 2
-                    
-                    # save additional metric - perplexity = exp(entropy)
-                    self.train_metrics['perplexity'][-1] += estimate_codebook_words_exp_entropy
-                
-                
+                                    
                 # count the number of batches
                 num_batches += 1
                 
@@ -1115,11 +1108,12 @@ class Model_Trainer:
                 self.train_multiple_losses_avg['reconstruction_loss'][-1] /= (1.*num_batches)
                 self.train_multiple_losses_avg['commitment_loss'][-1]     /= (1.*num_batches)
                 self.train_multiple_losses_avg['VQ_codebook_loss'][-1]    /= (1.*num_batches)
-                
-                self.train_metrics['perplexity'][-1] /= (1.*num_batches)
             
             # calculate the current min. avg. training loss
             self.min_train_loss = np.min([self.min_train_loss, self.train_loss_avg[-1]])
+            
+            # save additional metric - perplexity = exp(entropy)
+            self.train_metrics['perplexity'].append(estimate_codebook_words_exp_entropy)
             
             # calculate training elapsed time in the current epoch
             self.train_duration_per_epoch_seconds[epoch] = int(time.time() - start_time_epoch)
@@ -1138,10 +1132,7 @@ class Model_Trainer:
             self.val_multiple_losses_avg['reconstruction_loss'].append(0.)
             self.val_multiple_losses_avg['commitment_loss'].append(0.)#e_latent_loss = || Z_e - Z_q.detach() || ^ 2
             self.val_multiple_losses_avg['VQ_codebook_loss'].append(0.)#q_latent_loss = || Z_e.detach() - Z_q || ^ 2
-           
-           # init val perplexity
-            self.val_metrics['perplexity'].append(0.)
-            
+                      
             # init the number of mini-batches covered in the current epoch
             num_batches = 0
             
@@ -1151,7 +1142,6 @@ class Model_Trainer:
             # set the model to the evaluation state
             self.model.eval()
             
-
             for image_batch, image_ids_batch in self.loaders['val']:
                 
                 #torch.Size([BATCH_SIZE_VAL, 3 (RGB), H, W])
@@ -1181,11 +1171,7 @@ class Model_Trainer:
                     self.val_multiple_losses_avg['reconstruction_loss'][-1] += recon_error.item()
                     self.val_multiple_losses_avg['commitment_loss'][-1]     += e_latent_loss #e_latent_loss = || Z_e - Z_q.detach() || ^ 2
                     self.val_multiple_losses_avg['VQ_codebook_loss'][-1]    += q_latent_loss #q_latent_loss = || Z_e.detach() - Z_q || ^ 2
-                    
-                    # save additional metric - perplexity = exp(entropy)
-                    self.val_metrics['perplexity'][-1] += estimate_codebook_words_exp_entropy
-            
-                
+
                 # count the number of batches
                 num_batches += 1
             
@@ -1198,11 +1184,11 @@ class Model_Trainer:
                 self.val_multiple_losses_avg['commitment_loss'][-1]     /= (1.*num_batches)
                 self.val_multiple_losses_avg['VQ_codebook_loss'][-1]    /= (1.*num_batches)
                 
-                self.train_metrics['perplexity'][-1] /= (1.*num_batches)
-
-            
             # calculate the current min. avg. validation loss
             self.min_val_loss = np.min([self.min_val_loss, self.val_loss_avg[-1]])
+            
+            # save additional metric - perplexity = exp(entropy)
+            self.val_metrics['perplexity'].append(estimate_codebook_words_exp_entropy)
             
             # calculate validation elapsed time in the current epoch
             self.val_duration_per_epoch_seconds[epoch] = int(time.time() - start_time_epoch)

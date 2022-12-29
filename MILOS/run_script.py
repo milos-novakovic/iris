@@ -18,10 +18,11 @@ import numpy as np
 K_BIT_MIN, K_BIT_MAX = 5,11 #10 , 20
 
 # countinous vq-vae learns with K=512 D=256 and M=2
-D_array = np.array([128,64,32])#np.array([256, 1024, 512, 128, 64, 32, 16, 8, 4]) #np.array([512, 256, 128, 64, 32, 16, 8, 4])  #np.array([256, 128, 64, 32])
-M_array = np.array([1])#np.array([1, 0]) #np.array([0, 1, 3])   #np.array([1, 2, 3, 4, 5, 6])
+D_array = np.array([64])#64 is ok #np.array([256, 1024, 512, 128, 64, 32, 16, 8, 4]) #np.array([512, 256, 128, 64, 32, 16, 8, 4])  #np.array([256, 128, 64, 32])
+M_array = np.array([0,1,3,7,15,31]) #np.array([1, 0]) #np.array([0, 1, 3])   #np.array([1, 2, 3, 4, 5, 6])
 K_array = 2** np.arange(K_BIT_MIN, K_BIT_MAX+1)#2** np.array([6,7,8,9,10,11,12,13])#2** np.arange([K_BIT_MIN, K_BIT_MAX+1])# 2** np.array([12])  #2 ** np.arange(K_BIT_MIN, K_BIT_MAX + 1)    # from 1 bit to 19bits (ground truth is 14bits)
 K_array = -np.sort(-K_array) # np.sort(K_array)#
+M_array = -np.sort(-M_array) # np.sort(K_array)#
 
 
 # also differes for different number of EPOCHS!!!
@@ -32,7 +33,7 @@ K_array = -np.sort(-K_array) # np.sort(K_array)#
 # for M = 1
 # K_BIT_MIN, K_BIT_MAX = 1 , 15 
 
-run_id=0
+run_id=200#0
 input_bits=14
 # to avoid this error:
 # Error: mkl-service + Intel(R) MKL: MKL_THREADING_LAYER=INTEL is incompatible with libgomp.so.1 library.
