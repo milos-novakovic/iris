@@ -27,7 +27,7 @@ from sklearn.decomposition import PCA
 
 import os
 import pandas as pd
-from torchvision.io import read_image
+#from torchvision.io import read_image
 
 from vq_vae_implementation import *
 
@@ -981,7 +981,9 @@ class Model_Trainer:
                                     +f"{non_reconstruction_loss_str}*||Z_e-Z_q||^2 = {(self.val_multiple_losses_avg['VQ_codebook_loss'][-1] +  self.model.args_VQ['beta'] * self.val_multiple_losses_avg['commitment_loss'][-1]) *1e6 : .1f} e-6 = {(self.val_multiple_losses_avg['VQ_codebook_loss'][-1] +  self.model.args_VQ['beta'] * self.val_multiple_losses_avg['commitment_loss'][-1])/current_avg_val_loss*100:.1f} %)\n" \
                 +f"Min.  Avg. Train Loss across Mini-Batch = {self.min_train_loss *1e6 : .1f} e-6; \n"\
                 +f"Min.  Avg. Val   Loss across Mini-Batch = {self.min_val_loss *1e6 : .1f} e-6; \n"\
-                +f"Curr. Avg. (Val-Train) overfit gap      =  {(current_avg_val_loss - current_avg_train_loss) *1e6 : .1f} e-6; = (1/var)*||X-X_r||^2 val-train = {(self.val_multiple_losses_avg['reconstruction_loss'][-1] - self.train_multiple_losses_avg['reconstruction_loss'][-1])*1e6 :.1f} e-6 and (1+beta)*||Z_e-Z_q||^2 val-train = {(1 +  self.model.args_VQ['beta']) *(self.val_multiple_losses_avg['commitment_loss'][-1] - self.train_multiple_losses_avg['commitment_loss'][-1])*1e6 :.1f} e-6 \n"\
+                +f"Curr. Avg. (Val-Train) overfit gap      =  {(current_avg_val_loss - current_avg_train_loss) *1e6 : .1f} e-6; " \
+                                   +f"= (1/var)*||X-X_r||^2 val-train = {(self.val_multiple_losses_avg['reconstruction_loss'][-1] - self.train_multiple_losses_avg['reconstruction_loss'][-1])*1e6 :.1f} e-6 " \
+                                   +f"and {non_reconstruction_loss_str}*||Z_e-Z_q||^2 val-train = {((self.val_multiple_losses_avg['VQ_codebook_loss'][-1] +  self.model.args_VQ['beta'] * self.val_multiple_losses_avg['commitment_loss'][-1]) - (self.train_multiple_losses_avg['VQ_codebook_loss'][-1] +  self.model.args_VQ['beta'] * self.train_multiple_losses_avg['commitment_loss'][-1]))*1e6 :.1f} e-6 \n"\
                 +f"\n----------------------------------------------------------------------------------\n"
         
         return intermediate_training_stats
@@ -1388,7 +1390,7 @@ class Model_Trainer:
 
         # cast it to np.array type 
         self.test_loss = np.array(self.test_loss)
-        print(f'Average reconstruction error: {np.round(np.mean(self.test_loss)*1e6,1)} e-6')
+        print(f'Average test total loss = {np.round(np.mean(self.test_loss)*1e6,1)} e-6')
         print("Testing Ended")
 
     def plot(self, train_val_plot = True, test_plot = True) -> None:
@@ -1915,11 +1917,16 @@ class Model_Trainer:
         
         plt.figure()
         #colors = ["navy", "turquoise", "darkorange"]
-        lw = 2 #linewidth
+        lw = 1 #linewidth
         # for color, i, target_name in zip(colors, [0, 1, 2], target_names):
         target_name = ["$" +str(x+1)+ "$" for x in range(self.model.VQ.K)]
         plt.figure()
-        plt.scatter(E_pca[:,0],E_pca[:,1], c=np.arange(self.model.VQ.K) , s=8, cmap='tab10', alpha=0.8, lw=lw, marker = target_name)#, label=target_name)
+        for i in range(self.model.VQ.K):
+            plt.scatter(E_pca[i,0],
+                        E_pca[i,1],
+                        color = 'k',#alpha=0.8,
+                        lw=lw,
+                        marker = target_name[i])#, label=target_name)
         #plt.legend(loc="best", shadow=False, scatterpoints=1)
         plt.title("PCA of the codebook E")
         plt.xlabel('First PC')
@@ -1930,10 +1937,25 @@ class Model_Trainer:
         
         #LDA - requires labeled data
         
-        #UMAP
-        umap_projection = umap.UMAP(n_neighbors=3, min_dist=0.1, metric='cosine').fit_transform(E)
+        # UMAP args
+        n_neighbors = 3
+        min_dist = 0.1
+        #n_components = 2 #2D space for projection
+        metric = 'cosine'
+        
+        #UMAP https://umap-learn.readthedocs.io/en/latest/parameters.html
+        E_umap = umap.UMAP(n_neighbors=n_neighbors,
+                            min_dist=min_dist, #n_components = n_components,
+                            metric=metric).fit_transform(E)
         plt.figure()
-        plt.scatter(umap_projection[:,0], umap_projection[:,1], alpha=0.3)
+        #plt.scatter(E_umap[:,0], E_umap[:,1], alpha=0.3)
+        for i in range(self.model.VQ.K):
+            plt.scatter(E_umap[i,0],
+                        E_umap[i,1],
+                        alpha=0.3,
+                        color = 'k',
+                        lw=lw)#marker = target_name[i]
+        
         plt.title("UMAP of the codebook E")
         plt.xlabel('First UMAP component')
         plt.ylabel('Second UMAP component')
