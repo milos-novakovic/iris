@@ -49,7 +49,7 @@ def count_parameters(model):
         total_params+=params
     Parameters_list_percent = [round(param_ / total_params * 100.,2) for param_ in Parameters_list]
     table = pd.DataFrame({"Module Name" : Modules_list, "# of params in thousands" : Parameters_list, "# of params [%]" : Parameters_list_percent})
-    print(table)
+    #print(table)
     print(f"Total Trainable Params in thousands: {total_params}")
     
     with open('log_all.txt', 'a') as f:
