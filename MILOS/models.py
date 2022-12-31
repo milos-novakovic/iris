@@ -1195,7 +1195,7 @@ class Model_Trainer:
             
             
             # every 10th epoch print intermediate training/validation statistics
-            if (epoch+1) % 10 == 0:
+            if (epoch+1) % int(0.05 * self.NUM_EPOCHS) == 0:
                 message = self.get_intermediate_training_stats_str(\
                     current_epoch           = epoch,
                     start_time_training     = START_TIME_TRAINING)
