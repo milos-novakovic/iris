@@ -790,4 +790,95 @@ trainer.plot_perlexity()
 
 trainer.codebook_visualization()
 
+models_param_number_fn = lambda model : sum(p.numel() for p in model.parameters() if p.requires_grad)
+year = trainer.current_time_str[0:4]
+month = trainer.current_time_str[5:7]
+day = trainer.current_time_str[8:10]
+
+hour = trainer.current_time_str[11:13]
+minute = trainer.current_time_str[14:16]
+second = trainer.current_time_str[17:19]
+
+
+results_df = pd.DataFrame({
+    ### ARGS ###
+    'run_id':[run_id],
+    'current time':[f"{hour}:{minute}  {day}.{month}.{year}"],
+    'current time folder YYYY_MM_DD_hh_mm_ss':[trainer.current_time_str],
+    'K':[K],
+    'log2(K)':[int(np.log2(K))],
+    'D':[D],
+    'M':[M],
+    'bits':[compressed_number_of_bits_per_image],
+    'beta':[beta],
+    'max_channel_number' : [max_channel_number],
+    'change_channel_size_across_layers' : [change_channel_size_across_layers],
+    'use_EMA' : [trainer.model.VQ.use_EMA],
+    
+    ### MODEL PARAM NUMBER ###
+    'model_param_number' :  [models_param_number_fn(trainer.model)],
+    'encoder_param_number' :[models_param_number_fn(trainer.model.encoder)],
+    'VQ_param_number' :     [models_param_number_fn(trainer.model.VQ)],
+    'decoder_param_number' :[models_param_number_fn(trainer.model.decoder)],
+    
+    '[percentage] encoder_param_number' :[models_param_number_fn(trainer.model.encoder) / models_param_number_fn(trainer.model) * 100],
+    '[percentage] VQ_param_number' :     [models_param_number_fn(trainer.model.VQ) / models_param_number_fn(trainer.model) * 100],
+    '[percentage] decoder_param_number' :[models_param_number_fn(trainer.model.decoder) / models_param_number_fn(trainer.model) * 100],
+    
+
+     ### TRAINING LOSS RESULTS ###
+    'last_train_loss_value':[trainer.train_loss_avg[-1]],
+    
+    'last_train_loss_value:(1/var)||X - X_rec ||^2':[trainer.train_multiple_losses_avg['reconstruction_loss'][-1]],
+    'last_train_loss_value: (1+beta)*||Z_e-Z_q||^2':[trainer.train_multiple_losses_avg['VQ_codebook_loss'][-1] + beta * trainer.train_multiple_losses_avg['commitment_loss'][-1]],
+    'last_train_loss_value:beta*||Z_e-Z_q||^2':[beta * trainer.train_multiple_losses_avg['commitment_loss'][-1]],
+    'last_train_loss_value:||Z_e-Z_q||^2':[trainer.train_multiple_losses_avg['VQ_codebook_loss'][-1]],
+    
+    '[percentage] last_train_loss_value:(1/var)||X - X_rec ||^2':[trainer.train_multiple_losses_avg['reconstruction_loss'][-1]/ trainer.train_loss_avg[-1] * 100],
+    '[percentage] last_train_loss_value: (1+beta)*||Z_e-Z_q||^2':[(trainer.train_multiple_losses_avg['VQ_codebook_loss'][-1] + beta * trainer.train_multiple_losses_avg['commitment_loss'][-1] ) / trainer.train_loss_avg[-1] * 100],
+    '[percentage] last_train_loss_value:beta*||Z_e-Z_q||^2':[beta * trainer.train_multiple_losses_avg['commitment_loss'][-1] / trainer.train_loss_avg[-1] * 100],
+    '[percentage] last_train_loss_value:||Z_e-Z_q||^2':[trainer.train_multiple_losses_avg['VQ_codebook_loss'][-1]/ trainer.train_loss_avg[-1] * 100],
+    
+    ### VALIDATION LOSS RESULTS ###
+    'last_val_loss_value':[trainer.val_loss_avg[-1]],
+    
+    'last_val_loss_value:(1/var)||X - X_rec ||^2':[trainer.val_multiple_losses_avg['reconstruction_loss'][-1]],
+    'last_val_loss_value: (1+beta)*||Z_e-Z_q||^2':[trainer.val_multiple_losses_avg['VQ_codebook_loss'][-1] + beta * trainer.val_multiple_losses_avg['commitment_loss'][-1]],
+    'last_val_loss_value:beta*||Z_e-Z_q||^2':[beta * trainer.val_multiple_losses_avg['commitment_loss'][-1]],
+    'last_val_loss_value:||Z_e-Z_q||^2':[trainer.val_multiple_losses_avg['VQ_codebook_loss'][-1]],
+    
+    '[percentage] last_val_loss_value:(1/var)||X - X_rec ||^2':[trainer.val_multiple_losses_avg['reconstruction_loss'][-1]/ trainer.val_loss_avg[-1] * 100],
+    '[percentage] last_val_loss_value: (1+beta)*||Z_e-Z_q||^2':[(trainer.val_multiple_losses_avg['VQ_codebook_loss'][-1] + beta * trainer.val_multiple_losses_avg['commitment_loss'][-1] ) / trainer.val_loss_avg[-1] * 100],
+    '[percentage] last_val_loss_value:beta*||Z_e-Z_q||^2':[beta * trainer.val_multiple_losses_avg['commitment_loss'][-1] / trainer.val_loss_avg[-1] * 100],
+    '[percentage] last_val_loss_value:||Z_e-Z_q||^2':[trainer.val_multiple_losses_avg['VQ_codebook_loss'][-1]/ trainer.val_loss_avg[-1] * 100],
+    
+    ### TEST LOSS RESULTS ###
+    'mean test loss value':[trainer.test_samples_loss['total_loss'].mean()],
+
+    'mean test loss value:(1/var)||X - X_rec ||^2':[trainer.test_samples_loss['reconstruction_loss'].mean()],
+    'mean test loss value: (1+beta)*||Z_e-Z_q||^2':[trainer.test_samples_loss['VQ_codebook_loss'].mean() + beta * trainer.test_samples_loss['commitment_loss'].mean()],
+    'mean test loss value:beta*||Z_e-Z_q||^2':[beta * trainer.test_samples_loss['commitment_loss'].mean()],
+    'mean test loss value:||Z_e-Z_q||^2':[trainer.test_samples_loss['VQ_codebook_loss'].mean()],
+
+    '[percentage] mean test loss value:(1/var)||X - X_rec ||^2':[trainer.test_samples_loss['reconstruction_loss'].mean() / trainer.test_samples_loss['total_loss'].mean() * 100],
+    '[percentage] mean test loss value: (1+beta)*||Z_e-Z_q||^2':[(trainer.test_samples_loss['VQ_codebook_loss'].mean() + beta * trainer.test_samples_loss['commitment_loss'].mean())  / trainer.test_samples_loss['total_loss'].mean() * 100],
+    '[percentage] mean test loss value:beta*||Z_e-Z_q||^2':[beta * trainer.test_samples_loss['commitment_loss'].mean() / trainer.test_samples_loss['total_loss'].mean() * 100],
+    '[percentage] mean test loss value:||Z_e-Z_q||^2':[trainer.test_samples_loss['VQ_codebook_loss'].mean() / trainer.test_samples_loss['total_loss'].mean() * 100],
+
+    ### PERPLEXITY RESULTS ###
+    'last_train_perplexity':[trainer.train_metrics['perplexity'][-1]],
+    'last_val_perplexity':[trainer.val_metrics['perplexity'][-1]],
+    'mean test perplexity':[trainer.test_metrics['perplexity'].mean()],
+    'true_perplexity':[K],
+    
+    ### ENTROPY RESULTS ###    
+    'last_train_entropy':[np.log2(trainer.train_metrics['perplexity'][-1])],
+    'last_val_entropy':[np.log2(trainer.val_metrics['perplexity'][-1])],
+    'mean test entropy':[np.log2(trainer.test_metrics['perplexity'].mean())],
+    'true_entropy':[np.log2(K)]
+})
+log_results_file_path_name = './log_results/log_results.csv'
+with open(log_results_file_path_name, 'a') as f:
+    results_df.to_csv(f, index = False, header=f.tell()==0)
+
 debug =0

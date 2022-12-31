@@ -1329,14 +1329,23 @@ class Model_Trainer:
         print("Testing Started")
 
         # init test loss array per mini-batch as an empty array
-        self.test_loss = []
+        #self.test_loss = []
 
         # test_samples_loss is pandas DataFrame that has two columns
         # first column name is the test_image_id that is the id of the test image (int type)
         # second column name is the test_image_rec_loss that is the reconstruction loss of the test image with the id equal to test_image_id (float type)
         self.test_samples_loss = {} # test_image_tensor: test_loss
         self.test_samples_loss['test_image_id'] = []
-        self.test_samples_loss['test_image_rec_loss'] = []
+        
+        #self.test_samples_loss['test_image_rec_loss'] = []
+        self.test_samples_loss['total_loss'] = []
+        self.test_samples_loss['reconstruction_loss'] = [] #reconstruction_loss = || X - X_rec || ^ 2 
+        self.test_samples_loss['commitment_loss'] = []  #e_latent_loss = || Z_e - Z_q.detach() || ^ 2
+        self.test_samples_loss['VQ_codebook_loss'] = [] #q_latent_loss = || Z_e.detach() - Z_q || ^ 2
+
+        
+        self.test_metrics = {}
+        self.test_metrics['perplexity'] = []
 
         # put the model to the specified device
         self.model = self.model.to(self.device)
@@ -1348,7 +1357,8 @@ class Model_Trainer:
         self.model.eval()
 
         for image_batch, image_id_batch in self.loaders['test']:
-            assert(self.loaders['test'].batch_size == 1, f"Mini-batch size of the test set should be 1, because of visualization and plotting later on in the code.")
+            if self.loaders['test'].batch_size != 1:
+                assert(self.loaders['test'].batch_size == 1, f"Mini-batch size of the test set should be 1, because of visualization and plotting later on in the code.")
             
             # remember the test_image_id (i.e. id of the test image)
             self.test_samples_loss['test_image_id'].append(image_id_batch.item())
@@ -1365,18 +1375,41 @@ class Model_Trainer:
                     e_and_q_latent_loss, image_batch_recon_, e_latent_loss, q_latent_loss, estimate_codebook_words_exp_entropy = image_batch_recon                                       
                     recon_error = F.mse_loss(image_batch_recon_, image_batch)/ self.train_data_variance
                     loss = recon_error + e_and_q_latent_loss
+                    
+                    self.test_samples_loss['total_loss'].append(loss.item()) # reconstruction_loss + q_latent_loss + beta * e_latent_loss
+                    self.test_samples_loss['reconstruction_loss'].append(recon_error.item()) #reconstruction_loss = (1/var)|| X - X_rec || ^ 2 
+                    self.test_samples_loss['commitment_loss'].append(e_latent_loss)     #e_latent_loss = || Z_e - Z_q.detach() || ^ 2
+                    self.test_samples_loss['VQ_codebook_loss'].append(q_latent_loss)    #q_latent_loss = || Z_e.detach() - Z_q || ^ 2
+                    
+                    self.test_metrics['perplexity'].append(estimate_codebook_words_exp_entropy)
                 else:
                     loss = self.loss_fn(image_batch_recon, image_batch)
                 
                 # remember the test_image_id's reconstruction loss (in a different array used for complex plotting)
-                self.test_samples_loss['test_image_rec_loss'].append(loss.item())
+                #self.test_samples_loss['test_image_rec_loss'].append(loss.item())
                 
                 # remember the test_image_id's reconstruction loss (in a different array used for simple plotting)
-                self.test_loss.append(loss.item())
+                #self.test_loss.append(loss.item())
 
         # cast it to np.array type 
-        self.test_loss = np.array(self.test_loss)
-        print(f'Average test total loss = {np.round(np.mean(self.test_loss)*1e6,1)} e-6')
+        #self.test_loss = np.array(self.test_loss)
+        # print(f'Average test total loss = {np.round(np.mean(self.test_samples_loss['total_loss'])*1e6,0)} e-6')
+        
+        # print(f'Average test total reconstruction loss = {np.round(np.mean(self.test_samples_loss['total_loss'])*1e6,0)} e-6')
+        # print(f'Average test total commitment loss = {np.round(np.mean(self.test_samples_loss['commitment_loss'])*1e6,0)} e-6')
+        # print(f'Average test total VQ loss = {np.round(np.mean(self.test_samples_loss['VQ_codebook_loss'])*1e6,0)} e-6')
+        
+        
+        # cast to np array
+        self.test_samples_loss['test_image_id'] = np.array(self.test_samples_loss['test_image_id'])
+
+        self.test_samples_loss['total_loss'] = np.array(self.test_samples_loss['total_loss'])
+        self.test_samples_loss['reconstruction_loss'] = np.array(self.test_samples_loss['reconstruction_loss'])
+        self.test_samples_loss['commitment_loss'] = np.array(self.test_samples_loss['commitment_loss'])
+        self.test_samples_loss['VQ_codebook_loss'] = np.array(self.test_samples_loss['VQ_codebook_loss'])
+
+        self.test_metrics['perplexity'] = np.array(self.test_metrics['perplexity'])
+        
         print("Testing Ended")
 
     def plot(self, train_val_plot = True, test_plot = True) -> None:
@@ -1542,8 +1575,8 @@ class Model_Trainer:
             # Plot Test Loss for every sample in the Test set
             fig = plt.figure()
             ax = plt.gca()
-            x_scatter = np.array(self.test_samples_loss['test_image_id'])
-            y_scatter = np.array(self.test_samples_loss['test_image_rec_loss'])
+            x_scatter = self.test_samples_loss['test_image_id']
+            y_scatter = self.test_samples_loss['total_loss']  #self.test_samples_loss['test_image_rec_loss']
             colors = "blue"#[5 for img_id in x_scatter]
             area = 20 #(30 * np.random.rand(N))**2  # 0 to 15 point radii
             plt.scatter(x_scatter, y_scatter, s=area, c=colors, alpha=0.4)
@@ -1559,12 +1592,17 @@ class Model_Trainer:
     def plot_perlexity(self):
         
         # plot perplexity = 2^(estimated codewords entropy in bits)
-        plt.figure()
+        plt.figure(figsize=[6.4, 6.8] )
         plt.plot(self.train_metrics['perplexity'], 'k', label = 'train perplexity')
         plt.plot(self.val_metrics['perplexity'], 'm', label = 'validation perplexity')
         y = self.model.args_VQ['K']
+        max_train_perplexity, max_val_perplexity = np.max(self.train_metrics['perplexity']), np.max(self.val_metrics['perplexity'])
+        last_train_perplexity, last_val_perplexity = self.train_metrics['perplexity'][-1], self.val_metrics['perplexity'][-1]
+        
         plt.axhline(y=y, color='r', linestyle='-', label = f'Ground Truth K = {y}')
-        plt.title(f'Training and validation perplexity (2 ^ (estimated codewords entropy))')
+        plt.title(f"Training and validation perplexity (2 ^ (estimated codewords entropy))\n"\
+                    + f"max. train/val perplexity = { max_train_perplexity :.1f} / { max_val_perplexity :.1f}\n"\
+                    + f"last train/val perplexity = { last_train_perplexity :.1f} / { last_val_perplexity :.1f}")
         plt.grid()
         plt.xlabel('Epoch number')
         plt.ylabel('Perplexity')
@@ -1573,12 +1611,19 @@ class Model_Trainer:
         plt.close()
         
         # plot estimated codewords entropy in bits
-        plt.figure()
+        plt.figure(figsize=[6.4, 5.8] )
         plt.plot(np.log2(self.train_metrics['perplexity']), 'k', label = 'train entropy estimation [bits]')
         plt.plot(np.log2(self.val_metrics['perplexity']), 'm', label = 'validation entropy estimation [bits]')
         y = np.log2(self.model.args_VQ['K'])
+        max_train_entropy, max_val_entropy = np.log2(max_train_perplexity), np.log2(max_val_perplexity)
+        last_train_entropy, last_val_entropy = np.log2(last_train_perplexity), np.log2(last_val_perplexity)
+        
         plt.axhline(y=y, color='r', linestyle='-', label = f'Ground Truth log2(K) = {y} [bits]')
-        plt.title(f'Training and validation estimated codewords entropy H(E)')
+
+        
+        plt.title(f"Training and validation estimated codewords entropy H(E)\n"\
+            + f"max. train/val entropy = { max_train_entropy :.1f} / { max_val_entropy :.1f}\n"\
+            + f"last train/val entropy = { last_train_entropy :.1f} / { last_val_entropy :.1f}")
         plt.grid()
         plt.xlabel('Epoch number')
         plt.ylabel('Estimated codewords entropy H(E) in bits')
@@ -1605,8 +1650,8 @@ class Model_Trainer:
         #     print(image_binary_code)
         #     print(shape_specific_stats)
         
-        x_scatter = np.array(self.test_samples_loss['test_image_id'])
-        y_scatter = np.array(self.test_samples_loss['test_image_rec_loss'])
+        x_scatter = self.test_samples_loss['test_image_id']
+        y_scatter = self.test_samples_loss['total_loss']
         
         # all names have to be unique
         all_shape_features           = ['FILL_NOFILL',
@@ -1808,7 +1853,7 @@ class Model_Trainer:
     def get_worst_test_samples(self, TOP_WORST_RECONSTRUCTED_TEST_IMAGES) -> None:
         # Visualization of top worst reconstructed test images (i.e. where autoencoder fails) 
         self.df_test_samples_loss = pd.DataFrame(self.test_samples_loss)
-        self.df_test_samples_loss = self.df_test_samples_loss.sort_values('test_image_rec_loss',ascending=False)\
+        self.df_test_samples_loss = self.df_test_samples_loss.sort_values('total_loss',ascending=False)\
                                                             .reset_index(drop=True)
         #pick top- TOP_WORST_RECONSTRUCTED_TEST_IMAGES worst reconstructed images
         self.df_worst_reconstructed_test_images = self.df_test_samples_loss.head(TOP_WORST_RECONSTRUCTED_TEST_IMAGES)
@@ -1816,7 +1861,7 @@ class Model_Trainer:
 
 
         self.top_images, self.imgs_ids , self.imgs_losses = [], [], []
-        for worst_reconstructed_test_image_id, worst_reconstructed_test_image_loss in zip(self.df_worst_reconstructed_test_images['test_image_id'], self.df_worst_reconstructed_test_images['test_image_rec_loss']):
+        for worst_reconstructed_test_image_id, worst_reconstructed_test_image_loss in zip(self.df_worst_reconstructed_test_images['test_image_id'], self.df_worst_reconstructed_test_images['total_loss']):
             # find the test image index when you have test image id in the test_data.image_ids tha
             worst_reconstructed_test_image_id_index = np.where(self.loaders['test'].dataset.image_ids == worst_reconstructed_test_image_id)[0][0]
             
@@ -1838,7 +1883,7 @@ class Model_Trainer:
     def get_best_test_samples(self, TOP_BEST_RECONSTRUCTED_TEST_IMAGES) -> None:
         # Visualization of top best reconstructed test images (i.e. where autoencoder succeeds) 
         self.df_test_samples_loss = pd.DataFrame(self.test_samples_loss)
-        self.df_test_samples_loss = self.df_test_samples_loss.sort_values('test_image_rec_loss',ascending=True)\
+        self.df_test_samples_loss = self.df_test_samples_loss.sort_values('total_loss',ascending=True)\
                                                             .reset_index(drop=True)
         #pick top- TOP_BEST_RECONSTRUCTED_TEST_IMAGES best reconstructed images
         self.df_best_reconstructed_test_images = self.df_test_samples_loss.head(TOP_BEST_RECONSTRUCTED_TEST_IMAGES)
@@ -1846,7 +1891,7 @@ class Model_Trainer:
 
 
         self.top_images, self.imgs_ids , self.imgs_losses = [], [], []
-        for best_reconstructed_test_image_id, best_reconstructed_test_image_loss in zip(self.df_best_reconstructed_test_images['test_image_id'], self.df_best_reconstructed_test_images['test_image_rec_loss']):
+        for best_reconstructed_test_image_id, best_reconstructed_test_image_loss in zip(self.df_best_reconstructed_test_images['test_image_id'], self.df_best_reconstructed_test_images['total_loss']):
             # find the test image index when you have test image id in the test_data.image_ids tha
             best_reconstructed_test_image_id_index = np.where(self.loaders['test'].dataset.image_ids == best_reconstructed_test_image_id)[0][0]
             

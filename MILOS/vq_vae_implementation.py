@@ -65,7 +65,10 @@ def count_parameters(model):
 C,H,W = 3,64,64
 args_VQ = {}
 K,D,run_id,M = int(sys.argv[1]), int(sys.argv[2]), int(sys.argv[3]),  int(sys.argv[4]) # K D run_id M
-
+beta = float(sys.argv[5])#0.25
+max_channel_number = int(sys.argv[6])
+change_channel_size_across_layers = (sys.argv[7] == "True")
+print(f"change_channel_size_across_layers = {change_channel_size_across_layers}")
 true_number_of_bits_per_image =14
 compressed_number_of_bits_per_image = int(np.ceil(np.log2(K))) * (M + 1) ** 2
 compression_gain = true_number_of_bits_per_image / compressed_number_of_bits_per_image
@@ -94,14 +97,15 @@ print(f"So a reduction of {round(compression_gain,5)} bits is achieved")
 args_VQ['train_with_quantization'] = True #False
 args_VQ['D'] = D # 64 #embedding dimension
 args_VQ['K'] = K # 512 #number of embeddings
-args_VQ['beta'] = 0.25 #64 #embedding dimension
+args_VQ['beta'] = beta #64 #embedding dimension
 args_VQ['M'] = M
 args_VQ['use_EMA'] = False #True#False
 args_VQ['gamma'] = 0.99 # float number between [0,1)
-encoder_channel_number_in_hidden_layers = 128#64 #64 #128 #128 #256
-decoder_channel_number_in_hidden_layers = 128#64 #64 #128 #128 #256
+encoder_channel_number_in_hidden_layers = max_channel_number#64 #64 #128 #128 #256
+decoder_channel_number_in_hidden_layers = max_channel_number#64 #64 #128 #128 #256
 res_blocks_channel_number_in_hidden_layers = 32
 res_block_size = 2
+
 #####################
 # Encoder arguments # # floor[ (H + 2p - d(k-1) -1)/s + 1]
 #####################
@@ -133,7 +137,7 @@ args_decoder['encoder_conv_stride2_layer_number'] = int(np.log2(args_encoder['H_
 # Flag that lets the user increase exponentially (with base 2) the channel sizes of conv2d layers in the encoder
 # and
 # Flag that lets the user decrease exponentially (with base 2) the channel sizes of transosed conv2d layers in the decoder
-change_channel_size_across_layers = True
+
 
 if change_channel_size_across_layers:
     # init the
@@ -141,7 +145,7 @@ if change_channel_size_across_layers:
     if M == 3:
         boost_value = 1#2#1
     elif M == 1:
-        boost_value = 1#4#4#2#1
+        boost_value = 1 # OVDE RADI :=2 1#4#4#2#1
     else:
         boost_value = 1
 
