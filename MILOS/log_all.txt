@@ -1,1 +1,384 @@
-qweqwe
+current train      perplexity = 2^( H( PMF of codebook words occurance ) bits ) = 1.00; perplexity/K = 0.20%
+current validation perplexity = 2^( H( PMF of codebook words occurance ) bits ) = 1.00; perplexity/K = 0.20%
+Epoch 1/20;
+Training   Samples Mini-Batch size      = 128;
+Validation Samples Mini-Batch size      = 128;
+Total elapsed time in Training Epoch    = 0:0:2 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:0 h/m/s;
+Total elapsed time from begining        = 0:0:3 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  85387648.7 e-6; = (1/var)*||X-X_r||^2 =  5445682.1 e-6 = 6.4 %; (1+beta)*||Z_e-Z_q||^2 =  79941965.1 e-6 = 93.6 %)
+Curr. Avg. Val   Loss across Mini-Batch =  1772543.9 e-6; = (1/var)*||X-X_r||^2 =  1586237.5 e-6 = 89.5 %; (1+beta)*||Z_e-Z_q||^2 =  186306.5 e-6 = 10.5 %)
+Min.  Avg. Train Loss across Mini-Batch =  85387648.7 e-6; 
+Min.  Avg. Val   Loss across Mini-Batch =  1772543.9 e-6; 
+Curr. Avg. (Val-Train) overfit gap      =  -83615104.8 e-6; = (1/var)*||X-X_r||^2 val-train = -3859444.7 e-6 and (1+beta)*||Z_e-Z_q||^2 val-train = -79755658.6 e-6 
+
+----------------------------------------------------------------------------------
+
+current train      perplexity = 2^( H( PMF of codebook words occurance ) bits ) = 1.00; perplexity/K = 0.20%
+current validation perplexity = 2^( H( PMF of codebook words occurance ) bits ) = 1.00; perplexity/K = 0.20%
+Epoch 2/20;
+Training   Samples Mini-Batch size      = 128;
+Validation Samples Mini-Batch size      = 128;
+Total elapsed time in Training Epoch    = 0:0:1 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:0 h/m/s;
+Total elapsed time from begining        = 0:0:5 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  10385891.1 e-6; = (1/var)*||X-X_r||^2 =  1192998.0 e-6 = 11.5 %; (1+beta)*||Z_e-Z_q||^2 =  9192893.3 e-6 = 88.5 %)
+Curr. Avg. Val   Loss across Mini-Batch =  95423034.7 e-6; = (1/var)*||X-X_r||^2 =  1004440.9 e-6 = 1.1 %; (1+beta)*||Z_e-Z_q||^2 =  94418594.2 e-6 = 98.9 %)
+Min.  Avg. Train Loss across Mini-Batch =  10385891.1 e-6; 
+Min.  Avg. Val   Loss across Mini-Batch =  1772543.9 e-6; 
+Curr. Avg. (Val-Train) overfit gap      =   85037143.5 e-6; = (1/var)*||X-X_r||^2 val-train = -188557.1 e-6 and (1+beta)*||Z_e-Z_q||^2 val-train = 85225701.0 e-6 
+
+----------------------------------------------------------------------------------
+
+current train      perplexity = 2^( H( PMF of codebook words occurance ) bits ) = 1.00; perplexity/K = 0.20%
+current validation perplexity = 2^( H( PMF of codebook words occurance ) bits ) = 1.00; perplexity/K = 0.20%
+Epoch 3/20;
+Training   Samples Mini-Batch size      = 128;
+Validation Samples Mini-Batch size      = 128;
+Total elapsed time in Training Epoch    = 0:0:1 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:0 h/m/s;
+Total elapsed time from begining        = 0:0:6 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  1819665964.8 e-6; = (1/var)*||X-X_r||^2 =  1022585.0 e-6 = 0.1 %; (1+beta)*||Z_e-Z_q||^2 =  1818643363.9 e-6 = 99.9 %)
+Curr. Avg. Val   Loss across Mini-Batch =  3947585876.5 e-6; = (1/var)*||X-X_r||^2 =  973367.8 e-6 = 0.0 %; (1+beta)*||Z_e-Z_q||^2 =  3946612482.1 e-6 = 100.0 %)
+Min.  Avg. Train Loss across Mini-Batch =  10385891.1 e-6; 
+Min.  Avg. Val   Loss across Mini-Batch =  1772543.9 e-6; 
+Curr. Avg. (Val-Train) overfit gap      =   2127919911.7 e-6; = (1/var)*||X-X_r||^2 val-train = -49217.2 e-6 and (1+beta)*||Z_e-Z_q||^2 val-train = 2127969118.2 e-6 
+
+----------------------------------------------------------------------------------
+
+current train      perplexity = 2^( H( PMF of codebook words occurance ) bits ) = 1.38; perplexity/K = 0.27%
+current validation perplexity = 2^( H( PMF of codebook words occurance ) bits ) = 1.40; perplexity/K = 0.27%
+Epoch 4/20;
+Training   Samples Mini-Batch size      = 128;
+Validation Samples Mini-Batch size      = 128;
+Total elapsed time in Training Epoch    = 0:0:1 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:0 h/m/s;
+Total elapsed time from begining        = 0:0:8 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  3615756425.9 e-6; = (1/var)*||X-X_r||^2 =  1076334.6 e-6 = 0.0 %; (1+beta)*||Z_e-Z_q||^2 =  3614680085.1 e-6 = 100.0 %)
+Curr. Avg. Val   Loss across Mini-Batch =  1046344162.0 e-6; = (1/var)*||X-X_r||^2 =  856127.7 e-6 = 0.1 %; (1+beta)*||Z_e-Z_q||^2 =  1045488038.1 e-6 = 99.9 %)
+Min.  Avg. Train Loss across Mini-Batch =  10385891.1 e-6; 
+Min.  Avg. Val   Loss across Mini-Batch =  1772543.9 e-6; 
+Curr. Avg. (Val-Train) overfit gap      =  -2569412263.9 e-6; = (1/var)*||X-X_r||^2 val-train = -220206.9 e-6 and (1+beta)*||Z_e-Z_q||^2 val-train = -2569192047.0 e-6 
+
+----------------------------------------------------------------------------------
+
+current train      perplexity = 2^( H( PMF of codebook words occurance ) bits ) = 1.00; perplexity/K = 0.20%
+current validation perplexity = 2^( H( PMF of codebook words occurance ) bits ) = 1.00; perplexity/K = 0.20%
+Epoch 2/40;
+Training   Samples Mini-Batch size      = 128;
+Validation Samples Mini-Batch size      = 128;
+Total elapsed time in Training Epoch    = 0:0:1 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:0 h/m/s;
+Total elapsed time from begining        = 0:0:4 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  245192760.0 e-6; = (1/var)*||X-X_r||^2 =  1155619.7 e-6 = 0.5 %; (1+beta)*||Z_e-Z_q||^2 =  244037138.6 e-6 = 99.5 %)
+Curr. Avg. Val   Loss across Mini-Batch =  1335881744.4 e-6; = (1/var)*||X-X_r||^2 =  994710.4 e-6 = 0.1 %; (1+beta)*||Z_e-Z_q||^2 =  1334887042.0 e-6 = 99.9 %)
+Min.  Avg. Train Loss across Mini-Batch =  245192760.0 e-6; 
+Min.  Avg. Val   Loss across Mini-Batch =  1999778.8 e-6; 
+Curr. Avg. (Val-Train) overfit gap      =   1090688984.3 e-6; = (1/var)*||X-X_r||^2 val-train = -160909.3 e-6 and (1+beta)*||Z_e-Z_q||^2 val-train = 1090849903.4 e-6 
+
+----------------------------------------------------------------------------------
+
+current train      perplexity = 2^( H( PMF of codebook words occurance ) bits ) = 2.05; perplexity/K = 0.40%
+current validation perplexity = 2^( H( PMF of codebook words occurance ) bits ) = 2.04; perplexity/K = 0.40%
+Epoch 4/40;
+Training   Samples Mini-Batch size      = 128;
+Validation Samples Mini-Batch size      = 128;
+Total elapsed time in Training Epoch    = 0:0:1 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:0 h/m/s;
+Total elapsed time from begining        = 0:0:8 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  485744363.1 e-6; = (1/var)*||X-X_r||^2 =  728810.8 e-6 = 0.2 %; (1+beta)*||Z_e-Z_q||^2 =  485015555.6 e-6 = 99.8 %)
+Curr. Avg. Val   Loss across Mini-Batch =  273177146.0 e-6; = (1/var)*||X-X_r||^2 =  646903.2 e-6 = 0.2 %; (1+beta)*||Z_e-Z_q||^2 =  272530240.4 e-6 = 99.8 %)
+Min.  Avg. Train Loss across Mini-Batch =  245192760.0 e-6; 
+Min.  Avg. Val   Loss across Mini-Batch =  1999778.8 e-6; 
+Curr. Avg. (Val-Train) overfit gap      =  -212567217.2 e-6; = (1/var)*||X-X_r||^2 val-train = -81907.6 e-6 and (1+beta)*||Z_e-Z_q||^2 val-train = -212485315.2 e-6 
+
+----------------------------------------------------------------------------------
+
+current train      perplexity = 2^( H( PMF of codebook words occurance ) bits ) = 2.23; perplexity/K = 0.44%
+current validation perplexity = 2^( H( PMF of codebook words occurance ) bits ) = 2.20; perplexity/K = 0.43%
+Epoch 6/40;
+Training   Samples Mini-Batch size      = 128;
+Validation Samples Mini-Batch size      = 128;
+Total elapsed time in Training Epoch    = 0:0:1 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:0 h/m/s;
+Total elapsed time from begining        = 0:0:12 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  117079441.0 e-6; = (1/var)*||X-X_r||^2 =  630797.5 e-6 = 0.5 %; (1+beta)*||Z_e-Z_q||^2 =  116448643.1 e-6 = 99.5 %)
+Curr. Avg. Val   Loss across Mini-Batch =  64509979.6 e-6; = (1/var)*||X-X_r||^2 =  601607.5 e-6 = 0.9 %; (1+beta)*||Z_e-Z_q||^2 =  63908373.4 e-6 = 99.1 %)
+Min.  Avg. Train Loss across Mini-Batch =  117079441.0 e-6; 
+Min.  Avg. Val   Loss across Mini-Batch =  1999778.8 e-6; 
+Curr. Avg. (Val-Train) overfit gap      =  -52569461.4 e-6; = (1/var)*||X-X_r||^2 val-train = -29190.0 e-6 and (1+beta)*||Z_e-Z_q||^2 val-train = -52540269.6 e-6 
+
+----------------------------------------------------------------------------------
+
+current train      perplexity = 2^( H( PMF of codebook words occurance ) bits ) = 3.17; perplexity/K = 0.62%
+current validation perplexity = 2^( H( PMF of codebook words occurance ) bits ) = 3.38; perplexity/K = 0.66%
+Epoch 8/40;
+Training   Samples Mini-Batch size      = 128;
+Validation Samples Mini-Batch size      = 128;
+Total elapsed time in Training Epoch    = 0:0:1 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:0 h/m/s;
+Total elapsed time from begining        = 0:0:16 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  118986714.1 e-6; = (1/var)*||X-X_r||^2 =  624939.1 e-6 = 0.5 %; (1+beta)*||Z_e-Z_q||^2 =  118361775.2 e-6 = 99.5 %)
+Curr. Avg. Val   Loss across Mini-Batch =  156108756.5 e-6; = (1/var)*||X-X_r||^2 =  634141.4 e-6 = 0.4 %; (1+beta)*||Z_e-Z_q||^2 =  155474614.1 e-6 = 99.6 %)
+Min.  Avg. Train Loss across Mini-Batch =  78406300.8 e-6; 
+Min.  Avg. Val   Loss across Mini-Batch =  1999778.8 e-6; 
+Curr. Avg. (Val-Train) overfit gap      =   37122042.4 e-6; = (1/var)*||X-X_r||^2 val-train = 9202.3 e-6 and (1+beta)*||Z_e-Z_q||^2 val-train = 37112838.9 e-6 
+
+----------------------------------------------------------------------------------
+
+current train      perplexity = 2^( H( PMF of codebook words occurance ) bits ) = 4.64; perplexity/K = 0.91%
+current validation perplexity = 2^( H( PMF of codebook words occurance ) bits ) = 4.84; perplexity/K = 0.95%
+Epoch 10/40;
+Training   Samples Mini-Batch size      = 128;
+Validation Samples Mini-Batch size      = 128;
+Total elapsed time in Training Epoch    = 0:0:1 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:0 h/m/s;
+Total elapsed time from begining        = 0:0:20 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  74575357.3 e-6; = (1/var)*||X-X_r||^2 =  651929.2 e-6 = 0.9 %; (1+beta)*||Z_e-Z_q||^2 =  73923427.4 e-6 = 99.1 %)
+Curr. Avg. Val   Loss across Mini-Batch =  155062586.8 e-6; = (1/var)*||X-X_r||^2 =  728386.0 e-6 = 0.5 %; (1+beta)*||Z_e-Z_q||^2 =  154334205.1 e-6 = 99.5 %)
+Min.  Avg. Train Loss across Mini-Batch =  67728120.7 e-6; 
+Min.  Avg. Val   Loss across Mini-Batch =  1999778.8 e-6; 
+Curr. Avg. (Val-Train) overfit gap      =   80487229.4 e-6; = (1/var)*||X-X_r||^2 val-train = 76456.7 e-6 and (1+beta)*||Z_e-Z_q||^2 val-train = 80410777.7 e-6 
+
+----------------------------------------------------------------------------------
+
+current train      perplexity = 2^( H( PMF of codebook words occurance ) bits ) = 4.13; perplexity/K = 0.81%
+current validation perplexity = 2^( H( PMF of codebook words occurance ) bits ) = 4.08; perplexity/K = 0.80%
+Epoch 12/40;
+Training   Samples Mini-Batch size      = 128;
+Validation Samples Mini-Batch size      = 128;
+Total elapsed time in Training Epoch    = 0:0:1 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:0 h/m/s;
+Total elapsed time from begining        = 0:0:24 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  13293881.6 e-6; = (1/var)*||X-X_r||^2 =  766016.6 e-6 = 5.8 %; (1+beta)*||Z_e-Z_q||^2 =  12527865.0 e-6 = 94.2 %)
+Curr. Avg. Val   Loss across Mini-Batch =  15368299.5 e-6; = (1/var)*||X-X_r||^2 =  694749.2 e-6 = 4.5 %; (1+beta)*||Z_e-Z_q||^2 =  14673550.5 e-6 = 95.5 %)
+Min.  Avg. Train Loss across Mini-Batch =  13293881.6 e-6; 
+Min.  Avg. Val   Loss across Mini-Batch =  1999778.8 e-6; 
+Curr. Avg. (Val-Train) overfit gap      =   2074417.9 e-6; = (1/var)*||X-X_r||^2 val-train = -71267.4 e-6 and (1+beta)*||Z_e-Z_q||^2 val-train = 2145685.5 e-6 
+
+----------------------------------------------------------------------------------
+
+current train      perplexity = 2^( H( PMF of codebook words occurance ) bits ) = 4.08; perplexity/K = 0.80%
+current validation perplexity = 2^( H( PMF of codebook words occurance ) bits ) = 4.00; perplexity/K = 0.78%
+Epoch 14/40;
+Training   Samples Mini-Batch size      = 128;
+Validation Samples Mini-Batch size      = 128;
+Total elapsed time in Training Epoch    = 0:0:1 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:0 h/m/s;
+Total elapsed time from begining        = 0:0:28 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  12662666.8 e-6; = (1/var)*||X-X_r||^2 =  698516.3 e-6 = 5.5 %; (1+beta)*||Z_e-Z_q||^2 =  11964150.6 e-6 = 94.5 %)
+Curr. Avg. Val   Loss across Mini-Batch =  13819425.9 e-6; = (1/var)*||X-X_r||^2 =  668797.6 e-6 = 4.8 %; (1+beta)*||Z_e-Z_q||^2 =  13150628.5 e-6 = 95.2 %)
+Min.  Avg. Train Loss across Mini-Batch =  12662666.8 e-6; 
+Min.  Avg. Val   Loss across Mini-Batch =  1999778.8 e-6; 
+Curr. Avg. (Val-Train) overfit gap      =   1156759.1 e-6; = (1/var)*||X-X_r||^2 val-train = -29718.6 e-6 and (1+beta)*||Z_e-Z_q||^2 val-train = 1186477.9 e-6 
+
+----------------------------------------------------------------------------------
+
+current train      perplexity = 2^( H( PMF of codebook words occurance ) bits ) = 3.99; perplexity/K = 0.78%
+current validation perplexity = 2^( H( PMF of codebook words occurance ) bits ) = 3.98; perplexity/K = 0.78%
+Epoch 16/40;
+Training   Samples Mini-Batch size      = 128;
+Validation Samples Mini-Batch size      = 128;
+Total elapsed time in Training Epoch    = 0:0:1 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:0 h/m/s;
+Total elapsed time from begining        = 0:0:32 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  13177174.2 e-6; = (1/var)*||X-X_r||^2 =  682716.5 e-6 = 5.2 %; (1+beta)*||Z_e-Z_q||^2 =  12494457.6 e-6 = 94.8 %)
+Curr. Avg. Val   Loss across Mini-Batch =  12286994.2 e-6; = (1/var)*||X-X_r||^2 =  651404.9 e-6 = 5.3 %; (1+beta)*||Z_e-Z_q||^2 =  11635589.2 e-6 = 94.7 %)
+Min.  Avg. Train Loss across Mini-Batch =  12662666.8 e-6; 
+Min.  Avg. Val   Loss across Mini-Batch =  1999778.8 e-6; 
+Curr. Avg. (Val-Train) overfit gap      =  -890180.0 e-6; = (1/var)*||X-X_r||^2 val-train = -31311.6 e-6 and (1+beta)*||Z_e-Z_q||^2 val-train = -858868.5 e-6 
+
+----------------------------------------------------------------------------------
+
+current train      perplexity = 2^( H( PMF of codebook words occurance ) bits ) = 4.05; perplexity/K = 0.79%
+current validation perplexity = 2^( H( PMF of codebook words occurance ) bits ) = 3.99; perplexity/K = 0.78%
+Epoch 18/40;
+Training   Samples Mini-Batch size      = 128;
+Validation Samples Mini-Batch size      = 128;
+Total elapsed time in Training Epoch    = 0:0:1 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:0 h/m/s;
+Total elapsed time from begining        = 0:0:36 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  11628588.7 e-6; = (1/var)*||X-X_r||^2 =  666969.2 e-6 = 5.7 %; (1+beta)*||Z_e-Z_q||^2 =  10961619.5 e-6 = 94.3 %)
+Curr. Avg. Val   Loss across Mini-Batch =  10823858.4 e-6; = (1/var)*||X-X_r||^2 =  629752.0 e-6 = 5.8 %; (1+beta)*||Z_e-Z_q||^2 =  10194106.4 e-6 = 94.2 %)
+Min.  Avg. Train Loss across Mini-Batch =  11628588.7 e-6; 
+Min.  Avg. Val   Loss across Mini-Batch =  1999778.8 e-6; 
+Curr. Avg. (Val-Train) overfit gap      =  -804730.3 e-6; = (1/var)*||X-X_r||^2 val-train = -37217.2 e-6 and (1+beta)*||Z_e-Z_q||^2 val-train = -767513.1 e-6 
+
+----------------------------------------------------------------------------------
+
+current train      perplexity = 2^( H( PMF of codebook words occurance ) bits ) = 4.01; perplexity/K = 0.78%
+current validation perplexity = 2^( H( PMF of codebook words occurance ) bits ) = 4.02; perplexity/K = 0.79%
+Epoch 20/40;
+Training   Samples Mini-Batch size      = 128;
+Validation Samples Mini-Batch size      = 128;
+Total elapsed time in Training Epoch    = 0:0:1 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:0 h/m/s;
+Total elapsed time from begining        = 0:0:39 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  9607046.4 e-6; = (1/var)*||X-X_r||^2 =  644116.1 e-6 = 6.7 %; (1+beta)*||Z_e-Z_q||^2 =  8962930.1 e-6 = 93.3 %)
+Curr. Avg. Val   Loss across Mini-Batch =  9012376.8 e-6; = (1/var)*||X-X_r||^2 =  617955.6 e-6 = 6.9 %; (1+beta)*||Z_e-Z_q||^2 =  8394421.2 e-6 = 93.1 %)
+Min.  Avg. Train Loss across Mini-Batch =  9607046.4 e-6; 
+Min.  Avg. Val   Loss across Mini-Batch =  1999778.8 e-6; 
+Curr. Avg. (Val-Train) overfit gap      =  -594669.5 e-6; = (1/var)*||X-X_r||^2 val-train = -26160.5 e-6 and (1+beta)*||Z_e-Z_q||^2 val-train = -568509.0 e-6 
+
+----------------------------------------------------------------------------------
+
+current train      perplexity = 2^( H( PMF of codebook words occurance ) bits ) = 4.01; perplexity/K = 0.78%
+current validation perplexity = 2^( H( PMF of codebook words occurance ) bits ) = 4.01; perplexity/K = 0.78%
+Epoch 22/40;
+Training   Samples Mini-Batch size      = 128;
+Validation Samples Mini-Batch size      = 128;
+Total elapsed time in Training Epoch    = 0:0:1 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:0 h/m/s;
+Total elapsed time from begining        = 0:0:43 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  7899278.1 e-6; = (1/var)*||X-X_r||^2 =  628226.1 e-6 = 8.0 %; (1+beta)*||Z_e-Z_q||^2 =  7271051.9 e-6 = 92.0 %)
+Curr. Avg. Val   Loss across Mini-Batch =  7466678.1 e-6; = (1/var)*||X-X_r||^2 =  608979.1 e-6 = 8.2 %; (1+beta)*||Z_e-Z_q||^2 =  6857699.1 e-6 = 91.8 %)
+Min.  Avg. Train Loss across Mini-Batch =  7899278.1 e-6; 
+Min.  Avg. Val   Loss across Mini-Batch =  1999778.8 e-6; 
+Curr. Avg. (Val-Train) overfit gap      =  -432599.9 e-6; = (1/var)*||X-X_r||^2 val-train = -19247.1 e-6 and (1+beta)*||Z_e-Z_q||^2 val-train = -413352.9 e-6 
+
+----------------------------------------------------------------------------------
+
+current train      perplexity = 2^( H( PMF of codebook words occurance ) bits ) = 3.97; perplexity/K = 0.77%
+current validation perplexity = 2^( H( PMF of codebook words occurance ) bits ) = 3.96; perplexity/K = 0.77%
+Epoch 24/40;
+Training   Samples Mini-Batch size      = 128;
+Validation Samples Mini-Batch size      = 128;
+Total elapsed time in Training Epoch    = 0:0:1 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:0 h/m/s;
+Total elapsed time from begining        = 0:0:47 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  6919692.7 e-6; = (1/var)*||X-X_r||^2 =  632810.2 e-6 = 9.1 %; (1+beta)*||Z_e-Z_q||^2 =  6286882.4 e-6 = 90.9 %)
+Curr. Avg. Val   Loss across Mini-Batch =  7226759.3 e-6; = (1/var)*||X-X_r||^2 =  663818.1 e-6 = 9.2 %; (1+beta)*||Z_e-Z_q||^2 =  6562941.0 e-6 = 90.8 %)
+Min.  Avg. Train Loss across Mini-Batch =  6919692.7 e-6; 
+Min.  Avg. Val   Loss across Mini-Batch =  1999778.8 e-6; 
+Curr. Avg. (Val-Train) overfit gap      =   307066.6 e-6; = (1/var)*||X-X_r||^2 val-train = 31007.9 e-6 and (1+beta)*||Z_e-Z_q||^2 val-train = 276058.6 e-6 
+
+----------------------------------------------------------------------------------
+
+current train      perplexity = 2^( H( PMF of codebook words occurance ) bits ) = 4.21; perplexity/K = 0.82%
+current validation perplexity = 2^( H( PMF of codebook words occurance ) bits ) = 4.28; perplexity/K = 0.84%
+Epoch 26/40;
+Training   Samples Mini-Batch size      = 128;
+Validation Samples Mini-Batch size      = 128;
+Total elapsed time in Training Epoch    = 0:0:1 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:0 h/m/s;
+Total elapsed time from begining        = 0:0:51 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  6581707.8 e-6; = (1/var)*||X-X_r||^2 =  651447.5 e-6 = 9.9 %; (1+beta)*||Z_e-Z_q||^2 =  5930260.4 e-6 = 90.1 %)
+Curr. Avg. Val   Loss across Mini-Batch =  6857318.9 e-6; = (1/var)*||X-X_r||^2 =  631452.9 e-6 = 9.2 %; (1+beta)*||Z_e-Z_q||^2 =  6225866.1 e-6 = 90.8 %)
+Min.  Avg. Train Loss across Mini-Batch =  6581707.8 e-6; 
+Min.  Avg. Val   Loss across Mini-Batch =  1999778.8 e-6; 
+Curr. Avg. (Val-Train) overfit gap      =   275611.2 e-6; = (1/var)*||X-X_r||^2 val-train = -19994.5 e-6 and (1+beta)*||Z_e-Z_q||^2 val-train = 295605.7 e-6 
+
+----------------------------------------------------------------------------------
+
+current train      perplexity = 2^( H( PMF of codebook words occurance ) bits ) = 3.75; perplexity/K = 0.73%
+current validation perplexity = 2^( H( PMF of codebook words occurance ) bits ) = 3.59; perplexity/K = 0.70%
+Epoch 28/40;
+Training   Samples Mini-Batch size      = 128;
+Validation Samples Mini-Batch size      = 128;
+Total elapsed time in Training Epoch    = 0:0:1 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:0 h/m/s;
+Total elapsed time from begining        = 0:0:55 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  6532382.3 e-6; = (1/var)*||X-X_r||^2 =  671986.7 e-6 = 10.3 %; (1+beta)*||Z_e-Z_q||^2 =  5860395.7 e-6 = 89.7 %)
+Curr. Avg. Val   Loss across Mini-Batch =  9169637.7 e-6; = (1/var)*||X-X_r||^2 =  726619.2 e-6 = 7.9 %; (1+beta)*||Z_e-Z_q||^2 =  8443018.6 e-6 = 92.1 %)
+Min.  Avg. Train Loss across Mini-Batch =  6532382.3 e-6; 
+Min.  Avg. Val   Loss across Mini-Batch =  1999778.8 e-6; 
+Curr. Avg. (Val-Train) overfit gap      =   2637255.4 e-6; = (1/var)*||X-X_r||^2 val-train = 54632.5 e-6 and (1+beta)*||Z_e-Z_q||^2 val-train = 2582622.9 e-6 
+
+----------------------------------------------------------------------------------
+
+current train      perplexity = 2^( H( PMF of codebook words occurance ) bits ) = 4.81; perplexity/K = 0.94%
+current validation perplexity = 2^( H( PMF of codebook words occurance ) bits ) = 4.43; perplexity/K = 0.86%
+Epoch 30/40;
+Training   Samples Mini-Batch size      = 128;
+Validation Samples Mini-Batch size      = 128;
+Total elapsed time in Training Epoch    = 0:0:1 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:0 h/m/s;
+Total elapsed time from begining        = 0:0:59 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  7401283.4 e-6; = (1/var)*||X-X_r||^2 =  660733.9 e-6 = 8.9 %; (1+beta)*||Z_e-Z_q||^2 =  6740549.6 e-6 = 91.1 %)
+Curr. Avg. Val   Loss across Mini-Batch =  6648688.1 e-6; = (1/var)*||X-X_r||^2 =  640382.5 e-6 = 9.6 %; (1+beta)*||Z_e-Z_q||^2 =  6008305.6 e-6 = 90.4 %)
+Min.  Avg. Train Loss across Mini-Batch =  6532382.3 e-6; 
+Min.  Avg. Val   Loss across Mini-Batch =  1999778.8 e-6; 
+Curr. Avg. (Val-Train) overfit gap      =  -752595.3 e-6; = (1/var)*||X-X_r||^2 val-train = -20351.4 e-6 and (1+beta)*||Z_e-Z_q||^2 val-train = -732244.0 e-6 
+
+----------------------------------------------------------------------------------
+
+current train      perplexity = 2^( H( PMF of codebook words occurance ) bits ) = 6.13; perplexity/K = 1.20%
+current validation perplexity = 2^( H( PMF of codebook words occurance ) bits ) = 6.07; perplexity/K = 1.19%
+Epoch 32/40;
+Training   Samples Mini-Batch size      = 128;
+Validation Samples Mini-Batch size      = 128;
+Total elapsed time in Training Epoch    = 0:0:1 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:0 h/m/s;
+Total elapsed time from begining        = 0:1:3 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  4548399.8 e-6; = (1/var)*||X-X_r||^2 =  607906.5 e-6 = 13.4 %; (1+beta)*||Z_e-Z_q||^2 =  3940493.3 e-6 = 86.6 %)
+Curr. Avg. Val   Loss across Mini-Batch =  3960171.3 e-6; = (1/var)*||X-X_r||^2 =  587405.9 e-6 = 14.8 %; (1+beta)*||Z_e-Z_q||^2 =  3372765.4 e-6 = 85.2 %)
+Min.  Avg. Train Loss across Mini-Batch =  4548399.8 e-6; 
+Min.  Avg. Val   Loss across Mini-Batch =  1999778.8 e-6; 
+Curr. Avg. (Val-Train) overfit gap      =  -588228.5 e-6; = (1/var)*||X-X_r||^2 val-train = -20500.6 e-6 and (1+beta)*||Z_e-Z_q||^2 val-train = -567727.9 e-6 
+
+----------------------------------------------------------------------------------
+
+current train      perplexity = 2^( H( PMF of codebook words occurance ) bits ) = 6.53; perplexity/K = 1.28%
+current validation perplexity = 2^( H( PMF of codebook words occurance ) bits ) = 6.49; perplexity/K = 1.27%
+Epoch 34/40;
+Training   Samples Mini-Batch size      = 128;
+Validation Samples Mini-Batch size      = 128;
+Total elapsed time in Training Epoch    = 0:0:1 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:0 h/m/s;
+Total elapsed time from begining        = 0:1:7 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  3325327.8 e-6; = (1/var)*||X-X_r||^2 =  589998.3 e-6 = 17.7 %; (1+beta)*||Z_e-Z_q||^2 =  2735329.5 e-6 = 82.3 %)
+Curr. Avg. Val   Loss across Mini-Batch =  3156051.9 e-6; = (1/var)*||X-X_r||^2 =  574300.7 e-6 = 18.2 %; (1+beta)*||Z_e-Z_q||^2 =  2581751.2 e-6 = 81.8 %)
+Min.  Avg. Train Loss across Mini-Batch =  3325327.8 e-6; 
+Min.  Avg. Val   Loss across Mini-Batch =  1999778.8 e-6; 
+Curr. Avg. (Val-Train) overfit gap      =  -169275.9 e-6; = (1/var)*||X-X_r||^2 val-train = -15697.6 e-6 and (1+beta)*||Z_e-Z_q||^2 val-train = -153578.3 e-6 
+
+----------------------------------------------------------------------------------
+
+current train      perplexity = 2^( H( PMF of codebook words occurance ) bits ) = 7.42; perplexity/K = 1.45%
+current validation perplexity = 2^( H( PMF of codebook words occurance ) bits ) = 7.40; perplexity/K = 1.45%
+Epoch 36/40;
+Training   Samples Mini-Batch size      = 128;
+Validation Samples Mini-Batch size      = 128;
+Total elapsed time in Training Epoch    = 0:0:1 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:0 h/m/s;
+Total elapsed time from begining        = 0:1:10 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  2828638.1 e-6; = (1/var)*||X-X_r||^2 =  581070.7 e-6 = 20.5 %; (1+beta)*||Z_e-Z_q||^2 =  2247567.4 e-6 = 79.5 %)
+Curr. Avg. Val   Loss across Mini-Batch =  2658775.0 e-6; = (1/var)*||X-X_r||^2 =  568528.3 e-6 = 21.4 %; (1+beta)*||Z_e-Z_q||^2 =  2090246.7 e-6 = 78.6 %)
+Min.  Avg. Train Loss across Mini-Batch =  2828638.1 e-6; 
+Min.  Avg. Val   Loss across Mini-Batch =  1999778.8 e-6; 
+Curr. Avg. (Val-Train) overfit gap      =  -169863.1 e-6; = (1/var)*||X-X_r||^2 val-train = -12542.4 e-6 and (1+beta)*||Z_e-Z_q||^2 val-train = -157320.7 e-6 
+
+----------------------------------------------------------------------------------
+
+current train      perplexity = 2^( H( PMF of codebook words occurance ) bits ) = 8.34; perplexity/K = 1.63%
+current validation perplexity = 2^( H( PMF of codebook words occurance ) bits ) = 8.40; perplexity/K = 1.64%
+Epoch 38/40;
+Training   Samples Mini-Batch size      = 128;
+Validation Samples Mini-Batch size      = 128;
+Total elapsed time in Training Epoch    = 0:0:1 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:0 h/m/s;
+Total elapsed time from begining        = 0:1:14 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  2684478.1 e-6; = (1/var)*||X-X_r||^2 =  567767.4 e-6 = 21.2 %; (1+beta)*||Z_e-Z_q||^2 =  2116710.6 e-6 = 78.8 %)
+Curr. Avg. Val   Loss across Mini-Batch =  2670895.5 e-6; = (1/var)*||X-X_r||^2 =  552423.7 e-6 = 20.7 %; (1+beta)*||Z_e-Z_q||^2 =  2118471.8 e-6 = 79.3 %)
+Min.  Avg. Train Loss across Mini-Batch =  2684478.1 e-6; 
+Min.  Avg. Val   Loss across Mini-Batch =  1999778.8 e-6; 
+Curr. Avg. (Val-Train) overfit gap      =  -13582.6 e-6; = (1/var)*||X-X_r||^2 val-train = -15343.7 e-6 and (1+beta)*||Z_e-Z_q||^2 val-train = 1761.2 e-6 
+
+----------------------------------------------------------------------------------
+
+current train      perplexity = 2^( H( PMF of codebook words occurance ) bits ) = 9.26; perplexity/K = 1.81%
+current validation perplexity = 2^( H( PMF of codebook words occurance ) bits ) = 9.36; perplexity/K = 1.83%
+Epoch 40/40;
+Training   Samples Mini-Batch size      = 128;
+Validation Samples Mini-Batch size      = 128;
+Total elapsed time in Training Epoch    = 0:0:1 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:0 h/m/s;
+Total elapsed time from begining        = 0:1:18 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  2513140.9 e-6; = (1/var)*||X-X_r||^2 =  544297.2 e-6 = 21.7 %; (1+beta)*||Z_e-Z_q||^2 =  1968843.7 e-6 = 78.3 %)
+Curr. Avg. Val   Loss across Mini-Batch =  2387188.1 e-6; = (1/var)*||X-X_r||^2 =  523707.6 e-6 = 21.9 %; (1+beta)*||Z_e-Z_q||^2 =  1863480.5 e-6 = 78.1 %)
+Min.  Avg. Train Loss across Mini-Batch =  2513140.9 e-6; 
+Min.  Avg. Val   Loss across Mini-Batch =  1999778.8 e-6; 
+Curr. Avg. (Val-Train) overfit gap      =  -125952.8 e-6; = (1/var)*||X-X_r||^2 val-train = -20589.6 e-6 and (1+beta)*||Z_e-Z_q||^2 val-train = -105363.3 e-6 
+
+----------------------------------------------------------------------------------
+
