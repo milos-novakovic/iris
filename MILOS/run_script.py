@@ -26,7 +26,7 @@ M_array = -np.sort(-M_array)
 D_array = -np.sort(-D_array)
 
 beta_array = np.array([0.25]) #np.arrange(0,2.25,0.25)#np.array([0.15, 0.25, 0.65, 1.15, 1.65])
-max_channel_number_array = np.array([256,128])
+max_channel_number_array = np.array([128,256])
 change_channel_size_across_layers_array = [True, False]
 
 # also differes for different number of EPOCHS!!!
@@ -62,12 +62,13 @@ with open('log.txt', 'a') as f:
 # CORRECT: # it is beginning to learn for the following combination of (K,D,M)
 # 6) Running for K = 16384 & D = 256 & M = 1 (i.e. bits = 14):
 # 7) Running for K = 128 & D = 256 & M = 0 (i.e. bits = 7):
-for change_channel_size_across_layers in change_channel_size_across_layers_array:
-    for max_channel_number in max_channel_number_array:
-        for beta in beta_array:
-            for d in D_array:
-                for k in K_array:
-                    for m in M_array:
+
+for k in K_array:
+    for m in M_array:
+        for change_channel_size_across_layers in change_channel_size_across_layers_array:
+            for max_channel_number in max_channel_number_array:
+                for beta in beta_array:
+                    for d in D_array:
                         compressed_number_of_bits_per_image = int(np.ceil((m+1)**2 * np.log2(k)))
                         
                         # if compressed_number_of_bits_per_image > 50:
