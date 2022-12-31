@@ -877,6 +877,7 @@ results_df = pd.DataFrame({
     'mean test entropy':[np.log2(trainer.test_metrics['perplexity'].mean())],
     'true_entropy':[np.log2(K)]
 })
+
 log_results_file_path_name = './log_results/log_results.csv'
 with open(log_results_file_path_name, 'a') as f:
     results_df.to_csv(f, index = False, header=f.tell()==0)
@@ -886,7 +887,12 @@ with open(log_results_file_path_name, 'a') as f:
 #git push 
 add_command = "git add /home/novakovm/iris/MILOS/log_all.txt"
 os.system(add_command)
-commit_command = "git commit -m " + "\"" + f"Update log_all.txt ({hour}:{minute}  {day}.{month}.{year})" + "\""
+add_command = "git add /home/novakovm/iris/MILOS/log.txt"
+os.system(add_command)
+add_command = "git add /home/novakovm/iris/MILOS/log_results/log_results.csv"
+os.system(add_command)
+
+commit_command = "git commit -m " + "\"" + f"Update log.txt, log_all.txt, log_results.csv ({hour}:{minute}  {day}.{month}.{year})" + "\""
 os.system(commit_command)
 push_command = "git push"
 os.system(push_command)
