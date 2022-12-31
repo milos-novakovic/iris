@@ -2450,3 +2450,473 @@ VQ_VAE(
 16                    decoder.sequential_trans_convs.conv2d_2.weight                       262            17.70
 17                    decoder.sequential_trans_convs.conv2d_3.weight                         6             0.41
 
+
+ PyTorch print of the model:
+
+VQ_VAE(
+  (encoder): Encoder(
+    (sequential_convs): Sequential(
+      (conv2d_1): Conv2d(3, 128, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1))
+      (ReLU_1): ReLU(inplace=True)
+      (conv2d_2): Conv2d(128, 128, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1))
+      (ReLU_2): ReLU(inplace=True)
+      (conv2d_3): Conv2d(128, 128, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1))
+      (ReLU_3): ReLU(inplace=True)
+    )
+    (pre_residual_stack): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (residual_stack): ResidualStack(
+      (residual_blocks): ModuleList(
+        (0): Residual(
+          (residual_block): Sequential(
+            (0): ReLU(inplace=True)
+            (1): Conv2d(128, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+            (2): ReLU(inplace=True)
+            (3): Conv2d(32, 128, kernel_size=(1, 1), stride=(1, 1), bias=False)
+          )
+        )
+        (1): Residual(
+          (residual_block): Sequential(
+            (0): ReLU(inplace=True)
+            (1): Conv2d(128, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+            (2): ReLU(inplace=True)
+            (3): Conv2d(32, 128, kernel_size=(1, 1), stride=(1, 1), bias=False)
+          )
+        )
+      )
+    )
+    (channel_adjusting_conv): Conv2d(128, 64, kernel_size=(1, 1), stride=(1, 1))
+  )
+  (VQ): VectorQuantizer(
+    (E): Embedding(512, 64)
+  )
+  (decoder): Decoder(
+    (channel_adjusting_conv): Conv2d(64, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (residual_stack): ResidualStack(
+      (residual_blocks): ModuleList(
+        (0): Residual(
+          (residual_block): Sequential(
+            (0): ReLU(inplace=True)
+            (1): Conv2d(128, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+            (2): ReLU(inplace=True)
+            (3): Conv2d(32, 128, kernel_size=(1, 1), stride=(1, 1), bias=False)
+          )
+        )
+        (1): Residual(
+          (residual_block): Sequential(
+            (0): ReLU(inplace=True)
+            (1): Conv2d(128, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+            (2): ReLU(inplace=True)
+            (3): Conv2d(32, 128, kernel_size=(1, 1), stride=(1, 1), bias=False)
+          )
+        )
+      )
+    )
+    (sequential_trans_convs): Sequential(
+      (conv2d_1): ConvTranspose2d(128, 128, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1))
+      (ReLU_1): ReLU(inplace=True)
+      (conv2d_2): ConvTranspose2d(128, 128, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1))
+      (ReLU_2): ReLU(inplace=True)
+      (conv2d_3): ConvTranspose2d(128, 3, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1))
+    )
+  )
+)
+
+
+ Total Trainable Params in thousands: 1480 
+
+                                                         Module Name  # of params in thousands  # of params [%]
+0                           encoder.sequential_convs.conv2d_1.weight                         6             0.41
+1                           encoder.sequential_convs.conv2d_2.weight                       262            17.70
+2                           encoder.sequential_convs.conv2d_3.weight                       262            17.70
+3                                  encoder.pre_residual_stack.weight                       147             9.93
+4   encoder.residual_stack.residual_blocks.0.residual_block.1.weight                        36             2.43
+5   encoder.residual_stack.residual_blocks.0.residual_block.3.weight                         4             0.27
+6   encoder.residual_stack.residual_blocks.1.residual_block.1.weight                        36             2.43
+7   encoder.residual_stack.residual_blocks.1.residual_block.3.weight                         4             0.27
+8                              encoder.channel_adjusting_conv.weight                         8             0.54
+9                                                        VQ.E.weight                        32             2.16
+10                             decoder.channel_adjusting_conv.weight                        73             4.93
+11  decoder.residual_stack.residual_blocks.0.residual_block.1.weight                        36             2.43
+12  decoder.residual_stack.residual_blocks.0.residual_block.3.weight                         4             0.27
+13  decoder.residual_stack.residual_blocks.1.residual_block.1.weight                        36             2.43
+14  decoder.residual_stack.residual_blocks.1.residual_block.3.weight                         4             0.27
+15                    decoder.sequential_trans_convs.conv2d_1.weight                       262            17.70
+16                    decoder.sequential_trans_convs.conv2d_2.weight                       262            17.70
+17                    decoder.sequential_trans_convs.conv2d_3.weight                         6             0.41
+
+
+ PyTorch print of the model:
+
+VQ_VAE(
+  (encoder): Encoder(
+    (sequential_convs): Sequential(
+      (conv2d_1): Conv2d(3, 128, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1))
+      (ReLU_1): ReLU(inplace=True)
+      (conv2d_2): Conv2d(128, 128, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1))
+      (ReLU_2): ReLU(inplace=True)
+      (conv2d_3): Conv2d(128, 128, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1))
+      (ReLU_3): ReLU(inplace=True)
+    )
+    (pre_residual_stack): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (residual_stack): ResidualStack(
+      (residual_blocks): ModuleList(
+        (0): Residual(
+          (residual_block): Sequential(
+            (0): ReLU(inplace=True)
+            (1): Conv2d(128, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+            (2): ReLU(inplace=True)
+            (3): Conv2d(32, 128, kernel_size=(1, 1), stride=(1, 1), bias=False)
+          )
+        )
+        (1): Residual(
+          (residual_block): Sequential(
+            (0): ReLU(inplace=True)
+            (1): Conv2d(128, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+            (2): ReLU(inplace=True)
+            (3): Conv2d(32, 128, kernel_size=(1, 1), stride=(1, 1), bias=False)
+          )
+        )
+      )
+    )
+    (channel_adjusting_conv): Conv2d(128, 64, kernel_size=(1, 1), stride=(1, 1))
+  )
+  (VQ): VectorQuantizer(
+    (E): Embedding(512, 64)
+  )
+  (decoder): Decoder(
+    (channel_adjusting_conv): Conv2d(64, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (residual_stack): ResidualStack(
+      (residual_blocks): ModuleList(
+        (0): Residual(
+          (residual_block): Sequential(
+            (0): ReLU(inplace=True)
+            (1): Conv2d(128, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+            (2): ReLU(inplace=True)
+            (3): Conv2d(32, 128, kernel_size=(1, 1), stride=(1, 1), bias=False)
+          )
+        )
+        (1): Residual(
+          (residual_block): Sequential(
+            (0): ReLU(inplace=True)
+            (1): Conv2d(128, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+            (2): ReLU(inplace=True)
+            (3): Conv2d(32, 128, kernel_size=(1, 1), stride=(1, 1), bias=False)
+          )
+        )
+      )
+    )
+    (sequential_trans_convs): Sequential(
+      (conv2d_1): ConvTranspose2d(128, 128, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1))
+      (ReLU_1): ReLU(inplace=True)
+      (conv2d_2): ConvTranspose2d(128, 128, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1))
+      (ReLU_2): ReLU(inplace=True)
+      (conv2d_3): ConvTranspose2d(128, 3, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1))
+    )
+  )
+)
+
+
+ Total Trainable Params in thousands: 1480 
+
+                                                         Module Name  # of params in thousands  # of params [%]
+0                           encoder.sequential_convs.conv2d_1.weight                         6             0.41
+1                           encoder.sequential_convs.conv2d_2.weight                       262            17.70
+2                           encoder.sequential_convs.conv2d_3.weight                       262            17.70
+3                                  encoder.pre_residual_stack.weight                       147             9.93
+4   encoder.residual_stack.residual_blocks.0.residual_block.1.weight                        36             2.43
+5   encoder.residual_stack.residual_blocks.0.residual_block.3.weight                         4             0.27
+6   encoder.residual_stack.residual_blocks.1.residual_block.1.weight                        36             2.43
+7   encoder.residual_stack.residual_blocks.1.residual_block.3.weight                         4             0.27
+8                              encoder.channel_adjusting_conv.weight                         8             0.54
+9                                                        VQ.E.weight                        32             2.16
+10                             decoder.channel_adjusting_conv.weight                        73             4.93
+11  decoder.residual_stack.residual_blocks.0.residual_block.1.weight                        36             2.43
+12  decoder.residual_stack.residual_blocks.0.residual_block.3.weight                         4             0.27
+13  decoder.residual_stack.residual_blocks.1.residual_block.1.weight                        36             2.43
+14  decoder.residual_stack.residual_blocks.1.residual_block.3.weight                         4             0.27
+15                    decoder.sequential_trans_convs.conv2d_1.weight                       262            17.70
+16                    decoder.sequential_trans_convs.conv2d_2.weight                       262            17.70
+17                    decoder.sequential_trans_convs.conv2d_3.weight                         6             0.41
+
+
+ PyTorch print of the model:
+
+VQ_VAE(
+  (encoder): Encoder(
+    (sequential_convs): Sequential(
+      (conv2d_1): Conv2d(3, 128, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1))
+      (ReLU_1): ReLU(inplace=True)
+      (conv2d_2): Conv2d(128, 128, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1))
+      (ReLU_2): ReLU(inplace=True)
+      (conv2d_3): Conv2d(128, 128, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1))
+      (ReLU_3): ReLU(inplace=True)
+    )
+    (pre_residual_stack): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (residual_stack): ResidualStack(
+      (residual_blocks): ModuleList(
+        (0): Residual(
+          (residual_block): Sequential(
+            (0): ReLU(inplace=True)
+            (1): Conv2d(128, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+            (2): ReLU(inplace=True)
+            (3): Conv2d(32, 128, kernel_size=(1, 1), stride=(1, 1), bias=False)
+          )
+        )
+        (1): Residual(
+          (residual_block): Sequential(
+            (0): ReLU(inplace=True)
+            (1): Conv2d(128, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+            (2): ReLU(inplace=True)
+            (3): Conv2d(32, 128, kernel_size=(1, 1), stride=(1, 1), bias=False)
+          )
+        )
+      )
+    )
+    (channel_adjusting_conv): Conv2d(128, 64, kernel_size=(1, 1), stride=(1, 1))
+  )
+  (VQ): VectorQuantizer(
+    (E): Embedding(512, 64)
+  )
+  (decoder): Decoder(
+    (channel_adjusting_conv): Conv2d(64, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (residual_stack): ResidualStack(
+      (residual_blocks): ModuleList(
+        (0): Residual(
+          (residual_block): Sequential(
+            (0): ReLU(inplace=True)
+            (1): Conv2d(128, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+            (2): ReLU(inplace=True)
+            (3): Conv2d(32, 128, kernel_size=(1, 1), stride=(1, 1), bias=False)
+          )
+        )
+        (1): Residual(
+          (residual_block): Sequential(
+            (0): ReLU(inplace=True)
+            (1): Conv2d(128, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+            (2): ReLU(inplace=True)
+            (3): Conv2d(32, 128, kernel_size=(1, 1), stride=(1, 1), bias=False)
+          )
+        )
+      )
+    )
+    (sequential_trans_convs): Sequential(
+      (conv2d_1): ConvTranspose2d(128, 128, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1))
+      (ReLU_1): ReLU(inplace=True)
+      (conv2d_2): ConvTranspose2d(128, 128, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1))
+      (ReLU_2): ReLU(inplace=True)
+      (conv2d_3): ConvTranspose2d(128, 3, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1))
+    )
+  )
+)
+
+
+ Total Trainable Params in thousands: 1480 
+
+                                                         Module Name  # of params in thousands  # of params [%]
+0                           encoder.sequential_convs.conv2d_1.weight                         6             0.41
+1                           encoder.sequential_convs.conv2d_2.weight                       262            17.70
+2                           encoder.sequential_convs.conv2d_3.weight                       262            17.70
+3                                  encoder.pre_residual_stack.weight                       147             9.93
+4   encoder.residual_stack.residual_blocks.0.residual_block.1.weight                        36             2.43
+5   encoder.residual_stack.residual_blocks.0.residual_block.3.weight                         4             0.27
+6   encoder.residual_stack.residual_blocks.1.residual_block.1.weight                        36             2.43
+7   encoder.residual_stack.residual_blocks.1.residual_block.3.weight                         4             0.27
+8                              encoder.channel_adjusting_conv.weight                         8             0.54
+9                                                        VQ.E.weight                        32             2.16
+10                             decoder.channel_adjusting_conv.weight                        73             4.93
+11  decoder.residual_stack.residual_blocks.0.residual_block.1.weight                        36             2.43
+12  decoder.residual_stack.residual_blocks.0.residual_block.3.weight                         4             0.27
+13  decoder.residual_stack.residual_blocks.1.residual_block.1.weight                        36             2.43
+14  decoder.residual_stack.residual_blocks.1.residual_block.3.weight                         4             0.27
+15                    decoder.sequential_trans_convs.conv2d_1.weight                       262            17.70
+16                    decoder.sequential_trans_convs.conv2d_2.weight                       262            17.70
+17                    decoder.sequential_trans_convs.conv2d_3.weight                         6             0.41
+
+
+ PyTorch print of the model:
+
+VQ_VAE(
+  (encoder): Encoder(
+    (sequential_convs): Sequential(
+      (conv2d_1): Conv2d(3, 128, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1))
+      (ReLU_1): ReLU(inplace=True)
+      (conv2d_2): Conv2d(128, 128, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1))
+      (ReLU_2): ReLU(inplace=True)
+      (conv2d_3): Conv2d(128, 128, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1))
+      (ReLU_3): ReLU(inplace=True)
+    )
+    (pre_residual_stack): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (residual_stack): ResidualStack(
+      (residual_blocks): ModuleList(
+        (0): Residual(
+          (residual_block): Sequential(
+            (0): ReLU(inplace=True)
+            (1): Conv2d(128, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+            (2): ReLU(inplace=True)
+            (3): Conv2d(32, 128, kernel_size=(1, 1), stride=(1, 1), bias=False)
+          )
+        )
+        (1): Residual(
+          (residual_block): Sequential(
+            (0): ReLU(inplace=True)
+            (1): Conv2d(128, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+            (2): ReLU(inplace=True)
+            (3): Conv2d(32, 128, kernel_size=(1, 1), stride=(1, 1), bias=False)
+          )
+        )
+      )
+    )
+    (channel_adjusting_conv): Conv2d(128, 64, kernel_size=(1, 1), stride=(1, 1))
+  )
+  (VQ): VectorQuantizer(
+    (E): Embedding(512, 64)
+  )
+  (decoder): Decoder(
+    (channel_adjusting_conv): Conv2d(64, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (residual_stack): ResidualStack(
+      (residual_blocks): ModuleList(
+        (0): Residual(
+          (residual_block): Sequential(
+            (0): ReLU(inplace=True)
+            (1): Conv2d(128, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+            (2): ReLU(inplace=True)
+            (3): Conv2d(32, 128, kernel_size=(1, 1), stride=(1, 1), bias=False)
+          )
+        )
+        (1): Residual(
+          (residual_block): Sequential(
+            (0): ReLU(inplace=True)
+            (1): Conv2d(128, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+            (2): ReLU(inplace=True)
+            (3): Conv2d(32, 128, kernel_size=(1, 1), stride=(1, 1), bias=False)
+          )
+        )
+      )
+    )
+    (sequential_trans_convs): Sequential(
+      (conv2d_1): ConvTranspose2d(128, 128, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1))
+      (ReLU_1): ReLU(inplace=True)
+      (conv2d_2): ConvTranspose2d(128, 128, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1))
+      (ReLU_2): ReLU(inplace=True)
+      (conv2d_3): ConvTranspose2d(128, 3, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1))
+    )
+  )
+)
+
+
+ Total Trainable Params in thousands: 1480 
+
+                                                         Module Name  # of params in thousands  # of params [%]
+0                           encoder.sequential_convs.conv2d_1.weight                         6             0.41
+1                           encoder.sequential_convs.conv2d_2.weight                       262            17.70
+2                           encoder.sequential_convs.conv2d_3.weight                       262            17.70
+3                                  encoder.pre_residual_stack.weight                       147             9.93
+4   encoder.residual_stack.residual_blocks.0.residual_block.1.weight                        36             2.43
+5   encoder.residual_stack.residual_blocks.0.residual_block.3.weight                         4             0.27
+6   encoder.residual_stack.residual_blocks.1.residual_block.1.weight                        36             2.43
+7   encoder.residual_stack.residual_blocks.1.residual_block.3.weight                         4             0.27
+8                              encoder.channel_adjusting_conv.weight                         8             0.54
+9                                                        VQ.E.weight                        32             2.16
+10                             decoder.channel_adjusting_conv.weight                        73             4.93
+11  decoder.residual_stack.residual_blocks.0.residual_block.1.weight                        36             2.43
+12  decoder.residual_stack.residual_blocks.0.residual_block.3.weight                         4             0.27
+13  decoder.residual_stack.residual_blocks.1.residual_block.1.weight                        36             2.43
+14  decoder.residual_stack.residual_blocks.1.residual_block.3.weight                         4             0.27
+15                    decoder.sequential_trans_convs.conv2d_1.weight                       262            17.70
+16                    decoder.sequential_trans_convs.conv2d_2.weight                       262            17.70
+17                    decoder.sequential_trans_convs.conv2d_3.weight                         6             0.41
+
+
+ PyTorch print of the model:
+
+VQ_VAE(
+  (encoder): Encoder(
+    (sequential_convs): Sequential(
+      (conv2d_1): Conv2d(3, 128, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1))
+      (ReLU_1): ReLU(inplace=True)
+      (conv2d_2): Conv2d(128, 128, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1))
+      (ReLU_2): ReLU(inplace=True)
+      (conv2d_3): Conv2d(128, 128, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1))
+      (ReLU_3): ReLU(inplace=True)
+    )
+    (pre_residual_stack): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (residual_stack): ResidualStack(
+      (residual_blocks): ModuleList(
+        (0): Residual(
+          (residual_block): Sequential(
+            (0): ReLU(inplace=True)
+            (1): Conv2d(128, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+            (2): ReLU(inplace=True)
+            (3): Conv2d(32, 128, kernel_size=(1, 1), stride=(1, 1), bias=False)
+          )
+        )
+        (1): Residual(
+          (residual_block): Sequential(
+            (0): ReLU(inplace=True)
+            (1): Conv2d(128, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+            (2): ReLU(inplace=True)
+            (3): Conv2d(32, 128, kernel_size=(1, 1), stride=(1, 1), bias=False)
+          )
+        )
+      )
+    )
+    (channel_adjusting_conv): Conv2d(128, 64, kernel_size=(1, 1), stride=(1, 1))
+  )
+  (VQ): VectorQuantizer(
+    (E): Embedding(512, 64)
+  )
+  (decoder): Decoder(
+    (channel_adjusting_conv): Conv2d(64, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (residual_stack): ResidualStack(
+      (residual_blocks): ModuleList(
+        (0): Residual(
+          (residual_block): Sequential(
+            (0): ReLU(inplace=True)
+            (1): Conv2d(128, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+            (2): ReLU(inplace=True)
+            (3): Conv2d(32, 128, kernel_size=(1, 1), stride=(1, 1), bias=False)
+          )
+        )
+        (1): Residual(
+          (residual_block): Sequential(
+            (0): ReLU(inplace=True)
+            (1): Conv2d(128, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+            (2): ReLU(inplace=True)
+            (3): Conv2d(32, 128, kernel_size=(1, 1), stride=(1, 1), bias=False)
+          )
+        )
+      )
+    )
+    (sequential_trans_convs): Sequential(
+      (conv2d_1): ConvTranspose2d(128, 128, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1))
+      (ReLU_1): ReLU(inplace=True)
+      (conv2d_2): ConvTranspose2d(128, 128, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1))
+      (ReLU_2): ReLU(inplace=True)
+      (conv2d_3): ConvTranspose2d(128, 3, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1))
+    )
+  )
+)
+
+
+ Total Trainable Params in thousands: 1480 
+
+                                                         Module Name  # of params in thousands  # of params [%]
+0                           encoder.sequential_convs.conv2d_1.weight                         6             0.41
+1                           encoder.sequential_convs.conv2d_2.weight                       262            17.70
+2                           encoder.sequential_convs.conv2d_3.weight                       262            17.70
+3                                  encoder.pre_residual_stack.weight                       147             9.93
+4   encoder.residual_stack.residual_blocks.0.residual_block.1.weight                        36             2.43
+5   encoder.residual_stack.residual_blocks.0.residual_block.3.weight                         4             0.27
+6   encoder.residual_stack.residual_blocks.1.residual_block.1.weight                        36             2.43
+7   encoder.residual_stack.residual_blocks.1.residual_block.3.weight                         4             0.27
+8                              encoder.channel_adjusting_conv.weight                         8             0.54
+9                                                        VQ.E.weight                        32             2.16
+10                             decoder.channel_adjusting_conv.weight                        73             4.93
+11  decoder.residual_stack.residual_blocks.0.residual_block.1.weight                        36             2.43
+12  decoder.residual_stack.residual_blocks.0.residual_block.3.weight                         4             0.27
+13  decoder.residual_stack.residual_blocks.1.residual_block.1.weight                        36             2.43
+14  decoder.residual_stack.residual_blocks.1.residual_block.3.weight                         4             0.27
+15                    decoder.sequential_trans_convs.conv2d_1.weight                       262            17.70
+16                    decoder.sequential_trans_convs.conv2d_2.weight                       262            17.70
+17                    decoder.sequential_trans_convs.conv2d_3.weight                         6             0.41
+

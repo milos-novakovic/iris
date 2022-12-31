@@ -6,7 +6,7 @@ vanilla_autoencoder:
 
 training_hyperparams:
   - NUM_WORKERS: 4 #NUM_WORKERS = 4# see what this represents exactly!
-  - LATENT_DIM: 10 #TO DO
+  - LATENT_DIM: 0 #TO DO
   - USE_PRETRAINED_VANILLA_AUTOENCODER: False
   - USE_GPU: True
   #- TRAIN_FLAG: True
