@@ -33,3 +33,34 @@ Curr. Avg. (Val-Train) overfit gap      =   669.8 e-6; = (1/var)*||X-X_r||^2 val
 ----------------------------------------------------------------------------------
 
 The model is learning, for K = 2048, D= 64, M = 7
+The model is learning, for K = 2048, D= 64, M = 7
+Epoch 1000/2000;
+Training   Samples Mini-Batch size      = 128;
+Validation Samples Mini-Batch size      = 128;
+Total elapsed time in Training Epoch    = 0:0:1 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:0 h/m/s;
+Total elapsed time from begining        = 0:33:22 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  1041.7 e-6; = (1/var)*||X-X_r||^2 =  395.3 e-6 = 37.9 %; (1+beta)*||Z_e-Z_q||^2 =  646.4 e-6 = 62.1 %)
+Curr. Avg. Val   Loss across Mini-Batch =  1363.8 e-6; = (1/var)*||X-X_r||^2 =  725.7 e-6 = 53.2 %; (1+beta)*||Z_e-Z_q||^2 =  638.1 e-6 = 46.8 %)
+Min.  Avg. Train Loss across Mini-Batch =  1041.7 e-6; 
+Min.  Avg. Val   Loss across Mini-Batch =  1363.8 e-6; 
+Curr. Avg. (Val-Train) overfit gap      =   322.1 e-6; = (1/var)*||X-X_r||^2 val-train = 330.4 e-6 and (1+beta)*||Z_e-Z_q||^2 val-train = -8.4 e-6 
+
+----------------------------------------------------------------------------------
+
+The model is learning, for K = 2048, D= 64, M = 7
+Epoch 2000/2000;
+Training   Samples Mini-Batch size      = 128;
+Validation Samples Mini-Batch size      = 128;
+Total elapsed time in Training Epoch    = 0:0:1 h/m/s;
+Total elapsed time in Validation Epoch  = 0:0:0 h/m/s;
+Total elapsed time from begining        = 1:6:44 h/m/s;
+Curr. Avg. Train Loss across Mini-Batch =  1007.7 e-6; = (1/var)*||X-X_r||^2 =  234.0 e-6 = 23.2 %; (1+beta)*||Z_e-Z_q||^2 =  773.8 e-6 = 76.8 %)
+Curr. Avg. Val   Loss across Mini-Batch =  1079.4 e-6; = (1/var)*||X-X_r||^2 =  374.8 e-6 = 34.7 %; (1+beta)*||Z_e-Z_q||^2 =  704.6 e-6 = 65.3 %)
+Min.  Avg. Train Loss across Mini-Batch =  171.5 e-6; 
+Min.  Avg. Val   Loss across Mini-Batch =  275.1 e-6; 
+Curr. Avg. (Val-Train) overfit gap      =   71.7 e-6; = (1/var)*||X-X_r||^2 val-train = 140.8 e-6 and (1+beta)*||Z_e-Z_q||^2 val-train = -69.1 e-6 
+
+----------------------------------------------------------------------------------
+
+The model is learning, for K = 2048, D= 64, M = 7
