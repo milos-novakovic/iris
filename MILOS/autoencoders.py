@@ -885,16 +885,16 @@ with open(log_results_file_path_name, 'a') as f:
 #git add /home/novakovm/iris/MILOS/log_all.txt
 #git commit -m "Update log_all.txt (f"{hour}:{minute}  {day}.{month}.{year}")" 
 #git push 
-add_command = "git add /home/novakovm/iris/MILOS/log_all.txt"
-os.system(add_command)
-add_command = "git add /home/novakovm/iris/MILOS/log.txt"
-os.system(add_command)
-add_command = "git add /home/novakovm/iris/MILOS/log_results/log_results.csv"
-os.system(add_command)
+#add_command = "git add /home/novakovm/iris/MILOS/log_all.txt"
+#os.system(add_command)
+#add_command = "git add /home/novakovm/iris/MILOS/log.txt"
+#os.system(add_command)
+#add_command = "git add /home/novakovm/iris/MILOS/log_results/log_results.csv"
+#os.system(add_command)
 
-commit_command = "git commit -m " + "\"" + f"Update log.txt, log_all.txt, log_results.csv ({hour}:{minute}  {day}.{month}.{year})" + "\""
-os.system(commit_command)
-push_command = "git push"
-os.system(push_command)
+#commit_command = "git commit -m " + "\"" + f"Update log.txt, log_all.txt, log_results.csv ({hour}:{minute}  {day}.{month}.{year})" + "\""
+#os.system(commit_command)
+#push_command = "git push"
+#os.system(push_command)
 
 debug =0
