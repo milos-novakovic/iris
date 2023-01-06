@@ -1998,6 +1998,94 @@ class Model_Trainer:
         
         # PLOT PCA TSNE UMAP
 
-    #Visualizing interpolations
-    #Visualizing reconstructions
+    def visualize_interpolations(self):
+        # Visualizing interpolations
+        pass
+    
+    def visualize_reconstructions(self):
+        # Visualizing reconstructions
+        pass
+    
+    def visualize_discrete_codes(self, input):
+        # Visualizing the discrete codes from input images input-tensor of size (B, C, H, W)
+        
+        self.model.eval()
+        
+        B,C,H,W = input.size()
+        
+        Ze = self.model.encoder(input)  # tensor Ze size = (B, D, M+1, M+1)
+        
+        
+        # Calculate distances matrix D = dims (B*H*W) x K
+        D = (torch.sum(Ze**2, dim=1, keepdim=True) # sum across axis 1 matrix dims (but keepdims) = [(B*H*W) x D] -> column (B*H*W)-sized vector -> torch broadcast to same K-rows to get matrix = dims (B*H*W) x K
+            + torch.sum(self.model.VQ.E.weight**2, dim=1) # sum across axis 1 matrix dims = [K x D] -> row K-sized vector -> torch broadcast to same (B*H*W)-columns to get matrix = dims (B*H*W) x K
+            - 2 * torch.matmul(Ze, self.model.VQ.E.weight.t())) # [matrix dims = (B*H*W) x D] * [matrix dims = D x K]^T
+          
+        # Discretization metric is the closes vector in l2-norm sense
+        # Encoding indices = dims (B*H*W) x 1
+        encoding_indices = torch.argmin(D, dim=1).unsqueeze(1)
+        
+        # from embedding matrix E (dims K x D) pick (B*H*W)-number of vectors 
+        # put it into original shape of the tensor that VQ got from Encoder, i.e. Ze_tensor_shape
+        Zq_tensor = self.model.VQ.E(encoding_indices).view(Ze.permute(0, 2, 3, 1).contiguous().shape)
+        
+        # BHWC -> BCHW
+        Zq = Zq_tensor.permute(0, 3, 1, 2).contiguous()
+        
+        B_e, C_e, H_e, W_e = Zq.size()
+        
+        
+        # torch.unique gives back two arguments = 
+        # (sorted array of unique elements that are in the encoding_indices array) and
+        # (number of occurances of each i-th element in the sorted array without duplicates in the encoding_indices array)
+        estimate_codebook_words, estimate_codebook_words_freq = torch.unique(input = encoding_indices,#encoding_indices.detach(),
+                                                                            sorted=True, 
+                                                                            return_inverse=False,
+                                                                            return_counts=True,
+                                                                            dim=0)
+        
+        
+        # create a zero K-sized array of probabilitites associated of a word occuring (i.e. being used in the coding) [vector of size K]
+        estimate_codebook_words_prob = torch.zeros(self.model.VQ.K, device=self.model.device)
+        
+        # update probabilitites with freq. of the occuring of the codebook words [vector of size K]
+        estimate_codebook_words_prob[estimate_codebook_words.view(-1)] = estimate_codebook_words_freq.view(-1).float()
+        
+        # normalize probability so that it sums up to 1 [vector of size K]
+        #estimate_codebook_words_prob = estimate_codebook_words_freq.detach() / torch.sum(estimate_codebook_words_freq.detach())  #not this
+        estimate_codebook_words_prob = estimate_codebook_words_prob.detach() / torch.sum(estimate_codebook_words_prob.detach()) #use this
+        
+        # calculate the log2(.) of probabilitites [vector of size K]
+        log_estimate_codebook_words_prob = torch.log2(estimate_codebook_words_prob + 1e-10)
+        
+        # estimate (calculate) the entropy of the codewords in bits (log2 base) [scalar value]
+        estimate_codebook_words_entropy_bits = - torch.sum(estimate_codebook_words_prob * log_estimate_codebook_words_prob)
+        
+        # calculate the rest of estimators to estimate perplexity = exp(entropy of codewords inside codebook E) [scalar value]
+        estimate_codebook_words = 2**(estimate_codebook_words_entropy_bits)
+        
+
+        encoding_indices_as_images = encoding_indices.view(B_e, 1, H_e, W_e)
+        
+        # for every image in the input batch plot three subplots on next to each other:
+        # original image
+        # Zq indices (discretized Ze)
+        for i in range(B):
+            plt.subplot(1, 3, 1)
+            plt.imshow(input[i, :, :, :])
+            plt.title(f"{i+1}. input image of size ({1},{C},{H},{W})")
+            plt.axis("off")
+
+            plt.subplot(1, 3, 2)
+            plt.imshow(encoding_indices_as_images[i, 0, :, :])
+            plt.title(f"Zq indices on {i+1}. image - image of the size ({1},{1},{H_e},{W_e})")
+            plt.axis("off")
+            plt.show()
+            
+            plt.subplot(1, 3, 3)
+            plt.plot(np.array(1,1+self.model.VQ.K), estimate_codebook_words_prob)
+            plt.title(f"Codebook usage hisogram on {i+1}. image\n" + \
+                      f"(estimated entropy = {estimate_codebook_words_entropy_bits : .1f} bits; estimated perplexity = {estimate_codebook_words : .1f} )")
+            plt.axis("off")
+            plt.show()
         

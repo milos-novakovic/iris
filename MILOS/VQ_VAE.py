@@ -101,22 +101,23 @@ class VectorQuantizer(nn.Module):
         # BHWC -> BCHW
         Zq = Zq_tensor.permute(0, 3, 1, 2).contiguous()
         
-        # create a zero K-sized array of probabilitites associated of a word occuring (i.e. being used in the coding)
+        # create a zero K-sized array of probabilitites associated of a word occuring (i.e. being used in the coding) [vector of size K]
         estimate_codebook_words_prob = torch.zeros(self.K, device=inputs.device)
         
-        # update probabilitites with freq. of the occuring of the codebook words
+        # update probabilitites with freq. of the occuring of the codebook words [vector of size K]
         estimate_codebook_words_prob[estimate_codebook_words.view(-1)] = estimate_codebook_words_freq.view(-1).float()
         
-        # normalize probability so that it sums up to 1
-        estimate_codebook_words_prob = estimate_codebook_words_freq.detach() / torch.sum(estimate_codebook_words_freq.detach())
+        # normalize probability so that it sums up to 1 [vector of size K]
+        #estimate_codebook_words_prob = estimate_codebook_words_freq.detach() / torch.sum(estimate_codebook_words_freq.detach())  #not this
+        estimate_codebook_words_prob = estimate_codebook_words_prob.detach() / torch.sum(estimate_codebook_words_prob.detach()) #use this
         
-        # calculate the log2(.) of probabilitites
+        # calculate the log2(.) of probabilitites [vector of size K]
         log_estimate_codebook_words_prob = torch.log2(estimate_codebook_words_prob + 1e-10)
         
-        # estimate (calculate) the entropy of the codewords in bits (log2 base)
+        # estimate (calculate) the entropy of the codewords in bits (log2 base) [scalar value]
         estimate_codebook_words_entropy_bits = - torch.sum(estimate_codebook_words_prob * log_estimate_codebook_words_prob)
         
-        # calculate the rest of estimators to estimate perplexity = exp(entropy of codewords inside codebook E)
+        # calculate the rest of estimators to estimate perplexity = exp(entropy of codewords inside codebook E) [scalar value]
         estimate_codebook_words = 2**(estimate_codebook_words_entropy_bits)
         
         return e_and_q_latent_loss, Zq, e_latent_loss.item(), q_latent_loss.item(), estimate_codebook_words.item()

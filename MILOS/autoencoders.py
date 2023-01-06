@@ -299,7 +299,7 @@ zero_min_one_max_transform = transforms.Compose([
 minus_one_min_one_max_transform = transforms.Compose([
     transforms.Normalize(mean = [-255./2., -255./2., -255./2.],
                           std  = [255./2., 255./2., 255./2.])
-    ]) # OUTPUT TANH of DNN
+    ]) # OUTPUT (1/2)*TANH of DNN
 
 # Pick one transform that is applied
 TRANSFORM_IMG = zero_min_one_max_transform#zero_mean_unit_std_transform # zero_min_one_max_transform
