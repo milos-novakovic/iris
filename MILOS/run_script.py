@@ -17,21 +17,21 @@ import numpy as np
 #K_BIT_MIN, K_BIT_MAX = 1 , 22#and this is the max!
 #K_BIT_MIN, K_BIT_MAX = 6,11#8,11 #10 , 20
 # setK to be less than 6bits => K_BIT_MIN, K_BIT_MAX = 1,5
-K_BIT_MIN, K_BIT_MAX = 1,5
+K_BIT_MIN, K_BIT_MAX = 1,6
 
 # countinous vq-vae learns with K=512 D=256 and M=2
-D_array = np.array([64])#trying 128 #64 is ok #np.array([256, 1024, 512, 128, 64, 32, 16, 8, 4]) #np.array([512, 256, 128, 64, 32, 16, 8, 4])  #np.array([256, 128, 64, 32])
+D_array =np.array([32, 16, 8]) #np.array([64])#trying 128 #64 is ok #np.array([256, 1024, 512, 128, 64, 32, 16, 8, 4]) #np.array([512, 256, 128, 64, 32, 16, 8, 4])  #np.array([256, 128, 64, 32])
 #M_array = np.array([0,1,3,7]) #np.array([1, 0]) #np.array([0, 1, 3])   #np.array([1, 2, 3, 4, 5, 6])
-# set M_array only to 4x4, i.e., M = 3 => 
-M_array = np.array([3])
+# set M_array only to 4x4, i.e., M = 3 =>   
+M_array = np.array([1, 3])
 K_array = 2** np.arange(K_BIT_MIN, K_BIT_MAX+1)#2** np.array([6,7,8,9,10,11,12,13])#2** np.arange([K_BIT_MIN, K_BIT_MAX+1])# 2** np.array([12])  #2 ** np.arange(K_BIT_MIN, K_BIT_MAX + 1)    # from 1 bit to 19bits (ground truth is 14bits)
 K_array = -np.sort(-K_array)
 M_array = -np.sort(-M_array)
-D_array = -np.sort(-D_array)
+#D_array = -np.sort(-D_array)
 
 beta_array = np.array([0.25]) #np.arrange(0,2.25,0.25)#np.array([0.15, 0.25, 0.65, 1.15, 1.65])
 max_channel_number_array = np.array([128,256])
-change_channel_size_across_layers_array = [False, True]# [True, False] this was for first 96 models
+change_channel_size_across_layers_array = [True, False]# this was for first 96 models
 
 # also differes for different number of EPOCHS!!!
 
@@ -41,7 +41,7 @@ change_channel_size_across_layers_array = [False, True]# [True, False] this was 
 # for M = 1
 # K_BIT_MIN, K_BIT_MAX = 1 , 15 
 
-run_id=300#0
+run_id=400#0
 input_bits=14
 # to avoid this error:
 # Error: mkl-service + Intel(R) MKL: MKL_THREADING_LAYER=INTEL is incompatible with libgomp.so.1 library.
@@ -75,7 +75,7 @@ for change_channel_size_across_layers in change_channel_size_across_layers_array
                     for d in D_array:
                         run_id += 1
                         
-                        # if run_id <= 270: # use only when simulation breaks, and you have to re-run it from some specific run_id
+                        # if k!= 2 or run_id == 305 : # use only when simulation breaks, and you have to re-run it from some specific run_id
                         #     continue
                         compressed_number_of_bits_per_image = int(np.ceil((m+1)**2 * np.log2(k)))
                         

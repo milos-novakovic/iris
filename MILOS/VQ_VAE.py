@@ -9,12 +9,33 @@ class VectorQuantizer(nn.Module):
         self.D = args_VQ['D']
         self.K = args_VQ['K']
         self.beta = args_VQ['beta']
+        self.M = args_VQ['M']
         
         self.E = nn.Embedding(self.K, self.D)
         self.E.weight.data.uniform_(-1/self.K, 1/self.K)
         
+        
+        #self.token_usage = torch.zeros(size = (self.M+1, self.M+1)) # (M+1) x (M+1) matrix, where each element is the number of that particular (row,col)-position token used
+        
+        # Try this
+        # taken from "Vector-quantized Image Modeling with Improved VQGAN" paper from ICLR (2022) by Jiahui Yu et al.
+        
+        # self.codebook_distribution_initialization = args_VQ['codebook_distribution_initialization']
+        # if self.codebook_distribution_initialization == 'uniform':
+        #    self.E.weight.data.uniform_(-1/self.K, 1/self.K)
+        # elif self.codebook_distribution_initialization == 'standard_normal':
+        #    self.E.weight.data.normal_()
+        #
+        
+        #self.requires_normalization_with_sphere_projection = args_VQ['requires_normalization_with_sphere_projection']
+        
+        
+        
+        
         # specifices the usage of the VQ-VAE dictionary (codebook) E updates with Exponential Moving Average (EMA)
         self.use_EMA = args_VQ['use_EMA']
+        
+
         
         if self.use_EMA:
             # decay in the Exp. Moving Average
@@ -40,6 +61,13 @@ class VectorQuantizer(nn.Module):
         
         # Flatten input = dims (B*H*W) x D
         Ze = Ze_tensor.view(-1, self.D)
+                
+        # add normalization (i.e. l2-sphere projection) F.normalize(x, dim=-1)
+        # taken from "Vector-quantized Image Modeling with Improved VQGAN" paper from ICLR (2022) by Jiahui Yu et al.
+        # if self.requires_normalization_with_sphere_projection:
+        #   Ze = F.normalize(input = Ze, p = 2, dim = -1) # since Ze tensor is of shape BHWC we will use last chanell dimension (dim = -1) then all of the B*H*W of C-dim. non-quantized encoded latent vecotrs \vec{Z_e} is going to be normlized
+        #   self.E.weight = F.normalize(input = self.E.weight, p = 2, dim = -1) # since Zq tensor is of shape BHWC we will use last chanell dimension (dim = -1) then all of the B*H*W of C-dim. quantized encoded latent vecotrs \vec{Z_q} is going to be normlized
+        
         
         # Calculate distances matrix D = dims (B*H*W) x K
         D = (torch.sum(Ze**2, dim=1, keepdim=True) # sum across axis 1 matrix dims (but keepdims) = [(B*H*W) x D] -> column (B*H*W)-sized vector -> torch broadcast to same K-rows to get matrix = dims (B*H*W) x K
@@ -50,9 +78,15 @@ class VectorQuantizer(nn.Module):
         # Encoding indices = dims (B*H*W) x 1
         encoding_indices = torch.argmin(D, dim=1).unsqueeze(1)
         
+        # go into the debugger here
+        #encoding_indices_per_position = encoding_indices.detach().view(Ze_tensor_shape[0], Ze_tensor_shape[1], Ze_tensor_shape[2])# size = B, W, H
+        # encoding_indices_per_position_words, encoding_indices_per_position_freq = torch.unique(input = encoding_indices_per_position, sorted=True, return_inverse=False, return_counts=True, dim=0)
+        #self.token_usage[encoding_indices_per_position_words] += encoding_indices_per_position_freq
+        
         # from embedding matrix E (dims K x D) pick (B*H*W)-number of vectors 
         # put it into original shape of the tensor that VQ got from Encoder, i.e. Ze_tensor_shape
         Zq_tensor = self.E(encoding_indices).view(Ze_tensor_shape)# size = [B, H, W, C]
+        
         
         # calculate the avg. estimated probably of the quantized index 1,..,K occuring
         # https://pytorch.org/docs/stable/generated/torch.unique.html 
@@ -218,7 +252,7 @@ class Encoder(nn.Module):
         # input to the residual stack already has ReLU at the input, 
         # so we dont put it here (applying ReLU two times does not change anything but increases the computational time)
         self.pre_residual_stack = nn.Conv2d(in_channels=args_encoder['pre_residual_stack_conv_Cin'], #128 
-                                                out_channels=args_encoder['pre_residual_stack_conv_Cout'], #1228
+                                                out_channels=args_encoder['pre_residual_stack_conv_Cout'], #128
                                                 kernel_size=args_encoder['pre_residual_stack_conv_k'],#3
                                                 stride=args_encoder['pre_residual_stack_conv_s'],#1
                                                 padding=args_encoder['pre_residual_stack_conv_p'])#3
@@ -231,6 +265,16 @@ class Encoder(nn.Module):
                                                 kernel_size=args_encoder['channel_adjusting_conv_k'],#1
                                                 stride=args_encoder['channel_adjusting_conv_s'],#1
                                                 padding=args_encoder['channel_adjusting_conv_p'])#0
+        
+        # Try this
+        # taken from "Vector-quantized Image Modeling with Improved VQGAN" paper from ICLR (2022) by Jiahui Yu et al.
+        # self.requires_projection = args_encoder['D'] != args_encoder['D_e']
+        # if self.requires_projection:
+            # self.D_e = args_encoder['D_e']
+            # self.D = args_encoder['D']
+            # self.project_in = nn.Linear(in_features = self.D_e, out_features = self.D, bias=True, device=None, dtype=None)# if self.requires_projection else nn.Identity() 
+        
+        
         #if args_encoder['M'] == 0:
             # First we calculate the padding
             #padding = (0,1,0,1) #['W_left'], ['Padding_W_right'], ['Padding_H_top'], ['Padding_H_bottom']
@@ -241,6 +285,14 @@ class Encoder(nn.Module):
         x = self.pre_residual_stack(x)
         x = self.residual_stack(x)
         x = self.channel_adjusting_conv(x)
+        
+        # Try this
+        # taken from "Vector-quantized Image Modeling with Improved VQGAN" paper from ICLR (2022) by Jiahui Yu et al.
+        # if self.requires_projection:
+            # B_e, _, H_e, W_e = x.shape
+            # x = self.project_in(x.view(-1, self.D_e))
+            # x = x.view(B_e, self.D, H_e, W_e)
+        
         #if self.args_encoder['M'] == 0:
             #x = self.zeropad1(x)
         return x
@@ -248,6 +300,18 @@ class Encoder(nn.Module):
 class Decoder(nn.Module):
     def __init__(self, args_decoder, res_block_args):
         super(Decoder, self).__init__()
+        
+        
+        
+        # Try this
+        # taken from "Vector-quantized Image Modeling with Improved VQGAN" paper from ICLR (2022) by Jiahui Yu et al.
+        # self.requires_projection = args_decoder['D'] != args_decoder['D_e']
+        # if self.requires_projection:
+            # self.D_e = args_decoder['D_e']
+            # self.D = args_decoder['D']
+            # self.project_out = nn.Linear(in_features = self.D, out_features = self.D_e, bias=True, device=None, dtype=None)# if self.requires_projection else nn.Identity() 
+        
+        
         
         # Do not add ReLU() activation function layer to the channel_adjusting_conv CNN
         # input to the residual stack already has ReLU at the input, 
@@ -295,6 +359,13 @@ class Decoder(nn.Module):
         #                                                                 padding=args_decoder['trans_conv2_p'])#1
         #                                             )
     def forward(self, x):
+        # Try this
+        # taken from "Vector-quantized Image Modeling with Improved VQGAN" paper from ICLR (2022) by Jiahui Yu et al.
+        # if self.requires_projection:
+            # B_e, _, H_e, W_e = x.shape
+            # x = self.project_out(x.view(-1, self.D))
+            # x = x.view(B_e, self.D_e, H_e, W_e)
+        
         x = self.channel_adjusting_conv(x)
         x = self.residual_stack(x)
         x = self.sequential_trans_convs(x)    

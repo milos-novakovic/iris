@@ -672,7 +672,16 @@ else:
     ##########################    
     # Use a pretrained model #
     ########################## 
-    current_time_str = "2022_12_28_00_35_37" #"2022_12_25_21_47_48" #"2022_12_15_13_45_59"#"2022_12_15_02_13_36"#"2022_12_03_19_39_08"#'2022_12_02_17_59_16' # 17h 13min 14 sec 20th Nov. 2022
+    if run_id == 305:
+        current_time_str = "2023_01_07_22_38_36"
+    elif run_id == 310:
+        current_time_str = "2023_01_08_09_56_23"
+    elif run_id == 315:
+        current_time_str = "2023_01_08_13_58_08"
+    elif run_id == 320:
+        current_time_str = "2023_01_08_18_06_19"
+    else:
+        current_time_str = "2022_12_28_00_35_37" #"2022_12_25_21_47_48" #"2022_12_15_13_45_59"#"2022_12_15_02_13_36"#"2022_12_03_19_39_08"#'2022_12_02_17_59_16' # 17h 13min 14 sec 20th Nov. 2022
     
     # load model that was trained at newly given current_time_str 
     trainer.load_model(current_time_str = current_time_str, 
@@ -786,7 +795,8 @@ trainer.visualize_model_as_graph_image()
 ################################################
 ### Training & Validation metrics visualized ###
 ################################################
-trainer.plot_perlexity()
+if not USE_PRETRAINED_VANILLA_AUTOENCODER:
+    trainer.plot_perlexity()
 
 trainer.codebook_visualization()
 

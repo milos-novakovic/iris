@@ -101,6 +101,7 @@ args_VQ['beta'] = beta #64 #embedding dimension
 args_VQ['M'] = M
 args_VQ['use_EMA'] = False #True#False
 args_VQ['gamma'] = 0.99 # float number between [0,1)
+#args_VQ['requires_normalization_with_sphere_projection'] = False
 encoder_channel_number_in_hidden_layers = max_channel_number#64 #64 #128 #128 #256
 decoder_channel_number_in_hidden_layers = max_channel_number#64 #64 #128 #128 #256
 res_blocks_channel_number_in_hidden_layers = 32
@@ -322,6 +323,22 @@ res_block_args_decoder['block_size'] = res_block_size #2
 res_block_args_decoder['C_in'] = args_decoder['channel_adjusting_conv_Cout'] #args_encoder['conv3_Cout'] # 128
 res_block_args_decoder['C_mid'] = res_blocks_channel_number_in_hidden_layers#32
 
+
+
+# Linear Projection from D_e to d
+# Try this
+# taken from "Vector-quantized Image Modeling with Improved VQGAN" paper from ICLR (2022) by Jiahui Yu et al.
+
+# args_encoder['D_e'] = 64 # CHANGE THIS TO A HIGER VALUE OF D (usually better recon. quality when D_e > D)
+# args_encoder['D'] = D
+
+# args_decoder['requires_projection'] = args_encoder['requires_projection']
+# args_decoder['D_e'] = args_encoder['D_e']
+# args_decoder['D'] = args_encoder['D']
+
+
+# Normalization (L2-Sphere projection)
+# args_VQ['codebook_distribution_initialization'] = 'uniform' # or 'standard_normal'
 
 
 
