@@ -74,9 +74,9 @@ for change_channel_size_across_layers in change_channel_size_across_layers_array
                 for beta in beta_array:
                     for d in D_array:
                         run_id += 1
-                        
-                        # if k!= 2 or run_id == 305 : # use only when simulation breaks, and you have to re-run it from some specific run_id
-                        #     continue
+                        # do it again for 433
+                        if run_id !=433 and run_id <= 459: # use only when simulation breaks, and you have to re-run it from some specific run_id
+                            continue#
                         compressed_number_of_bits_per_image = int(np.ceil((m+1)**2 * np.log2(k)))
                         
                         # if compressed_number_of_bits_per_image > 50:

@@ -21,37 +21,6 @@ from models import *
 from mpl_toolkits.axes_grid1 import ImageGrid
 
 
-# This function takes as an input the images to reconstruct
-# and the name of the model with which the reconstructions
-# are performed
-def to_img(x, compose_transforms = None):
-    # x dim = (N,C,H,W)
-    if compose_transforms == None:
-        return x
-    
-    #np.save('./DATA/RGB_mean.npy', RGB_mean) 
-    #RGB_mean = np.load('./DATA/RGB_mean.npy')
-    #RGB_std = np.load('./DATA/RGB_std.npy')
-    RGB_mean = compose_transforms.transforms[0].mean
-    RGB_std = compose_transforms.transforms[0].std
-    
-    R_mean, G_mean, B_mean = RGB_mean[0], RGB_mean[1], RGB_mean[2]
-    R_std, G_std, B_std = RGB_std[0], RGB_std[1], RGB_std[2]
-    
-    MIN_PIXEL_VALUE, MAX_PIXEL_VALUE = 0,255
-    # red chanel of the image
-    x[:, 0, :, :] =  R_std * x[:, 0, :, :] + R_mean
-    x[:, 0, :, :] = x[:, 0, :, :].clamp(MIN_PIXEL_VALUE, MAX_PIXEL_VALUE)
-    # green chanel of the image
-    x[:, 1, :, :] =  G_std * x[:, 1, :, :] + G_mean
-    x[:, 1, :, :] = x[:, 1, :, :].clamp(MIN_PIXEL_VALUE, MAX_PIXEL_VALUE)
-    # blue chanel of the image
-    x[:, 2, :, :] =  B_std * x[:, 2, :, :] + B_mean
-    x[:, 2, :, :] = x[:, 2, :, :].clamp(MIN_PIXEL_VALUE, MAX_PIXEL_VALUE)
-    
-    x = np.round(x) #x = np.round(x*255.)
-    x = x.int()#astype(int)
-    return x
 
 # show/plot top-N worst reconstructed images
 def show(original_imgs, reconstructed_imgs, imgs_ids, imgs_losses, savefig_path):
@@ -671,7 +640,9 @@ if not USE_PRETRAINED_VANILLA_AUTOENCODER:
 else:
     ##########################    
     # Use a pretrained model #
-    ########################## 
+    ##########################
+    trainer.epoch_ids_PCA = list(range( int(0.05*trainer.NUM_EPOCHS), trainer.NUM_EPOCHS + 1, int(0.05*trainer.NUM_EPOCHS)))
+    
     if run_id == 305:
         current_time_str = "2023_01_07_22_38_36"
     elif run_id == 310:
@@ -680,6 +651,8 @@ else:
         current_time_str = "2023_01_08_13_58_08"
     elif run_id == 320:
         current_time_str = "2023_01_08_18_06_19"
+    elif run_id == 999:
+        current_time_str = "2023_01_12_01_32_41"
     else:
         current_time_str = "2022_12_28_00_35_37" #"2022_12_25_21_47_48" #"2022_12_15_13_45_59"#"2022_12_15_02_13_36"#"2022_12_03_19_39_08"#'2022_12_02_17_59_16' # 17h 13min 14 sec 20th Nov. 2022
     
@@ -719,26 +692,33 @@ else:
         
         # Validation Loss data per term
         trainer.val_multiple_losses_avg[loss_term]   = np.load(trainer.val_multiple_losses_avg_path[loss_term])
+    
+    # Load Perplexity over epochs during training
+    trainer.train_metrics, trainer.val_metrics = {}, {}    
+    trainer.train_metrics_perplexity_path = trainer.main_folder_path + '/' + trainer.model_name + '_train_perplexity_' + trainer.current_time_str + '.npy'
+    trainer.val_metrics_perplexity_path = trainer.main_folder_path + '/' + trainer.model_name + '_val_perplexity_' + trainer.current_time_str + '.npy'
+    trainer.train_metrics['perplexity'] = np.load(trainer.train_metrics_perplexity_path)
+    trainer.val_metrics['perplexity'] = np.load(trainer.val_metrics_perplexity_path)
 
-######################    
-# Testing the model #
-######################
+#########################
+### Testing the model ###
+#########################
 loss_fn = trainer.loss_fn
 loss_fn.to(trainer.device)
 trainer.test() 
 
-######################    
+#############################################################################
 # Plot train and validation avergae loss across mini-batch across epochs #
 # Plot Test Loss for every sample in the Test set #
-######################
+#############################################################################
 trainer.plot()
 
-######################    
+#############################################################################
 # Plot test images reconstruction losses
 # And for "labels" use different shape features to see  
 # which shape features did autoencoder learned the best/worst
 # (i.e. what is the easiest/hardest to learn from persepctive of autoencoder)
-######################
+#############################################################################
 shape_features_of_interest = [
                             'FILL_NOFILL',
                             'SHAPE_TYPE_SPACE',
@@ -752,37 +732,37 @@ shape_features_of_interest = [
 for shape_feature_of_interest in shape_features_of_interest:
     trainer.scatter_plot_test_images_with_specific_classes(shape_features_of_interest = [shape_feature_of_interest])
 
-######################    
+############################################################
 # Plot top-N worst reconstructed test images
 # [with their original test images side by side
 # and rank them from worst (highest reconstruction loss value)
 # to best reconstructed test image]
-######################
+############################################################
 TOP_WORST_RECONSTRUCTED_TEST_IMAGES = 50
 trainer.get_worst_test_samples(TOP_WORST_RECONSTRUCTED_TEST_IMAGES)
 trainer.model.eval()
-visualise_output(images             = trainer.top_images, 
+visualise_output(images             = trainer.worst_top_images, 
                  model              = trainer.model,
                  compose_transforms = TRANSFORM_IMG,
-                 imgs_ids           = trainer.imgs_ids,
-                 imgs_losses        = trainer.imgs_losses,
+                 imgs_ids           = trainer.worst_imgs_ids,
+                 imgs_losses        = trainer.worst_imgs_losses,
                  savefig_path       = trainer.main_folder_path + '/WORST_RECONSTRUCTED_TEST_IMAGES.png',
                  device = trainer.device)
 
-######################    
+############################################################
 # Plot top-N best reconstructed test images
 # [with their original test images side by side
 # and rank them from best (lowest reconstruction loss value)
 # to worst reconstructed test image]
-######################
+############################################################
 TOP_BEST_RECONSTRUCTED_TEST_IMAGES = 50
 trainer.get_best_test_samples(TOP_BEST_RECONSTRUCTED_TEST_IMAGES)
 trainer.model.eval()
-visualise_output(images             = trainer.top_images, 
+visualise_output(images             = trainer.best_top_images, 
                  model              = trainer.model,
                  compose_transforms = TRANSFORM_IMG,
-                 imgs_ids           = trainer.imgs_ids,
-                 imgs_losses        = trainer.imgs_losses,
+                 imgs_ids           = trainer.best_imgs_ids,
+                 imgs_losses        = trainer.best_imgs_losses,
                  savefig_path       = trainer.main_folder_path + '/BEST_RECONSTRUCTED_TEST_IMAGES.png',
                  device = trainer.device)
 
@@ -798,8 +778,21 @@ trainer.visualize_model_as_graph_image()
 if not USE_PRETRAINED_VANILLA_AUTOENCODER:
     trainer.plot_perlexity()
 
+
+#####################################################################
+### Codebook (a matrix of codewords) and Tokens Z_Q visualization ###
+#####################################################################
 trainer.codebook_visualization()
 
+trainer.plot_codebook_PCA()
+
+trainer.visualize_discrete_codes(compose_transforms = TRANSFORM_IMG, dataset_str = 'test')
+
+
+
+###################################################################################
+### Logging of Results (especially useful when training large number of models) ###
+###################################################################################
 models_param_number_fn = lambda model : sum(p.numel() for p in model.parameters() if p.requires_grad)
 year = trainer.current_time_str[0:4]
 month = trainer.current_time_str[5:7]
@@ -888,6 +881,7 @@ results_df = pd.DataFrame({
     'true_entropy':[np.log2(K)]
 })
 
+# saving of the log. results in a csv file
 log_results_file_path_name = './log_results/log_results.csv'
 with open(log_results_file_path_name, 'a') as f:
     results_df.to_csv(f, index = False, header=f.tell()==0)

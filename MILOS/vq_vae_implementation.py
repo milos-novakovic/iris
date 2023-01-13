@@ -101,7 +101,8 @@ args_VQ['beta'] = beta #64 #embedding dimension
 args_VQ['M'] = M
 args_VQ['use_EMA'] = False #True#False
 args_VQ['gamma'] = 0.99 # float number between [0,1)
-#args_VQ['requires_normalization_with_sphere_projection'] = False
+args_VQ['requires_normalization_with_sphere_projection'] = False
+
 encoder_channel_number_in_hidden_layers = max_channel_number#64 #64 #128 #128 #256
 decoder_channel_number_in_hidden_layers = max_channel_number#64 #64 #128 #128 #256
 res_blocks_channel_number_in_hidden_layers = 32

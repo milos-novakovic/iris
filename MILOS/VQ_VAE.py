@@ -11,6 +11,8 @@ class VectorQuantizer(nn.Module):
         self.beta = args_VQ['beta']
         self.M = args_VQ['M']
         
+        self.output_whole_quantization_process = False
+        
         self.E = nn.Embedding(self.K, self.D)
         self.E.weight.data.uniform_(-1/self.K, 1/self.K)
         
@@ -27,7 +29,7 @@ class VectorQuantizer(nn.Module):
         #    self.E.weight.data.normal_()
         #
         
-        #self.requires_normalization_with_sphere_projection = args_VQ['requires_normalization_with_sphere_projection']
+        self.requires_normalization_with_sphere_projection = args_VQ['requires_normalization_with_sphere_projection']
         
         
         
@@ -62,12 +64,13 @@ class VectorQuantizer(nn.Module):
         # Flatten input = dims (B*H*W) x D
         Ze = Ze_tensor.view(-1, self.D)
                 
-        # add normalization (i.e. l2-sphere projection) F.normalize(x, dim=-1)
-        # taken from "Vector-quantized Image Modeling with Improved VQGAN" paper from ICLR (2022) by Jiahui Yu et al.
-        # if self.requires_normalization_with_sphere_projection:
-        #   Ze = F.normalize(input = Ze, p = 2, dim = -1) # since Ze tensor is of shape BHWC we will use last chanell dimension (dim = -1) then all of the B*H*W of C-dim. non-quantized encoded latent vecotrs \vec{Z_e} is going to be normlized
-        #   self.E.weight = F.normalize(input = self.E.weight, p = 2, dim = -1) # since Zq tensor is of shape BHWC we will use last chanell dimension (dim = -1) then all of the B*H*W of C-dim. quantized encoded latent vecotrs \vec{Z_q} is going to be normlized
         
+        #    add normalization (i.e. l2-sphere projection) F.normalize(x, dim=-1)
+        #    taken from "Vector-quantized Image Modeling with Improved VQGAN" paper from ICLR (2022) by Jiahui Yu et al.
+        if self.requires_normalization_with_sphere_projection:
+            Ze = F.normalize(input = Ze, p = 2, dim = -1) # since Ze tensor is of shape BHWC we will use last chanell dimension (dim = -1) then all of the B*H*W of C-dim. non-quantized encoded latent vecotrs \vec{Z_e} is going to be normlized 
+            self.model.VQ.E.weight = F.normalize(input = self.model.VQ.E.weight, p = 2, dim = -1) # since Zq tensor is of shape BHWC we will use last chanell dimension (dim = -1) then all of the B*H*W of C-dim. quantized encoded latent vecotrs \vec{Z_q} is going to be normlized
+
         
         # Calculate distances matrix D = dims (B*H*W) x K
         D = (torch.sum(Ze**2, dim=1, keepdim=True) # sum across axis 1 matrix dims (but keepdims) = [(B*H*W) x D] -> column (B*H*W)-sized vector -> torch broadcast to same K-rows to get matrix = dims (B*H*W) x K
@@ -154,7 +157,10 @@ class VectorQuantizer(nn.Module):
         # calculate the rest of estimators to estimate perplexity = exp(entropy of codewords inside codebook E) [scalar value]
         estimate_codebook_words = 2**(estimate_codebook_words_entropy_bits)
         
-        return e_and_q_latent_loss, Zq, e_latent_loss.item(), q_latent_loss.item(), estimate_codebook_words.item()
+        if self.output_whole_quantization_process:
+            return e_and_q_latent_loss, Zq, e_latent_loss.item(), q_latent_loss.item(), estimate_codebook_words.item(), encoding_indices.detach(), estimate_codebook_words_freq.detach(), estimate_codebook_words_prob.detach(), inputs.detach(), D.detach()
+        else:
+            return e_and_q_latent_loss, Zq, e_latent_loss.item(), q_latent_loss.item(), estimate_codebook_words.item()
     
 class Residual(nn.Module):
     def __init__(self, res_block_args):
