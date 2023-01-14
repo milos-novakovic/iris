@@ -3,6 +3,7 @@ from yaml.loader import SafeLoader
 import itertools
 from collections import OrderedDict
 from matplotlib.colors import ListedColormap
+import matplotlib
 import matplotlib.pyplot as plt
 import os
 import numpy as np
@@ -1439,12 +1440,6 @@ class Model_Trainer:
 
         # cast it to np.array type 
         #self.test_loss = np.array(self.test_loss)
-        # print(f'Average test total loss = {np.round(np.mean(self.test_samples_loss['total_loss'])*1e6,0)} e-6')
-        
-        # print(f'Average test total reconstruction loss = {np.round(np.mean(self.test_samples_loss['total_loss'])*1e6,0)} e-6')
-        # print(f'Average test total commitment loss = {np.round(np.mean(self.test_samples_loss['commitment_loss'])*1e6,0)} e-6')
-        # print(f'Average test total VQ loss = {np.round(np.mean(self.test_samples_loss['VQ_codebook_loss'])*1e6,0)} e-6')
-        
         
         # cast to np array
         self.test_samples_loss['test_image_id'] = np.array(self.test_samples_loss['test_image_id'])
@@ -1457,6 +1452,12 @@ class Model_Trainer:
         self.test_metrics['perplexity'] = np.array(self.test_metrics['perplexity'])
         #self.test_metrics_perplexity_path = self.main_folder_path + '/' + self.model_name + '_test_perplexity_' + self.current_time_str + '.npy'
         #np.save(self.test_metrics_perplexity_path, self.test_metrics['perplexity'])
+        
+        print(f"Average test total loss = {self.test_samples_loss['total_loss'].mean() * 1e6 : .0f} e-6")
+        print(f"Average test total reconstruction loss = {self.test_samples_loss['reconstruction_loss'].mean() * 1e6 : .0f} e-6 ({ self.test_samples_loss['reconstruction_loss'].mean()/self.test_samples_loss['total_loss'].mean() *100:.0f} %)")
+        print(f"Average test total commitment loss = {self.test_samples_loss['commitment_loss'].mean() * 1e6 : .0f} e-6 ({ self.test_samples_loss['commitment_loss'].mean()/self.test_samples_loss['total_loss'].mean() *100:.0f} %)")
+        print(f"Average test total VQ loss = {self.test_samples_loss['VQ_codebook_loss'].mean() * 1e6 : .0f} e-6 ({ self.test_samples_loss['VQ_codebook_loss'].mean()/self.test_samples_loss['total_loss'].mean() *100:.0f} %)")
+        
         
         print("Testing Ended")
 
@@ -2118,7 +2119,7 @@ class Model_Trainer:
                     writer.close()
         else:
             plt.savefig(self.main_folder_path + f"/Cummulative_Explained_Variance_PCA/{ str(epoch_id).zfill(digit_size) }_Cumulative_Explained_Variance_PCA.png")
-            
+        plt.close()
             
 
 
@@ -2169,8 +2170,10 @@ class Model_Trainer:
         pass
     
     def visualize_discrete_codes(self, compose_transforms, dataset_str = 'test'):
-        do_it_only_for_top_worst_and_top_best_images = False
-        MAX_NUMBER_OF_IMAGES_TO_COVER =200#None
+        assert(dataset_str in ['train', 'val', 'test'], f"The dataset can only be train, val or test and current dataset is {dataset_str}")
+        
+        create_plot_for_every_image_in_dataset = False
+        MAX_NUMBER_OF_IMAGES_TO_COVER = None#200#None#200#None
         
         # Visualizing the discrete codes from input images input-tensor of size (B, C, H, W)
         digit_size = len(str(len(self.loaders[dataset_str].dataset)))
@@ -2178,15 +2181,21 @@ class Model_Trainer:
 
         if not os.path.exists(self.main_folder_path + '/test_image_PLUS_encoding_counter_per_token_position_PLUS_histogram_of_codewords_usages/'):
             os.mkdir(self.main_folder_path + '/test_image_PLUS_encoding_counter_per_token_position_PLUS_histogram_of_codewords_usages/')
-
-        if not os.path.exists(self.main_folder_path + '/test_image_PLUS_encoding_counter_per_token_position_PLUS_histogram_of_codewords_usages/best_imgs/'):
-            os.mkdir(self.main_folder_path + '/test_image_PLUS_encoding_counter_per_token_position_PLUS_histogram_of_codewords_usages/best_imgs/')
-            
-        if not os.path.exists(self.main_folder_path + '/test_image_PLUS_encoding_counter_per_token_position_PLUS_histogram_of_codewords_usages/worst_imgs/'):
-            os.mkdir(self.main_folder_path + '/test_image_PLUS_encoding_counter_per_token_position_PLUS_histogram_of_codewords_usages/worst_imgs/')
-            
-        if not os.path.exists(self.main_folder_path + '/test_image_PLUS_encoding_counter_per_token_position_PLUS_histogram_of_codewords_usages/_imgs/'):
-            os.mkdir(self.main_folder_path + '/test_image_PLUS_encoding_counter_per_token_position_PLUS_histogram_of_codewords_usages/_imgs/')
+        
+        # best images
+        best_images_full_path = self.main_folder_path + '/test_image_PLUS_encoding_counter_per_token_position_PLUS_histogram_of_codewords_usages/best_imgs/'
+        if not os.path.exists(best_images_full_path):
+            os.mkdir(best_images_full_path)
+        
+        # worst images
+        worst_images_full_path = self.main_folder_path + '/test_image_PLUS_encoding_counter_per_token_position_PLUS_histogram_of_codewords_usages/worst_imgs/'
+        if not os.path.exists(worst_images_full_path):
+            os.mkdir(worst_images_full_path)
+        
+        # all images
+        all_images_full_path =self.main_folder_path + '/test_image_PLUS_encoding_counter_per_token_position_PLUS_histogram_of_codewords_usages/_imgs/' 
+        if not os.path.exists(all_images_full_path):
+            os.mkdir(all_images_full_path)
 
         # for every image in the input batch plot three subplots on next to each other:
         # original image
@@ -2202,52 +2211,26 @@ class Model_Trainer:
         # put loaded model in the evaulation mode
         self.model.eval()
         
-        
-
-        #self.visualize_discrete_codes_output = {}
-        #self.visualize_discrete_codes_output[dataset_str + '_image_id']= []
-        #self.visualize_discrete_codes_output['count_codebook_words_used_in_' + dataset_str] = torch.zeros(self.model.VQ.K, device=self.model.device)#counting words used
-        
-        #self.visualize_discrete_codes_output['count_K_codebook_indices_used_per_token_position_used_in_' + dataset_str] = torch.zeros((self.model.VQ.K, self.model.VQ.M+1,self.model.VQ.M+1), device=self.model.device)#counting words used
-        
-        
-
+        #
         count_of_encoding_indices_per_token_position = torch.zeros((self.model.VQ.K, self.model.VQ.M+1,self.model.VQ.M+1), device='cpu')
-        index_ = -1
-        counter = -1
         
-        top_images = { 'worst': self.worst_top_images, 'best': self.best_top_images}
-        imgs_ids = { 'worst': self.worst_imgs_ids, 'best': self.best_imgs_ids}
-        imgs_losses = { 'worst': self.worst_imgs_losses, 'best': self.best_imgs_losses}
-        imgs_indices = {'worst': -1, 'best': -1}
-        best_worst_flag = ''
+        # counter 0,1,2,3.... across dataset
+        index_ = -1
+        
+        # iterate image by image in the dataset
         for image_batch, image_id_batch in self.loaders[dataset_str]:
-            counter += 1
             if MAX_NUMBER_OF_IMAGES_TO_COVER != None:
-                if counter > MAX_NUMBER_OF_IMAGES_TO_COVER:
+                if index_ > MAX_NUMBER_OF_IMAGES_TO_COVER:
+                    # hard stop at MAX_NUMBER_OF_IMAGES_TO_COVER-th image if MAX_NUMBER_OF_IMAGES_TO_COVER is defined (if MAX_NUMBER_OF_IMAGES_TO_COVER is not None)
                     break
             
-            if do_it_only_for_top_worst_and_top_best_images:
-                #self.worst_top_images, self.worst_imgs_ids , self.worst_imgs_losses
-                #self.best_top_images, self.best_imgs_ids , self.best_imgs_losses
-                if not(image_id_batch in self.best_imgs_ids or image_id_batch in self.worst_imgs_ids):
-                    continue
-                else:
-                    best_worst_flag = 'best' if image_id_batch in self.best_imgs_ids else 'worst'
-                    #imgs_indices[best_worst_flag] += 1
-                    index_ = imgs_indices[imgs_ids[best_worst_flag].index(image_id_batch.item())]
-            else:
-                index_ += 1
             
+            # inc. image counter by 1
+            index_ += 1
             
-            
+            # it has to be image by image (because we are plotting image by image plots) hence batch-size has to be 1
             if self.loaders[dataset_str].batch_size != 1:
                 assert(self.loaders[dataset_str].batch_size == 1, f"Mini-batch size of the test set should be 1, because of visualization and plotting later on in the code.")
-            
-            # remember the test_image_id (i.e. id of the test image)
-            #self.visualize_discrete_codes_output[dataset_str + '_image_id'].append(image_id_batch.item())
-            
-            
             
             with torch.no_grad():
                 # move the image tensor to the device
@@ -2257,9 +2240,12 @@ class Model_Trainer:
                 # output every tensor in the vector quantization process 
                 self.model.VQ.output_whole_quantization_process = True
                 e_and_q_latent_loss, Zq, e_latent_loss, q_latent_loss, estimate_codebook_words, encoding_indices, estimate_codebook_words_freq, estimate_codebook_words_prob, inputs, D  = self.model.VQ(self.model.encoder(image_batch))
+                
                 self.model.VQ.output_whole_quantization_process = False
                 
-                e_and_q_latent_loss, Zq, encoding_indices, estimate_codebook_words_freq, estimate_codebook_words_prob, inputs, D = e_and_q_latent_loss.cpu(), Zq.cpu(), encoding_indices.cpu(), estimate_codebook_words_freq.cpu(), estimate_codebook_words_prob.cpu(), inputs.cpu(), D.cpu()
+                #self.model.VQ(self.model.encoder(image_batch))
+                
+                e_and_q_latent_loss, encoding_indices, estimate_codebook_words_freq, estimate_codebook_words_prob, inputs, D = e_and_q_latent_loss.cpu(), encoding_indices.cpu(), estimate_codebook_words_freq.cpu(), estimate_codebook_words_prob.cpu(), inputs.cpu(), D.cpu()
                 # e_and_q_latent_loss, e_latent_loss, q_latent_loss are scalars
                 # Zq is BCHW tensor
                 # estimate_codebook_words vector of size (K,)
@@ -2274,185 +2260,294 @@ class Model_Trainer:
                     for tokens_column_position in range(self.model.VQ.M + 1):
                         unique_encoding_indices_per_image_per_position, count_of_unique_encoding_indices_per_image_per_position = torch.unique(input = encoding_indices_tensor[:, tokens_row_position, tokens_column_position], sorted=True, return_inverse=False, return_counts=True, dim=0)
                         
+                        # this tensor count_of_encoding_indices_per_token_position is used later to produce other plots so do not deleete it!
                         count_of_encoding_indices_per_token_position[unique_encoding_indices_per_image_per_position.view(-1), tokens_row_position, tokens_column_position] += count_of_unique_encoding_indices_per_image_per_position.view(-1).float()
                         
                         #count_of_encoding_indices_per_image[unique_encoding_indices_per_image_per_position.view(-1), tokens_row_position, tokens_column_position] +=count_of_unique_encoding_indices_per_image_per_position.view(-1).float()
                         # TO DO OBAVEZNO !
                         count_of_encoding_indices_per_image[tokens_row_position, tokens_column_position] = unique_encoding_indices_per_image_per_position.view(-1)[0].float()
 
-                
-                fig, axs = plt.subplots(1,3, figsize=(15,7), gridspec_kw={'width_ratios': [1, 1, 5], 'height_ratios': [1]})
-                
-                #fig.set_size_inches(15, 7)
-                fig.suptitle(f"{best_worst_flag} {index_+1}. image from {dataset_str} dataset", fontsize=20)
+                if (create_plot_for_every_image_in_dataset) or (image_id_batch in self.best_imgs_ids) or (image_id_batch in self.worst_imgs_ids):
+                    fig, axs = plt.subplots(1,4, figsize=(15,6), gridspec_kw={'width_ratios': [1, 1, 1, 1], 'height_ratios': [1]})
+                    #matplotlib.rcParams.update(matplotlib.rcParamsDefault)
+                    #plt.rcParams['text.usetex'] = True
+                    #fig.set_size_inches(15, 7)
+                    fig.suptitle(f"{index_+1}. image from {dataset_str} dataset", fontsize=20)
 
-                #plt.subplot(1, 3, 1)
-                # have to renormalize and show original image here
-                #image_batch_original_img = image_batch_original_img.view(1, image_batch_original_img.size(0), image_batch_original_img.size(1), image_batch_original_img.size(2))
-                image_batch_original_img = to_img(image_batch.cpu(), compose_transforms)
+                    #plt.subplot(1, 3, 1)
+                    # have to renormalize and show original image here
+                    #image_batch_original_img = image_batch_original_img.view(1, image_batch_original_img.size(0), image_batch_original_img.size(1), image_batch_original_img.size(2))
+                    image_batch_original_img = to_img(image_batch.cpu(), compose_transforms)
 
-                axs[0].imshow(np.transpose(image_batch_original_img[0,:,:,:], (1, 2, 0))) # H,W,C
-                axs[0].set_title(f"Original image")
+                    axs[0].imshow(np.transpose(image_batch_original_img[0,:,:,:], (1, 2, 0))) # H,W,C
+                    axs[0].set_title(f"Original {image_batch_original_img.size(1)}x{image_batch_original_img.size(2)}x{image_batch_original_img.size(3)} image " + r"$X$")
+                    axs[0].set_xlabel(r"$W$")
+                    axs[0].set_ylabel(r"$H$")
+                    #plt.subplot(1, 3, 2)
+                    #different heatmaps
+                    #axs[1].imshow(count_of_encoding_indices_per_image)
+                    #axs[1].matshow(count_of_encoding_indices_per_image)
+                    #axs[1].imshow(count_of_encoding_indices_per_image, cmap='hot', interpolation='nearest')
+                    #axs[1] = 
+                    sns.heatmap(data = count_of_encoding_indices_per_image.numpy(), linewidth=0.5, annot=True, ax=axs[1], cbar = False, xticklabels=np.arange(1,2 + self.model.VQ.M), yticklabels=np.arange(1,2 + self.model.VQ.M), square = True)
+                    #plt.show()
+                    # different ways to show heatmap https://stackoverflow.com/questions/33282368/plotting-a-2d-heatmap
 
-                #plt.subplot(1, 3, 2)
-                #axs[1].imshow(count_of_encoding_indices_per_image)
-                #axs[1].matshow(count_of_encoding_indices_per_image)
-                #axs[1].imshow(count_of_encoding_indices_per_image, cmap='hot', interpolation='nearest')
-                #axs[1] = 
-                sns.heatmap(data = count_of_encoding_indices_per_image.numpy(), linewidth=0.5, annot=True, ax=axs[1], cbar = False, xticklabels=np.arange(1,2 + self.model.VQ.M), yticklabels=np.arange(1,2 + self.model.VQ.M), square = True)
-                #plt.show()
-                # different ways to show heatmap https://stackoverflow.com/questions/33282368/plotting-a-2d-heatmap
+                    axs[1].set_title(f"The indices of codebook " + r"$E$" + f"\n({self.model.VQ.M+1}x{self.model.VQ.M+1} {self.model.VQ.D}-dimensional vectors that form " + r"$Z_q$" + f" tensor)")
+                    axs[1].set_xlabel(r"$W_e$")
+                    axs[1].set_ylabel(r"$H_e$")
+                    #axs[1].set_xticks(np.arange(0,1 + self.model.VQ.M))
+                    #axs[1].set_yticks(np.arange(0,1 + self.model.VQ.M))
+                    unique_encoding_indices_per_image, count_of_unique_encoding_indices_per_image = torch.unique(input = count_of_encoding_indices_per_image.view(-1), sorted=True, return_inverse=False, return_counts=True, dim=0)
+                    histogram_unique_encoding_indices_per_image = np.zeros(self.model.VQ.K)
+                    histogram_unique_encoding_indices_per_image[unique_encoding_indices_per_image.view(-1).numpy().astype(int)] = count_of_unique_encoding_indices_per_image.view(-1).numpy().astype(int)
+                    histogram_unique_encoding_indices_per_image = 100*histogram_unique_encoding_indices_per_image/histogram_unique_encoding_indices_per_image.sum()
+                    histogram_unique_encoding_indices_per_image = [float('nan') if x==0 else x for x in histogram_unique_encoding_indices_per_image]
 
-                axs[1].set_title(f"Codebook Token indices")
-                #axs[1].set_xticks(np.arange(0,1 + self.model.VQ.M))
-                #axs[1].set_yticks(np.arange(0,1 + self.model.VQ.M))
-                unique_encoding_indices_per_image, count_of_unique_encoding_indices_per_image = torch.unique(input = count_of_encoding_indices_per_image.view(-1), sorted=True, return_inverse=False, return_counts=True, dim=0)
-                histogram_unique_encoding_indices_per_image = np.zeros(self.model.VQ.K)
-                histogram_unique_encoding_indices_per_image[unique_encoding_indices_per_image.view(-1).numpy().astype(int)] = count_of_unique_encoding_indices_per_image.view(-1).numpy().astype(int)
-                histogram_unique_encoding_indices_per_image = 100*histogram_unique_encoding_indices_per_image/histogram_unique_encoding_indices_per_image.sum()
-                histogram_unique_encoding_indices_per_image = [float('nan') if x==0 else x for x in histogram_unique_encoding_indices_per_image]
-
-                #plt.subplot(1, 3, 3)
-                axs[2].stem(np.arange(0, self.model.VQ.K), histogram_unique_encoding_indices_per_image)
-                axs[2].set_title(f"Histogram in % of used tokens to quantize the original image ("+ r"$\hat{H}(E)$" + f" = {np.log2(estimate_codebook_words) : .1f} bits;" + r"$2^{\hat{H}(E)}$" + f" = {estimate_codebook_words : .1f} )")
-
-                used_codewords = unique_encoding_indices_per_image.cpu().numpy().tolist()
-
-                xticklabels = [ str(idx_) if idx_ in used_codewords else "" for idx_ in range(self.model.VQ.K)]
-
-                #for idx_, xticklabel in enumerate(xticklabels):
-                #    if idx_ in xticklabels:
-                #        xticklabels[idx_] = str(idx_)
-                axs[2].xaxis.set_ticks(np.arange(0, self.model.VQ.K))
-
-                axs[2].set_xticklabels(xticklabels)
-
-                axs[2].yaxis.set_major_formatter(FormatStrFormatter('%.0f'))
-
-                plt.tight_layout()
-
-
-                fig.savefig(self.main_folder_path + f"/test_image_PLUS_encoding_counter_per_token_position_PLUS_histogram_of_codewords_usages/{best_worst_flag}_imgs/{str(index_+1).zfill(digit_size)}_th_test_image_PLUS_encoding_counter_per_token_position_PLUS_histogram_of_codewords_usages.png")
-                plt.close()
-                
-        if not do_it_only_for_top_worst_and_top_best_images:
-            
-            # total number of codewords to code those images per codeword (1...K) in the codebook
-            count_of_encoding_indices = count_of_encoding_indices_per_token_position.sum(dim=2).sum(dim=1).view(-1) # size=(K,)
-            # total number of codewords to code those images is hence count_of_encoding_indices.sum()
-            MAX_OCCURANCES_OF_SINGLE_ENCODING = count_of_encoding_indices.max().item()
-            TOTAL_TOKEN_NUMBER = count_of_encoding_indices.sum().item() # = (number of images) * (M+1)^2
-            
-            
-            #estimate probability of codewords usage
-            prob_count_of_encoding_indices = count_of_encoding_indices/count_of_encoding_indices.sum()
-            log_prob_count_of_encoding_indices = torch.log2(prob_count_of_encoding_indices)
-            entropy_prob_count_of_encoding_indices = - torch.sum(prob_count_of_encoding_indices * log_prob_count_of_encoding_indices)
-            perplexity_prob_count_of_encoding_indices = 2**(entropy_prob_count_of_encoding_indices)
-            
-            entropy_report_str = r"$H(E)$"+ f" = {np.log2(self.model.VQ.K)} bits;  "+r"$\hat{H}(E)$"+f" = {entropy_prob_count_of_encoding_indices :.1f} bits ({entropy_prob_count_of_encoding_indices/np.log2(self.model.VQ.K)*100 :.1f} % of ideal)"
-            perplexity_report_str = r"$2^{H(E)}$"+f" = {self.model.VQ.K};  "+r"$2^{\hat{H}(E)}$"+f" = {perplexity_prob_count_of_encoding_indices :.1f} ({perplexity_prob_count_of_encoding_indices/self.model.VQ.K*100 :.1f} % of ideal)"
-
-            
-            
-            fig, axs = plt.subplots(self.model.VQ.M + 1, self.model.VQ.M + 1, figsize=(16,16), gridspec_kw={'width_ratios': [1] * (self.model.VQ.M + 1) , 'height_ratios': [1] * (self.model.VQ.M + 1)}, sharex = True, sharey=True)
-            title_ = f"count of codebook indices used in the {dataset_str} dataset per token position\n" + entropy_report_str + "\n" + perplexity_report_str
-            fig.suptitle(title_, fontsize=20)
-
-            
-            for tokens_row_position in range(self.model.VQ.M + 1): 
-                for tokens_column_position in range(self.model.VQ.M + 1):
-                    x_axis_histogram_data = np.arange(self.model.VQ.K)
-                    y_axis_histogram_data = count_of_encoding_indices_per_token_position[:, tokens_row_position, tokens_column_position].view(-1).cpu().numpy()
+                    #plot reconstruction
+                    image_batch_recon  = self.model.decoder(Zq)
+                    recon_error = (F.mse_loss(image_batch_recon, image_batch) / self.train_data_variance)
+                    image_batch_recon_img = to_img(image_batch_recon.cpu(), compose_transforms)
+                    axs[2].imshow(np.transpose(image_batch_recon_img[0,:,:,:], (1, 2, 0))) # H,W,C
+                    axs[2].set_title(f"Reconstructed image " + r"$X_{rec}$" + " with loss\n"+ \
+                                    r"$\mathcal{L}$" + f" = {(recon_error.item() + e_and_q_latent_loss.item() )*1e6 :.0f}" + r"$\cdot10^{-6}$=" + "\n" +\
+                                    #f"\n(1/var)||X - X_rec ||^2 ({recon_error.item()*1e6 :.0f}e-6)"+\
+                                    r"$\frac{1}{VAR[X_{train}]} ||X - X_{rec}||^2_2 $" + f" ( = {recon_error.item()*1e6 :.0f}" + r"$\cdot10^{-6}$" + f";{recon_error.item()/(recon_error.item() + e_and_q_latent_loss.item()) * 100. :.0f}%)\n" + \
+                                    #f"\n+ (1+beta)*||Z_e-Z_q||^2 ({e_and_q_latent_loss.item()*1e6 :.0f}e-6)")
+                                    r"$+(1+\beta) ||Z_e - Z_q||^2_2 $" + f" ( = {e_and_q_latent_loss.item()*1e6 :.0f}" + r"$\cdot10^{-6}$" + f";{e_and_q_latent_loss.item()/(recon_error.item() + e_and_q_latent_loss.item()) * 100. :.0f}%)")
+                    axs[2].set_xlabel(r"$W$")
+                    axs[2].set_ylabel(r"$H$")
                     
-                    perplexity_ = 2**(-np.sum((y_axis_histogram_data/y_axis_histogram_data.sum()) * np.log2((1e-12 + y_axis_histogram_data/y_axis_histogram_data.sum()))))
-                    
-                    total_number_of_images = int(np.sum(y_axis_histogram_data))
-                    #axs[tokens_row_position, tokens_column_position].stem(x_axis_histogram_data, y_axis_histogram_data, basefmt=" ", linewidth = 1, markersize = 2, linefmt = ':', markerfmt = 'o', color = 'k')
-                    markerline, stemline, baseline = axs[tokens_row_position, tokens_column_position].stem(x_axis_histogram_data, y_axis_histogram_data, basefmt=" ", linefmt = ':', markerfmt = 'o')
-                    #plt.setp(stemline, linewidth = 1)
-                    #plt.setp(markerline, markersize = 2)
-                    #plt.setp(baseline, linewidth = 0)
-                    
+                    # histogram of current tokens for a current image
+                    markerline, stemline, baseline = axs[3].stem(np.arange(0, self.model.VQ.K), histogram_unique_encoding_indices_per_image, label = 'Token count')
+                    plt.setp(stemline, linewidth = 1)
                     plt.setp(stemline, color = 'k')
                     plt.setp(markerline, markersize = 5)
                     plt.setp(markerline, color = 'k')
                     plt.setp(baseline, color = 'k')
                     
+                    axs[3].plot(np.arange(0, self.model.VQ.K), np.ones(self.model.VQ.K) * (1. / (self.model.VQ.M + 1) ** 2) * 100, color = 'm', label = 'Uniform dist.')
+                    axs[3].set_title(f"Percentage count of {(self.model.VQ.M+1)**2} tokens")
+                    
+                    #axs[3].legend(loc="upper left")
+
+                    used_codewords = unique_encoding_indices_per_image.cpu().numpy().tolist()
+
+                    #xticklabels = [ str(idx_) if idx_ in used_codewords else "" for idx_ in range(self.model.VQ.K)]
+                    #xticklabels = [ ("\n"+x) if x_idx % 2 == 1 else x for x_idx, x in enumerate(xticklabels)]
+                    
+                    xticklabels = []
+                    counter_ = 0
+                    for idx_ in range(self.model.VQ.K):
+                        if idx_ in used_codewords:
+                            counter_ += 1
+                            xticklabels.append(str(idx_) if counter_%2==1 else ("\n" + str(idx_)))
+                        else:
+                            xticklabels.append("")
+                    axs[3].xaxis.set_ticks(np.arange(0, self.model.VQ.K))
+                    axs[3].set_xticklabels(xticklabels, fontdict = {'fontsize' : 8})
+                    plt.setp(axs[3].get_xticklabels(), rotation=30, horizontalalignment='right')
+
+                    
+                    # yticklabels = [y_value for y_value in histogram_unique_encoding_indices_per_image if not(np.isnan(y_value))] 
+                    # yticklabels.append((1. / (self.model.VQ.M + 1) ** 2) * 100) #uniform dist value
+                    # yticklabels = sorted(yticklabels)
+                    # yticklabels = np.unique(np.array(yticklabels))
+                    # yticklabels = [str(round(y_value,1)) for y_value in yticklabels]
+                    # yticklabels = ["0"] + yticklabels # append minimum value of the plot, i.e., 0%
+                    # yticklabels = yticklabels + ["40"] # append minimum value of the plot, i.e., 40%
+                    # axs[3].set_yticklabels(yticklabels)
+                    for x_,y_ in zip(np.arange(0, self.model.VQ.K), histogram_unique_encoding_indices_per_image):
+                        if not(np.isnan(y_)):
+                            axs[3].annotate( f"{y_: .0f}", xy=(x_,y_), xytext=(0,5), textcoords='offset points',ha='center')
                     
                     
-                    axs[tokens_row_position, tokens_column_position].set_title(f"T[{tokens_row_position},{tokens_column_position}] (#={total_number_of_images};"+  r"$2^{\hat{H}(E)}$" +f"={perplexity_ :.1f})")
-                    axs[tokens_row_position, tokens_column_position].set_xlim(left=0, right=self.model.VQ.K)
-                    axs[tokens_row_position, tokens_column_position].set_ylim(bottom=0, top=count_of_encoding_indices_per_token_position.max())
+                    axs[3].set_ylim(bottom=0, top=40)#the top is 40% this can be chaned ! (but if some token is used 40% or more then we are in a serious problem, I think)
+                    axs[3].yaxis.set_major_formatter(FormatStrFormatter('%.0f'))
                     
-                    axs[tokens_row_position, tokens_column_position].plot(np.arange(0, self.model.VQ.K), np.ones(self.model.VQ.K) * (total_number_of_images * 1. / self.model.VQ.K), color = 'm')
+                    axs[3].grid(True)
                     
+                    axs[3].set_xlabel(r"$K$" + f"-sized codebook indices")
+                    axs[3].set_ylabel(f"Rounded percentage token count")
+                    plt.tight_layout()
+
+                    # save for all images
+                    if create_plot_for_every_image_in_dataset:
+                        fig.savefig(all_images_full_path + f"{str(index_+1).zfill(digit_size)}_th_test_image_PLUS_encoding_counter_per_token_position_PLUS_histogram_of_codewords_usages.png")
                     
+                    # do worst/best images split
+                    if image_id_batch in self.best_imgs_ids:
+                        index_in_best_array = self.best_imgs_ids.index(image_id_batch.item())
+                        loss_of_index_in_best_array = self.best_imgs_losses[index_in_best_array]
+                        fig.suptitle(f"{index_in_best_array+1}/{len(self.best_imgs_ids)} best reconstructed images (according to loss func. value) from {dataset_str} dataset", fontsize=20)
+                        fig.savefig(best_images_full_path + f"{str(index_in_best_array+1).zfill(digit_size)}_th_test_image_PLUS_encoding_counter_per_token_position_PLUS_histogram_of_codewords_usages_with_loss{loss_of_index_in_best_array*1e6 : .1f}e-6.png")
+
+                    if image_id_batch in self.worst_imgs_ids:
+                        index_in_worst_array = self.worst_imgs_ids.index(image_id_batch.item())
+                        loss_of_index_in_worst_array = self.worst_imgs_losses[index_in_worst_array]
+                        fig.suptitle(f"{index_in_worst_array+1}/{len(self.worst_imgs_ids)} worst reconstructed images (according to loss func. value) from {dataset_str} dataset", fontsize=20)
+                        fig.savefig(worst_images_full_path + f"{str(index_in_worst_array+1).zfill(digit_size)}_th_test_image_PLUS_encoding_counter_per_token_position_PLUS_histogram_of_codewords_usages_with_loss{loss_of_index_in_worst_array*1e6 : .1f}e-6.png")
                     
+                    plt.close()    
+            
+        # total number of codewords to code those images per codeword (1...K) in the codebook
+        count_of_encoding_indices = count_of_encoding_indices_per_token_position.sum(dim=2).sum(dim=1).view(-1) # size=(K,)
+        # total number of codewords to code those images is hence count_of_encoding_indices.sum()
+        MAX_OCCURANCES_OF_SINGLE_ENCODING = count_of_encoding_indices.max().item()
+        TOTAL_TOKEN_NUMBER = count_of_encoding_indices.sum().item() # = (number of images) * (M+1)^2
+        
+        
+        #estimate probability of codewords usage
+        prob_count_of_encoding_indices = count_of_encoding_indices/count_of_encoding_indices.sum()
+        log_prob_count_of_encoding_indices = torch.log2(1e-12 + prob_count_of_encoding_indices)
+        entropy_prob_count_of_encoding_indices = - torch.sum(prob_count_of_encoding_indices * log_prob_count_of_encoding_indices)
+        perplexity_prob_count_of_encoding_indices = 2**(entropy_prob_count_of_encoding_indices)
+        
+        #entropy_report_str = r"$H(E)$"+ f" = {np.log2(self.model.VQ.K)} bits;  "+r"$\hat{H}(E)$"+f" = {entropy_prob_count_of_encoding_indices :.1f} bits ({entropy_prob_count_of_encoding_indices/np.log2(self.model.VQ.K)*100 :.1f} % of ideal)"
+        #perplexity_report_str = r"$2^{H(E)}$"+f" = {self.model.VQ.K};  "+r"$2^{\hat{H}(E)}$"+f" = {perplexity_prob_count_of_encoding_indices :.1f} ({perplexity_prob_count_of_encoding_indices/self.model.VQ.K*100 :.1f} % of ideal)"
+
+        entropy_report_str = r"$\hat{H}(E)$"+"/"+r"$H(E)$"+ f" = {entropy_prob_count_of_encoding_indices :.1f} / {np.log2(self.model.VQ.K)} bits ({entropy_prob_count_of_encoding_indices/np.log2(self.model.VQ.K)*100 :.1f}%)"
+        perplexity_report_str = r"$2^{\hat{H}(E)}$"+"/"+r"$2^{H(E)}$"+f" = {perplexity_prob_count_of_encoding_indices :.1f} / {self.model.VQ.K} ({perplexity_prob_count_of_encoding_indices/self.model.VQ.K*100 :.1f}%)"
+
+        
+        
+        fig, axs = plt.subplots(self.model.VQ.M + 1, self.model.VQ.M + 1, figsize=(13,13), gridspec_kw={'width_ratios': [1] * (self.model.VQ.M + 1) , 'height_ratios': [1] * (self.model.VQ.M + 1)}, sharex = True, sharey=True)
+        title_ = f"Percentage of codebook indices used in the {int(TOTAL_TOKEN_NUMBER / (self.model.VQ.M + 1)**2)}-sized {dataset_str} dataset per token position\n" + entropy_report_str + "  " + perplexity_report_str + f"[unif. dist. {(1. / self.model.VQ.K) * 100 : .1f}%] "
+        fig.suptitle(title_, fontsize=20)
+
+        #count_of_encoding_indices_per_token_position
+        # will use this as y-axis top limit
+        MAX_PROBABILITY_PERCENTAGE = [count_of_encoding_indices_per_token_position[:, tokens_row_position, tokens_column_position].view(-1).cpu().numpy()  for tokens_row_position in range(self.model.VQ.M + 1) for tokens_column_position in range(self.model.VQ.M + 1)]
+        MAX_PROBABILITY_PERCENTAGE = max([(x/x.sum()*100.).max() for x in MAX_PROBABILITY_PERCENTAGE])
+        for tokens_row_position in range(self.model.VQ.M + 1): 
+            for tokens_column_position in range(self.model.VQ.M + 1):
+                x_axis_histogram_data = np.arange(self.model.VQ.K)
+                y_axis_histogram_data = count_of_encoding_indices_per_token_position[:, tokens_row_position, tokens_column_position].view(-1).cpu().numpy()
+                
+                perplexity_ = 2**(-np.sum((y_axis_histogram_data/y_axis_histogram_data.sum()) * np.log2((1e-12 + y_axis_histogram_data/y_axis_histogram_data.sum()))))
+                
+                total_number_of_images = int(np.sum(y_axis_histogram_data))
+                
+                markerline, stemline, baseline = axs[tokens_row_position, tokens_column_position].stem(x_axis_histogram_data, y_axis_histogram_data / y_axis_histogram_data.sum() * 100, basefmt=" ", linefmt = ':', markerfmt = 'o')
+                #plt.setp(stemline, linewidth = 1)
+                #plt.setp(markerline, markersize = 2)
+                #plt.setp(baseline, linewidth = 0)
+                plt.setp(stemline, color = 'k')
+                plt.setp(markerline, markersize = 5)
+                plt.setp(markerline, color = 'k')
+                plt.setp(baseline, color = 'k')
+                
+                
+                
+                axs[tokens_row_position, tokens_column_position].set_title(f"Token [{tokens_row_position},{tokens_column_position}]  "+  r"$2^{\hat{H}(E)}$" +f"={perplexity_ :.1f}")
+                axs[tokens_row_position, tokens_column_position].set_xlim(left=0, right=self.model.VQ.K)
+                axs[tokens_row_position, tokens_column_position].set_ylim(bottom=0, top=MAX_PROBABILITY_PERCENTAGE+2)#count_of_encoding_indices_per_token_position.max())
+                
+                axs[tokens_row_position, tokens_column_position].plot(np.arange(0, self.model.VQ.K), np.ones(self.model.VQ.K) * (1. / self.model.VQ.K) * 100, color = 'm') # np.ones(self.model.VQ.K) * (total_number_of_images * 1. / self.model.VQ.K)
+                
+                axs[tokens_row_position, tokens_column_position].yaxis.set_major_formatter(FormatStrFormatter('%.0f'))
+                axs[tokens_row_position, tokens_column_position].grid(True)
+                
+                max_number_of_annotations = 2
+                max_value, is_max_value_annotated = np.sort((y_axis_histogram_data / y_axis_histogram_data.sum() * 100))[-1], False
+                second_max_value, is_second_max_value_annotated = np.sort((y_axis_histogram_data / y_axis_histogram_data.sum() * 100))[-2], False
+                for x_,y_ in zip(np.arange(0, self.model.VQ.K), y_axis_histogram_data / y_axis_histogram_data.sum() * 100):
+                    #if y_ == (y_axis_histogram_data / y_axis_histogram_data.sum() * 100).max(): # only higest % elment
+                    if y_ == max_value and not(is_max_value_annotated):
+                        axs[tokens_row_position, tokens_column_position].annotate(f"({x_}, {y_:.0f}%)", xy=(x_,y_), xytext=(0,5), textcoords='offset points',ha='center')
+                        
+                        max_number_of_annotations -= 1
+                        is_max_value_annotated = True
+                        
+                        if max_value == second_max_value:
+                            is_second_max_value_annotated = True
+                            max_number_of_annotations -= 1
                     
-            # for ax in axs.flat:
-            #     ax.set(xlabel = f"sorted {self.model.VQ.K}-codebook indices", 
-            #         ylabel = f"count of codebook indices used in the {dataset_str} dataset")
+                    if y_ == second_max_value and not(is_second_max_value_annotated):
+                        axs[tokens_row_position, tokens_column_position].annotate(f"({x_}, {y_:.0f}%)", xy=(x_,y_), xytext=(0,5), textcoords='offset points',ha='center')
+                        max_number_of_annotations -= 1
+                    
+                        
+                    if max_number_of_annotations == 0:
+                        break
+                        #break
 
-            # Hide x labels and tick labels for top plots and y ticks for right plots.
-            for ax in axs.flat:
-                ax.label_outer()
+                
+                #axs[tokens_row_position, tokens_column_position].set_xlabel("Entries in the Codebook")
+        # for ax in axs.flat:
+        #     ax.set(xlabel = f"sorted {self.model.VQ.K}-codebook indices", 
+        #         ylabel = f"count of codebook indices used in the {dataset_str} dataset")
 
-            fig.savefig(self.main_folder_path + f"/(M+1)_x_(M+1)_token_position_usage_across_{dataset_str}_dataset.png")
+        # Hide x labels and tick labels for top plots and y ticks for right plots.
+        for ax in axs.flat:
+            ax.label_outer()
+
+        
+        fig.supxlabel(f"{self.model.VQ.K}-Entries (codewords) in the Codebook", fontsize=20)
+        fig.supylabel("Percent of the used codeword in a specific token T position", fontsize=20)
+        fig.savefig(self.main_folder_path + f"/(M+1)_x_(M+1)_token_position_usage_across_{dataset_str}_dataset.png")
+        plt.close()
+
+        # occurances of codeword indices accross all positions
+        # use this tensor -> count_of_encoding_indices
+
+        fig,ax = plt.subplots(1, figsize=(8,8))
 
 
-            # occurances of codeword indices accross all positions
-            # use this tensor -> count_of_encoding_indices
+        markerline, stemline, baseline = ax.stem(np.arange(0, self.model.VQ.K), prob_count_of_encoding_indices * 100, label = 'Real Hist.', linefmt = ':', markerfmt = 'o')
+        plt.setp(stemline, linewidth = 1)
+        plt.setp(stemline, color = 'k')
+        plt.setp(markerline, markersize = 5)
+        plt.setp(markerline, color = 'k')
+        plt.setp(baseline, color = 'k')
 
-            fig,ax = plt.subplots(1, figsize=(8,8))
+        ax.plot(np.arange(0, self.model.VQ.K), np.ones(self.model.VQ.K) * (1. / self.model.VQ.K) * 100, label = 'Ideal Hist. (Uniform Dist.)', color = 'm')
 
+        #plt.setp(baseline, linewidth = 0)
 
-            markerline, stemline, baseline = ax.stem(np.arange(0, self.model.VQ.K), prob_count_of_encoding_indices * 100, label = 'Real Hist.', linefmt = ':', markerfmt = 'o')
-            plt.setp(stemline, linewidth = 1)
-            plt.setp(stemline, color = 'k')
-            plt.setp(markerline, markersize = 5)
-            plt.setp(markerline, color = 'k')
-            plt.setp(baseline, color = 'k')
+        ax.legend()
 
-            ax.plot(np.arange(0, self.model.VQ.K), np.ones(self.model.VQ.K) * (1. / self.model.VQ.K) * 100, label = 'Ideal Hist. (Uniform Dist.)', color = 'm')
+        ax.set_title(f"Histogram in % of used tokens to quantize the WHOLE {dataset_str} dataset of {int(TOTAL_TOKEN_NUMBER / (self.model.VQ.M + 1)**2)} images\n" + entropy_report_str + " " + perplexity_report_str)
 
-            #plt.setp(baseline, linewidth = 0)
+        used_codewords = unique_encoding_indices_per_image.cpu().numpy().tolist()
 
-            ax.legend()
+        xticklabels = [ str(idx_) if idx_ % 2 == 0 else ("\n"+str(idx_)) for idx_ in range(self.model.VQ.K)]
 
-            ax.set_title(f"Histogram in % of used tokens to quantize the WHOLE {dataset_str} dataset of {int(TOTAL_TOKEN_NUMBER / (self.model.VQ.M + 1)**2)} images\n" + entropy_report_str + "\n" + perplexity_report_str)
+        #for idx_, xticklabel in enumerate(xticklabels):
+        #    if idx_ in xticklabels:
+        #        xticklabels[idx_] = str(idx_)
+        ax.xaxis.set_ticks(np.arange(0, self.model.VQ.K))
 
-            used_codewords = unique_encoding_indices_per_image.cpu().numpy().tolist()
+        ax.set_xticklabels(xticklabels)
+        plt.setp(ax.get_xticklabels(), rotation=30, horizontalalignment='right')
 
-            xticklabels = [ str(idx_) if idx_ % 2 == 0 else "" for idx_ in range(self.model.VQ.K)]
+        ax.yaxis.set_major_formatter(FormatStrFormatter('%.0f'))
 
-            #for idx_, xticklabel in enumerate(xticklabels):
-            #    if idx_ in xticklabels:
-            #        xticklabels[idx_] = str(idx_)
-            ax.xaxis.set_ticks(np.arange(0, self.model.VQ.K))
+        ax.set_xlabel(f"Codewords entries in the Codebook")
+        ax.set_ylabel(f"Percent of the codeword occurrence across all token position")
+        
+        for x_,y_ in zip(np.arange(0, self.model.VQ.K), prob_count_of_encoding_indices*100):
+            if y_>(1. / self.model.VQ.K) * 100:
+                ax.annotate(f"({x_}, {y_:.0f}%)", xy=(x_,y_), xytext=(0,5), textcoords='offset points',ha='center')
+                    
+        
 
-            ax.set_xticklabels(xticklabels)
-
-            ax.yaxis.set_major_formatter(FormatStrFormatter('%.0f'))
-
-            ax.set_xlabel(f"Codewords entries in the Codebook")
-
-            plt.tight_layout()
-
-            fig.savefig(self.main_folder_path + f"/codewords_usage_across_{dataset_str}_dataset.png")
-
-            # # TO DO
-            # # all names have to be unique
-            # all_shape_features           = ['FILL_NOFILL',
-            #                                 'SHAPE_TYPE_SPACE',
-            #                                 'X_CENTER_SPACE',
-            #                                 'Y_CENTER_SPACE',
-            #                                 'COLOR_LIST',
-            #                                 'a_CENTER_SPACE',
-            #                                 'b_CENTER_SPACE',
-            #                                 'alpha_CENTER_SPACE'
-            #                                 ]
-            # shape_feature_name_str = all_shape_features[0]
-            # #histograms per position
-            # for tokens_row_position in range(self.model.VQ.M + 1):
-            #     for tokens_column_position in range(self.model.VQ.M + 1):
+        plt.tight_layout()
+        ax.grid(True)
+        fig.savefig(self.main_folder_path + f"/codewords_usage_across_{dataset_str}_dataset.png")
+        plt.close()
+        # # TO DO
+        # # all names have to be unique
+        # all_shape_features           = ['FILL_NOFILL',
+        #                                 'SHAPE_TYPE_SPACE',
+        #                                 'X_CENTER_SPACE',
+        #                                 'Y_CENTER_SPACE',
+        #                                 'COLOR_LIST',
+        #                                 'a_CENTER_SPACE',
+        #                                 'b_CENTER_SPACE',
+        #                                 'alpha_CENTER_SPACE'
+        #                                 ]
+        # shape_feature_name_str = all_shape_features[0]
+        # #histograms per position
+        # for tokens_row_position in range(self.model.VQ.M + 1):
+        #     for tokens_column_position in range(self.model.VQ.M + 1):
