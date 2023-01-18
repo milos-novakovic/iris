@@ -5,16 +5,16 @@ vanilla_autoencoder:
   - vanilla_autoencoder_extension: '.py'
 
 training_hyperparams:
-  - NUM_WORKERS: 4 #NUM_WORKERS = 4# see what this represents exactly!
+  - NUM_WORKERS: 4 #4 #NUM_WORKERS = 4# see what this represents exactly!
   - LATENT_DIM: 10 #TO DO
-  - USE_PRETRAINED_VANILLA_AUTOENCODER: True
+  - USE_PRETRAINED_VANILLA_AUTOENCODER: False
   - USE_GPU: True
   #- TRAIN_FLAG: True
-  - NUM_EPOCHS: 2000 #40 #2000 #2000 #400 #200 #1000 #100 #200 #10 #20
-  - BATCH_SIZE_TRAIN: 128 #64 #128 #256 #32 #64 #128
-  - BATCH_SIZE_VAL: 128 #64 #128 #256 #32 #64 #128
+  - NUM_EPOCHS: 400 #2000 #40 #2000 #2000 #400 #200 #1000 #100 #200 #10 #20
+  - BATCH_SIZE_TRAIN: 256 #64 #128 #256 #32 #64 #128
+  - BATCH_SIZE_VAL: 256 #64 #128 #256 #32 #64 #128
   - BATCH_SIZE_TEST: 1 #32 #64 #128 50  
-  - LEARNING_RATE: 300 #400 #200 #500 #200 #50 #200 -> 0.0002 #50 #50*1e-6  #0.0001 #0.0002 #0.001 #0.0002 #1e-3
+  - LEARNING_RATE: 200 #200#300 #400 #200 #500 #200 #50 #200 -> 0.0002 #50 #50*1e-6  #0.0001 #0.0002 #0.001 #0.0002 #1e-3
   - TRAIN_DATA_PATH: '/home/novakovm/DATA_TRAIN/' #'./DATA/'
   - VAL_DATA_PATH: '/home/novakovm/DATA_VALIDATE/' #'./DATA/'
   - TEST_DATA_PATH: '/home/novakovm/DATA_TEST/' #'./DATA_TEST/'

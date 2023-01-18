@@ -11,8 +11,8 @@ file_info:
   - H : 64
   - W : 64
   - C : 3
-  - TOTAL_NUMBER_OF_SHAPES : 1
-  - TOTAL_NUMBER_OF_IMAGES : 16384 #16384 #= 2^14
+  - TOTAL_NUMBER_OF_SHAPES : 2 #2#1
+  - TOTAL_NUMBER_OF_IMAGES : 268_435_456 #16384 #268_435_456 #16384 #16384 #= 2^14 when TOTAL_NUMBER_OF_SHAPES = 1 and 2^*(2*14) = 2^28 = 268_435_456 when TOTAL_NUMBER_OF_SHAPES = 2
   - train_dataset_percentage: 75.0  # 6/8
   - val_dataset_percentage: 12.5    # 1/8
   - test_dataset_percentage: 12.5   # 1/8

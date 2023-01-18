@@ -76,11 +76,16 @@ def train_val_test_split(data_folder_path : str, # = '/home/novakovm/DATA'
                         test_folder_path : str,  # = '/home/novakovm/DATA_TEST'
                         train_val_test_split_indices:dict, # {'train':(6/8)*2**L,'val':(7/8)*2**L,'test':(8/8)*2**L}
                         image_ids : np.array,
-                        SEED : int):
+                        SEED : int,
+                        N = None):
     np.random.seed(SEED)
     np.random.shuffle(image_ids)
     shuffled_image_ids = image_ids
-    N = len(shuffled_image_ids)
+    # if TOTAL_NUMBER_OF_SHAPES == 1:
+    #     N = len(shuffled_image_ids)
+    # elif TOTAL_NUMBER_OF_SHAPES == 2:
+    #     N = TOTAL_NUMBER_OF_IMAGES
+    N = TOTAL_NUMBER_OF_IMAGES
     
     # secure no overlap with train, validation and test datasets
     
@@ -138,10 +143,28 @@ H,W = file_info_dict['H'], file_info_dict['W']
 
 
 #TOTAL_NUMBER_OF_IMAGES = TRAIN_TOTAL_NUMBER_OF_IMAGES# if TRAIN_MODE else TEST_TOTAL_NUMBER_OF_IMAGES
+image_id = 0
+image_ids = []
 
-for image_id in range(TOTAL_NUMBER_OF_IMAGES):
-    if image_id % 1000 == 0 and image_id > 0:
-        print(f"Generated {image_id}-th image!")
+absolute_image_counter = 0
+from helper_functions import get_hyperparam_from_config_file
+LOGGER_PATH = get_hyperparam_from_config_file("/home/novakovm/iris/MILOS/toy_shapes_config.yaml", 'LOGGER_PATH')
+
+while image_id < TOTAL_NUMBER_OF_IMAGES:
+    image_ids.append(image_id)
+    absolute_image_counter += 1
+    
+    if TOTAL_NUMBER_OF_SHAPES == 1 and image_id % 1000 == 0 and image_id > 0:
+        message = f"Generated {image_id}-th image!"
+        with open(LOGGER_PATH, 'a') as f:
+                f.write(f"{message}\n")
+            
+    if TOTAL_NUMBER_OF_SHAPES == 2 and absolute_image_counter % 1000 == 0:
+        message = f"Generated {image_id/TOTAL_NUMBER_OF_IMAGES * 100 : .2f} % of partical dataset! With {absolute_image_counter}-th image!"
+        with open(LOGGER_PATH, 'a') as f:
+                f.write(f"{message}\n")
+        
+    
     # image image_id info
     # SEED is set here
     # SEED = image_id#52#42
@@ -177,7 +200,7 @@ for image_id in range(TOTAL_NUMBER_OF_IMAGES):
     # fills or no fills
     FILL_NOFILL_np = np.array(FILL_NOFILL).astype(int)
 
-    all_shapes_variable_data = {c : [] for c in COLUMNS}
+    
     
     ## Shape Generic stats
         
@@ -199,19 +222,34 @@ for image_id in range(TOTAL_NUMBER_OF_IMAGES):
     image_binary_code = get_image_binary_code(image_id=image_id,
                                               THEORETICAL_MAX_NUMBER_OF_BITS_TO_ENCODER_AN_IMAGE=THEORETICAL_MAX_NUMBER_OF_BITS_TO_ENCODER_AN_IMAGE)
 
-    shape_specific_stats = get_shape_specific_stats(image_binary_code=image_binary_code,
-                                                    shape_generic_stats=shape_generic_stats,
-                                                    COLOR_DICT_WORD_2_BGR_CODE=COLOR_DICT_WORD_2_BGR_CODE)
-    # TODO
-    shape_specific_stats['shape_rotation_angle'] = None
-    shape_specific_stats['shape_scale_size']= None
-    
-    # TODO
-    shape_specific_stats['image_binary_code'] = ''.join([str(x) for x in image_binary_code])
-    
+    if TOTAL_NUMBER_OF_SHAPES == 2:
+        image_binary_code_1, image_binary_code_2 = image_binary_code[:len(image_binary_code)//2],image_binary_code[len(image_binary_code)//2:]
+        image_binary_code = [image_binary_code_1, image_binary_code_2]
+    elif TOTAL_NUMBER_OF_SHAPES == 1:
+        image_binary_code = [image_binary_code]
+    else:
+        assert(False)
+        
+    all_shapes_variable_data = {c : [] for c in COLUMNS}
     for i in range(TOTAL_NUMBER_OF_SHAPES):
-        #simple id (i.e. the order of shape creation)
-        shape_specific_stats['shape_id'] = i
+            
+        shape_specific_stats = get_shape_specific_stats(image_binary_code=image_binary_code[i],
+                                                        shape_generic_stats=shape_generic_stats,
+                                                        COLOR_DICT_WORD_2_BGR_CODE=COLOR_DICT_WORD_2_BGR_CODE)
+        # TODO
+        shape_specific_stats[f'shape_rotation_angle'] = None
+        shape_specific_stats[f'shape_scale_size']= None
+        
+        shape_specific_stats[f"image_reversed_binary_code"] = ''.join([str(x) for x in image_binary_code[i]])
+        
+        if TOTAL_NUMBER_OF_SHAPES == 2:
+            # TODO
+            #simple id (i.e. the order of shape creation)
+            shape_specific_stats['shape_id'] = i
+        else:
+            shape_specific_stats['shape_id'] = None # the value will be overwritten this is a place-holder
+        
+        shape_specific_stats['image_id'] = file_info_dict['file_version'][1:]
         
         kwargs_shape = {}
         # # image info (to be implemented)
@@ -271,17 +309,53 @@ for image_id in range(TOTAL_NUMBER_OF_IMAGES):
     if GENERATE_STATS:
         # create pandas df
         DF_all_shapes_variable_data = pd.DataFrame.from_dict(all_shapes_variable_data)
+        #DF_all_shapes_variable_data['image_id'] = file_info_dict['file_version'][1:]
+        DF_all_shapes_variable_data['shape_color_word'] = DF_all_shapes_variable_data.apply(lambda row:  COLOR_DICT_BGR_2_WORD_CODE['-'.join([str(x) for x in row['shape_color']])] , axis = 1)
+            
         
         # append newly sampled image to the olderones
-        DF_all_shapes_variable_data['shape_id'] = DF_all_shapes_variable_data.index.values
-        DF_all_shapes_variable_data['image_id'] = file_info_dict['file_version'][1:]
-        DF_all_shapes_variable_data['shape_color_word'] = DF_all_shapes_variable_data.apply(lambda row:  COLOR_DICT_BGR_2_WORD_CODE['-'.join([str(x) for x in row['shape_color']])] , axis = 1)
+        if TOTAL_NUMBER_OF_SHAPES == 1:
+            DF_all_shapes_variable_data['shape_id'] = DF_all_shapes_variable_data.index.values
+            
+        #if TOTAL_NUMBER_OF_SHAPES == 2:
+            #DF_all_shapes_variable_data['shape_id'] = DF_all_shapes_variable_data.index.values
+            
         DF_all_shapes_variable_data= DF_all_shapes_variable_data[['image_id', 'shape_id'] + COLUMNS + ['shape_color_word']]
-        DF_all_shapes_variable_data.to_csv(CSV_FILE_PATH, mode='a', index=False, header= not(os.path.isfile(CSV_FILE_PATH)) )
+        DF_all_shapes_variable_data.to_csv(CSV_FILE_PATH, mode='a', index=False, header= not(os.path.isfile(CSV_FILE_PATH)))
 
-
+    
+    
+    if TOTAL_NUMBER_OF_SHAPES == 1:
+        image_id += 1 # to generate every image
+        
+    if TOTAL_NUMBER_OF_SHAPES == 2:
+        # to generate every random sample 
+        np.random.seed(1)
+        #image_id += np.random.randint(low = 1000, high=10000, size=1, dtype=int)[0] # 200k images come from this
+        image_id += np.random.randint(low = 2000, high=20000, size=1, dtype=int)[0] # 100k images come from this
+        #image_id += np.random.randint(low = 5000, high=50000, size=1, dtype=int)[0] # 30k images come from this
+        
+        
+    
+    
+    
 ### TRAIN, VALIDATION, TEST Split
-image_ids = np.arange(0, TOTAL_NUMBER_OF_IMAGES)
+#image_ids = np.arange(0, TOTAL_NUMBER_OF_IMAGES)
+image_ids = np.array(image_ids)
+np.save(main_folder_path+'/all_nonshuffled_image_ids.npy', image_ids)
+
+
+
+train_dataset_percentage=   extract_yaml_data(data, 'train_dataset_percentage')#[dict_['train_dataset_percentage'] for dict_ in data['file_info'] if 'train_dataset_percentage' in dict_][0]
+val_dataset_percentage  =   extract_yaml_data(data, 'val_dataset_percentage')#[dict_['val_dataset_percentage'] for dict_ in data['file_info'] if 'val_dataset_percentage' in dict_][0]
+test_dataset_percentage =   extract_yaml_data(data, 'test_dataset_percentage')#[dict_['test_dataset_percentage'] for dict_ in data['file_info'] if 'test_dataset_percentage' in dict_][0]
+assert(100.0 == train_dataset_percentage + val_dataset_percentage + test_dataset_percentage, f"Train percentage {train_dataset_percentage}, Validation percentage {val_dataset_percentage}, and Test percentage {test_dataset_percentage} do not add up to a 100.")
+train_val_test_split_indices = {}
+train_val_test_split_indices['train'] = int((train_dataset_percentage/100)*len(image_ids))
+train_val_test_split_indices['val'] = int(((train_dataset_percentage+val_dataset_percentage)/100)*len(image_ids))
+train_val_test_split_indices['test'] = int(len(image_ids))
+
+
 SEED = 0
 train_shuffled_image_ids, val_shuffled_image_ids, test_shuffled_image_ids = \
 train_val_test_split(   data_folder_path = data_folder_path,
@@ -326,6 +400,8 @@ if GENERATE_STATS:
     
         # create histograms
         for i_col, col in enumerate(COLUMNS):
+            if col in ['shape_id', 'image_reversed_binary_code', 'image_id']:
+                continue
             
             col_space = None
             bar_width = None

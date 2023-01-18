@@ -3,23 +3,23 @@ from yaml.loader import SafeLoader
 import itertools
 from collections import OrderedDict
 from matplotlib.colors import ListedColormap
-import matplotlib
 import matplotlib.pyplot as plt
 import os
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torch.autograd import Variable
+import torch.utils.data as data
 import torchvision
+from torchvision import transforms
 import time
-import seaborn as sns
-from mpl_toolkits.axes_grid1 import ImageGrid
+
+
 # for functionvisualize_model_as_graph_image
 # taken from https://github.com/mert-kurttutan/torchview
 from torchview import draw_graph
 import graphviz # conda install graphviz
-
-from helper_functions import to_img
 
 # projections from high dim. space to a lower one
 import umap
@@ -30,44 +30,35 @@ import os
 import pandas as pd
 #from torchvision.io import read_image
 
-#from vq_vae_implementation import *
+from vq_vae_implementation import *
+
 from mpl_toolkits import mplot3d
 import imageio
-from matplotlib.ticker import FormatStrFormatter
-
-def conv2d_dims(h_in,w_in,k,s,p,d):
-    h_out, w_out = None, None
-    if len(p) == 2:
-        h_out = np.floor( (h_in + 2 * p[0] - d[0] * (k[0] - 1) - 1 ) / s[0] + 1)
-        w_out = np.floor( (w_in + 2 * p[1] - d[1] * (k[1] - 1) - 1 ) / s[1] + 1)
-    elif len(p) == 4:
-        pad_top, pad_bottom, pad_left, pad_right = p[0], p[1], p[2], p[3]
-        h_out = np.floor( (h_in + pad_top + pad_bottom - d[0] * (k[0] - 1) - 1 ) / s[0] + 1)
-        w_out = np.floor( (w_in + pad_left + pad_right - d[1] * (k[1] - 1) - 1 ) / s[1] + 1)
-    return int(h_out), int(w_out)
-
 
 class CustomImageDataset(torch.utils.data.Dataset):
-    def __init__(self, args, root = False, transform=None):#, target_transform=False):
+    def __init__(self, args, root = False, transform=False, target_transform=False):
         #self.img_labels = pd.read_csv(annotations_file)
         self.root = root # './DATA/' = '/home/novakovm/iris/MILOS/DATA/'
         self.transform = transform
         self.TOTAL_NUMBER_OF_IMAGES = args['TOTAL_NUMBER_OF_IMAGES'] # 2048 for test and val; 12'288 for train
         self.image_ids = args['image_ids']# 3314, 2151, 12030, 32, ...
         
+        
+        #self.target_transform = target_transform
+
     def __len__(self):
         return len(self.image_ids)#self.TOTAL_NUMBER_OF_IMAGES
 
     def __getitem__(self, idx):
         image_id = self.image_ids[idx]
         img_path = self.root + 'color_img_' + str(image_id).zfill(len(str(self.TOTAL_NUMBER_OF_IMAGES))) + '.png'#os.path.join(self.root, self.img_labels.iloc[idx, 0])
-        #image = torchvision.io.read_image(img_path).float() # .double() = torch.float64 and  .float() = torch.float32
-        image = torchvision.io.read_image(img_path, mode=torchvision.io.image.ImageReadMode.RGB).float() # .double() = torch.float64 and  .float() = torch.float32
-        
-        if self.transform != None:
+        image = torchvision.io.read_image(img_path).float() # .double() = torch.float64 and  .float() = torch.float32
+        #label = self.img_labels.iloc[idx, 1]
+        if self.transform:
             image = self.transform(image)
+        # if self.target_transform:
+        #     label = self.target_transform(label)
         return image, image_id#, label
-
 
 class Encoder(nn.Module):
     def __init__(self, params_encoder):
@@ -839,7 +830,7 @@ class My_VQ_VAE_Encoder_Decoder(nn.Module):
                  C_in=3,
                  C_Conv2d=32,
                  num_residual_layers=2):
-        super(My_VQ_VAE_Encoder_Decoder, self).__init__()
+        super(My_VQ_VAE_Encoder, self).__init__()
         '''
         DocString comment here
         '''
@@ -940,15 +931,11 @@ class Model_Trainer:
         self.optimizer_settings=args['optimizer_settings'] #torch.optim.Adam(params=vanilla_autoencoder_v02.parameters(), lr=LEARNING_RATE)
         self.main_folder_path = args['main_folder_path']#'/home/novakovm/iris/MILOS'
         self.train_data_variance=args['train_data_variance']#float32 number represents the variance of all the training images across all chanels and pixels
-        self.PCA_decomp_in_every_epochs = args['PCA_decomp_in_every_epochs']
-        self.logger_path = args['logger_path']
         
         self.epoch_ids_PCA = []
         # create and init self.optimizer
         if self.optimizer_settings['optimization_algorithm'] == 'Adam':
             self.optimizer = torch.optim.Adam(params = self.model.parameters(), lr = self.optimizer_settings['lr'])
-            #self.scheduler = torch.optim.lr_scheduler.MultiStepLR(self.optimizer, milestones=[self.NUM_EPOCHS//3 , 2*(self.NUM_EPOCHS//3)], gamma=self.optimizer_settings['lr'] * 0.1)
-            #self.optimizer = torch.optim.Adam(params = self.model.parameters(), lr = self.optimizer_settings['lr'])
             
         elif self.optimizer_settings['optimization_algorithm'] == 'SGD':
             self.optimizer = torch.optim.SGD(params = self.model.parameters(), lr = self.optimizer_settings['lr'])
@@ -1007,7 +994,6 @@ class Model_Trainer:
         return intermediate_training_stats
     
     def train(self) -> None:
-        #torch.autograd.set_detect_anomaly(True)
         print("Training Started")
         
         # time when the training began
@@ -1050,9 +1036,6 @@ class Model_Trainer:
         # training and validation duration in seconds per epoch
         self.train_duration_per_epoch_seconds = [None]*self.NUM_EPOCHS
         self.val_duration_per_epoch_seconds = [None]*self.NUM_EPOCHS
-        
-        #init early stopper: https://stackoverflow.com/questions/71998978/early-stopping-in-pytorch
-        early_stopping = EarlyStopper(patience=1, min_delta=0)
         
         # epochs loop
         for epoch in range(self.NUM_EPOCHS):
@@ -1215,18 +1198,15 @@ class Model_Trainer:
             # calculate validation elapsed time in the current epoch
             self.val_duration_per_epoch_seconds[epoch] = int(time.time() - start_time_epoch)
             
-            # scheduler stop
-            #self.scheduler.step()
             
             # every 10th epoch print intermediate training/validation statistics
             if (epoch+1) % int(0.05 * self.NUM_EPOCHS) == 0:
-                
-                
                 message = self.get_intermediate_training_stats_str(\
                     current_epoch           = epoch,
                     start_time_training     = START_TIME_TRAINING)
                 #print(message)
-                with open(self.logger_path, 'a') as f:
+                with open('log_all.txt', 'a') as f:
+                    
                     f.write(f"current train      perplexity = 2^( H( PMF of codebook words occurance ) bits ) = { self.train_metrics['perplexity'][-1] :.2f}; perplexity/K = {self.train_metrics['perplexity'][-1] / self.model.args_VQ['K'] * 100 :.2f}%\n")
                     f.write(f"current validation perplexity = 2^( H( PMF of codebook words occurance ) bits ) = { self.val_metrics['perplexity'][-1] :.2f}; perplexity/K = {self.val_metrics['perplexity'][-1] / self.model.args_VQ['K'] * 100 :.2f}%\n")
                     f.write(f"{message}\n")
@@ -1237,37 +1217,19 @@ class Model_Trainer:
                         #raise KeyboardInterrupt #^C # keyboard interruption = means the model is not learning
                 
                 if (epoch+1)==int(0.5 * self.NUM_EPOCHS) or (epoch+1)==self.NUM_EPOCHS:# and self.train_loss_avg[-1] < 16000*1e-6: #self.train_loss_avg[-1] > 16000*1e-6
-                    with open(self.logger_path, 'a') as f:
+                    with open('log.txt', 'a') as f:
                         k_,d_,m_ = self.model.args_VQ['K'], self.model.args_VQ['D'], self.model.args_VQ['M']
                         f.write(f"The model is learning, for K = {k_}, D= {d_}, M = {m_}\n")
                         f.write(f"{message}\n")
                     #raise KeyboardInterrupt
-                if self.PCA_decomp_in_every_epochs:
-                    self.plot_codebook_PCA(epoch_id = epoch+1)
-
-                    # for layers_ in [self.model.encoder.sequential_convs, self.model.decoder.sequential_trans_convs]:
-                        # for x in layers_:
-                        #     try:
-                        #         if x._get_name()[:4] == "Conv":
-                        #             print(x._get_name(),f"\t {x.weight.detach().cpu().norm().item() :.1f}")
-                        #     except:
-                        #         print('')
+                
                 # if self.train_loss_avg[-1] < 4000*1e-6:
                 #     k_,d_,m_ = self.model.args_VQ['K'], self.model.args_VQ['D'], self.model.args_VQ['M']
                 #     print(f"The model is learning, for K = {k_}, D= {d_}, M = {m_}")
                 #     raise KeyboardInterrupt
-            # early stopping
-            if (epoch+1) >= int(0.9* self.NUM_EPOCHS):
-                #if early_stopping(validation_loss = self.val_loss_avg[-1]):
-                if 1.05 * self.min_val_loss >= self.val_loss_avg[-1]:
-                    print(self.get_intermediate_training_stats_str(current_epoch = epoch, start_time_training = START_TIME_TRAINING))
-                    with open(self.logger_path, 'a') as f:
-                        f.write(f"\n!!! Early stopping happened at the epochs = {(epoch+1)}. And the current train/val loss message is the following!!! \n")
-                        f.write(f"{message}\n")
-                    break
-                    
+                
         
-        with open(self.logger_path, 'a') as f:
+        with open('log.txt', 'a') as f:
             k_,d_,m_ = self.model.args_VQ['K'], self.model.args_VQ['D'], self.model.args_VQ['M']
             f.write(f"The model is learning, for K = {k_}, D= {d_}, M = {m_}\n")
         
@@ -1276,8 +1238,8 @@ class Model_Trainer:
         #train_loss_avg_path = '/home/novakovm/iris/MILOS/autoencoder_train_loss_avg_' + current_time_str + '.npy'
         
         # create training/validation avg. loss file paths
-        self.train_loss_avg_path = self.main_folder_path + self.model_name + '_train_loss_avg_' + self.current_time_str + '.npy'
-        self.val_loss_avg_path = self.main_folder_path + self.model_name + '_val_loss_avg_' + self.current_time_str + '.npy'
+        self.train_loss_avg_path = self.main_folder_path + '/' + self.model_name + '_train_loss_avg_' + self.current_time_str + '.npy'
+        self.val_loss_avg_path = self.main_folder_path + '/' + self.model_name + '_val_loss_avg_' + self.current_time_str + '.npy'
 
         # create training/validation avg. loss file paths per loss term
         self.train_multiple_losses_avg_path = {}
@@ -1286,8 +1248,8 @@ class Model_Trainer:
             #'reconstruction_loss' = || x - x_recon || ^ 2
             #'commitment_loss'     = e_latent_loss = || Z_e - Z_q.detach() || ^ 2
             #'VQ_codebook_loss'    = q_latent_loss = || Z_e.detach() - Z_q || ^ 2
-            self.train_multiple_losses_avg_path[loss_term] = self.main_folder_path  + self.model_name + '_train_multiple_losses_avg_' + loss_term + '_'  + self.current_time_str + '.npy'
-            self.val_multiple_losses_avg_path[loss_term] = self.main_folder_path + self.model_name + '_val_multiple_losses_avg_' + loss_term + '_'  + self.current_time_str + '.npy'
+            self.train_multiple_losses_avg_path[loss_term] = self.main_folder_path + '/' + self.model_name + '_train_multiple_losses_avg_' + loss_term + '_'  + self.current_time_str + '.npy'
+            self.val_multiple_losses_avg_path[loss_term] = self.main_folder_path + '/' + self.model_name + '_val_multiple_losses_avg_' + loss_term + '_'  + self.current_time_str + '.npy'
 
         # create training/validation avg. losses as numpy arrays to the above specified file paths
         self.train_loss_avg = np.array(self.train_loss_avg)
@@ -1305,18 +1267,18 @@ class Model_Trainer:
         self.train_metrics['perplexity'] = np.array(self.train_metrics['perplexity'])
         self.val_metrics['perplexity'] = np.array(self.val_metrics['perplexity'])
         
-        self.train_metrics_perplexity_path = self.main_folder_path + self.model_name + '_train_perplexity_' + self.current_time_str + '.npy'
-        self.val_metrics_perplexity_path = self.main_folder_path + self.model_name + '_val_perplexity_' + self.current_time_str + '.npy'
+        self.train_metrics_perplexity_path = self.main_folder_path + '/' + self.model_name + '_train_perplexity_' + self.current_time_str + '.npy'
+        self.val_metrics_perplexity_path = self.main_folder_path + '/' + self.model_name + '_val_perplexity_' + self.current_time_str + '.npy'
         
         np.save(self.train_metrics_perplexity_path, self.train_metrics['perplexity'])
         np.save(self.val_metrics_perplexity_path, self.val_metrics['perplexity'])
         
         # save M_ema and N_ema
         # if self.model.VQ.use_EMA:
-        #     torch.save(self.model.N_ema, self.main_folder_path \
+        #     torch.save(self.model.N_ema, self.main_folder_path + '/' \
         #                                 + self.model_name + '_N_ema_' \
         #                                 + self.current_time_str + '.pt')
-        #     torch.save(self.model.M_ema, self.main_folder_path \
+        #     torch.save(self.model.M_ema, self.main_folder_path + '/' \
         #                                 + self.model_name + '_M_ema_' \
         #                                 + self.current_time_str + '.pt')
         
@@ -1330,7 +1292,7 @@ class Model_Trainer:
         #vanilla_autoencoder
         # 2022_12_03_19_39_08
         #.py
-        self.model_path = self.main_folder_path + self.model_name + self.current_time_str + '.py'
+        self.model_path = self.main_folder_path + '/' + self.model_name + self.current_time_str + '.py'
         
         # saving model trained parameters, so that it could be used as a pretrained model in the future usages
         torch.save(self.model.state_dict(),self.model_path)
@@ -1344,25 +1306,25 @@ class Model_Trainer:
         print(f"Total training time is = {TOTAL_TRAINING_TIME}, end = '\n\n'")
         print("Training Ended", end = '\n--------------------------------------------------------------\n')
     
-    def load_model(self, current_time_str, autoencoder_config_params_wrapped_sorted = None) -> None:
+    def load_model(self, current_time_str, autoencoder_config_params_wrapped_sorted) -> None:
         #current time in the format YYYY_MM_DD_hh_mm_ss
         self.current_time_str  = current_time_str
-        self.model_path = self.main_folder_path + self.model_name + self.current_time_str + '.py'
+        self.model_path = self.main_folder_path + '/' + self.model_name + self.current_time_str + '.py'
         
         # load model architecture in params wrapped and sorted fashion
-        #self.autoencoder_config_params_wrapped_sorted = autoencoder_config_params_wrapped_sorted
+        self.autoencoder_config_params_wrapped_sorted = autoencoder_config_params_wrapped_sorted
         
         # create a model (constructor)
         #self.model = Vanilla_Autoencoder_v02(autoencoder_config_params_wrapped_sorted=self.autoencoder_config_params_wrapped_sorted)
-        #self.model = model
+        self.model = vq_vae_implemented_model
         
         # load the model state from the model path
         self.model.load_state_dict(torch.load(self.model_path))
     
-        # N_ema = torch.load(self.main_folder_path  \
+        # N_ema = torch.load(self.main_folder_path + '/' \
         #                     + self.model_name + '_N_ema_' \
         #                     + self.current_time_str + '.pt')
-        # M_ema = torch.load(self.main_folder_path  \
+        # M_ema = torch.load(self.main_folder_path + '/' \
         #                     + self.model_name + '_M_ema_' \
         #                     + self.current_time_str + '.pt')
         # move model to device
@@ -1442,6 +1404,12 @@ class Model_Trainer:
 
         # cast it to np.array type 
         #self.test_loss = np.array(self.test_loss)
+        # print(f'Average test total loss = {np.round(np.mean(self.test_samples_loss['total_loss'])*1e6,0)} e-6')
+        
+        # print(f'Average test total reconstruction loss = {np.round(np.mean(self.test_samples_loss['total_loss'])*1e6,0)} e-6')
+        # print(f'Average test total commitment loss = {np.round(np.mean(self.test_samples_loss['commitment_loss'])*1e6,0)} e-6')
+        # print(f'Average test total VQ loss = {np.round(np.mean(self.test_samples_loss['VQ_codebook_loss'])*1e6,0)} e-6')
+        
         
         # cast to np array
         self.test_samples_loss['test_image_id'] = np.array(self.test_samples_loss['test_image_id'])
@@ -1452,14 +1420,6 @@ class Model_Trainer:
         self.test_samples_loss['VQ_codebook_loss'] = np.array(self.test_samples_loss['VQ_codebook_loss'])
 
         self.test_metrics['perplexity'] = np.array(self.test_metrics['perplexity'])
-        #self.test_metrics_perplexity_path = self.main_folder_path + '/' + self.model_name + '_test_perplexity_' + self.current_time_str + '.npy'
-        #np.save(self.test_metrics_perplexity_path, self.test_metrics['perplexity'])
-        
-        print(f"Average test total loss = {self.test_samples_loss['total_loss'].mean() * 1e6 : .0f} e-6")
-        print(f"Average test total reconstruction loss = {self.test_samples_loss['reconstruction_loss'].mean() * 1e6 : .0f} e-6 ({ self.test_samples_loss['reconstruction_loss'].mean()/self.test_samples_loss['total_loss'].mean() *100:.0f} %)")
-        print(f"Average test total commitment loss = {self.model.VQ.beta * self.test_samples_loss['commitment_loss'].mean() * 1e6 : .0f} e-6 ({self.model.VQ.beta *  self.test_samples_loss['commitment_loss'].mean()/self.test_samples_loss['total_loss'].mean() *100:.0f} %)")
-        print(f"Average test total VQ loss = {self.test_samples_loss['VQ_codebook_loss'].mean() * 1e6 : .0f} e-6 ({ self.test_samples_loss['VQ_codebook_loss'].mean()/self.test_samples_loss['total_loss'].mean() *100:.0f} %)")
-        
         
         print("Testing Ended")
 
@@ -1485,7 +1445,7 @@ class Model_Trainer:
             plt.ylabel('Mini-Batch Avg. Train & Validation Loss')
             plt.legend(legend_labels)
             plt.grid()
-            plt.savefig(self.main_folder_path + 'semilog_train_val_loss_per_epoch.png')
+            plt.savefig(self.main_folder_path + '/semilog_train_val_loss_per_epoch.png')
             plt.close()
             
             
@@ -1552,7 +1512,7 @@ class Model_Trainer:
             plt.ylabel('Mini-Batch Avg. Train Loss')
             plt.legend(legend_labels, loc='center left', bbox_to_anchor=(1, 0.5))
             plt.grid()
-            plt.savefig(self.main_folder_path + 'semilog_train_per_loss_terms_per_epoch.png')
+            plt.savefig(self.main_folder_path + '/semilog_train_per_loss_terms_per_epoch.png')
             plt.close()
             
             
@@ -1619,7 +1579,7 @@ class Model_Trainer:
             plt.ylabel('Mini-Batch Avg. Validation Loss')
             plt.legend(legend_labels, loc='center left', bbox_to_anchor=(1, 0.5))
             plt.grid()
-            plt.savefig(self.main_folder_path + 'semilog_val_per_loss_terms_per_epoch.png')
+            plt.savefig(self.main_folder_path + '/semilog_val_per_loss_terms_per_epoch.png')
             plt.close()
             
         if test_plot:
@@ -1637,7 +1597,7 @@ class Model_Trainer:
             plt.grid()
             plt.xlabel('Test sample ids')
             plt.ylabel('Testing Loss')
-            plt.savefig(self.main_folder_path + 'testing_loss_per_image_in_minibatch.png')
+            plt.savefig(self.main_folder_path + '/testing_loss_per_image_in_minibatch.png')
             plt.close()
     
     def plot_perlexity(self):
@@ -1658,7 +1618,7 @@ class Model_Trainer:
         plt.xlabel('Epoch number')
         plt.ylabel('Perplexity')
         plt.legend()
-        plt.savefig(self.main_folder_path + 'train_val_Perplexity.png')
+        plt.savefig(self.main_folder_path + '/train_val_Perplexity.png')
         plt.close()
         
         # plot estimated codewords entropy in bits
@@ -1679,7 +1639,7 @@ class Model_Trainer:
         plt.xlabel('Epoch number')
         plt.ylabel('Estimated codewords entropy H(E) in bits')
         plt.legend()
-        plt.savefig(self.main_folder_path + 'train_val_estimated_codewords_entropy.png')
+        plt.savefig(self.main_folder_path + '/train_val_estimated_codewords_entropy.png')
         plt.close()
         
             
@@ -1898,20 +1858,20 @@ class Model_Trainer:
         plt.grid()
         plt.xlabel('Test sample ids')
         plt.ylabel('Testing Loss')
-        plt.savefig(self.main_folder_path + f"Test_Loss_across_{plot_title}.png")
+        plt.savefig(self.main_folder_path + f"/Test_Loss_Over_Test_Image_IDs_based_on_following_feature_shapes_{plot_title}.png")
         plt.close()
             
     def get_worst_test_samples(self, TOP_WORST_RECONSTRUCTED_TEST_IMAGES) -> None:
         # Visualization of top worst reconstructed test images (i.e. where autoencoder fails) 
-        self.df_worst_test_samples_loss = pd.DataFrame(self.test_samples_loss)
-        self.df_worst_test_samples_loss = self.df_worst_test_samples_loss.sort_values('total_loss',ascending=False)\
+        self.df_test_samples_loss = pd.DataFrame(self.test_samples_loss)
+        self.df_test_samples_loss = self.df_test_samples_loss.sort_values('total_loss',ascending=False)\
                                                             .reset_index(drop=True)
         #pick top- TOP_WORST_RECONSTRUCTED_TEST_IMAGES worst reconstructed images
-        self.df_worst_reconstructed_test_images = self.df_worst_test_samples_loss.head(TOP_WORST_RECONSTRUCTED_TEST_IMAGES)
+        self.df_worst_reconstructed_test_images = self.df_test_samples_loss.head(TOP_WORST_RECONSTRUCTED_TEST_IMAGES)
         #print(f"pick top {TOP_WORST_RECONSTRUCTED_TEST_IMAGES} worst reconstructed images\n", self.df_worst_reconstructed_test_images.to_string())
 
 
-        self.worst_top_images, self.worst_imgs_ids , self.worst_imgs_losses = [], [], []
+        self.top_images, self.imgs_ids , self.imgs_losses = [], [], []
         for worst_reconstructed_test_image_id, worst_reconstructed_test_image_loss in zip(self.df_worst_reconstructed_test_images['test_image_id'], self.df_worst_reconstructed_test_images['total_loss']):
             # find the test image index when you have test image id in the test_data.image_ids tha
             worst_reconstructed_test_image_id_index = np.where(self.loaders['test'].dataset.image_ids == worst_reconstructed_test_image_id)[0][0]
@@ -1920,28 +1880,28 @@ class Model_Trainer:
             image, image_id = self.loaders['test'].dataset[worst_reconstructed_test_image_id_index]
             
             # save the test image (tensor)
-            self.worst_top_images.append(image)
+            self.top_images.append(image)
             
             # save the test image id
-            self.worst_imgs_ids.append(image_id)
+            self.imgs_ids.append(image_id)
             
             # save the test image reconstruction error (i.e. loss value)
-            self.worst_imgs_losses.append(worst_reconstructed_test_image_loss)
+            self.imgs_losses.append(worst_reconstructed_test_image_loss)
 
         # saved top_images are list of tensor, so cast to a tensor with torch.stack() function
-        self.worst_top_images = torch.stack(self.worst_top_images) #torch.Size(TOP_WORST_RECONSTRUCTED_TEST_IMAGES, C, H, W)
+        self.top_images = torch.stack(self.top_images) #torch.Size(TOP_WORST_RECONSTRUCTED_TEST_IMAGES, C, H, W)
     
     def get_best_test_samples(self, TOP_BEST_RECONSTRUCTED_TEST_IMAGES) -> None:
         # Visualization of top best reconstructed test images (i.e. where autoencoder succeeds) 
-        self.df_best_test_samples_loss = pd.DataFrame(self.test_samples_loss)
-        self.df_best_test_samples_loss = self.df_best_test_samples_loss.sort_values('total_loss',ascending=True)\
+        self.df_test_samples_loss = pd.DataFrame(self.test_samples_loss)
+        self.df_test_samples_loss = self.df_test_samples_loss.sort_values('total_loss',ascending=True)\
                                                             .reset_index(drop=True)
         #pick top- TOP_BEST_RECONSTRUCTED_TEST_IMAGES best reconstructed images
-        self.df_best_reconstructed_test_images = self.df_best_test_samples_loss.head(TOP_BEST_RECONSTRUCTED_TEST_IMAGES)
+        self.df_best_reconstructed_test_images = self.df_test_samples_loss.head(TOP_BEST_RECONSTRUCTED_TEST_IMAGES)
         #print(f"pick top {TOP_BEST_RECONSTRUCTED_TEST_IMAGES} best reconstructed images\n", self.df_best_reconstructed_test_images.to_string())
 
 
-        self.best_top_images, self.best_imgs_ids , self.best_imgs_losses = [], [], []
+        self.top_images, self.imgs_ids , self.imgs_losses = [], [], []
         for best_reconstructed_test_image_id, best_reconstructed_test_image_loss in zip(self.df_best_reconstructed_test_images['test_image_id'], self.df_best_reconstructed_test_images['total_loss']):
             # find the test image index when you have test image id in the test_data.image_ids tha
             best_reconstructed_test_image_id_index = np.where(self.loaders['test'].dataset.image_ids == best_reconstructed_test_image_id)[0][0]
@@ -1950,16 +1910,16 @@ class Model_Trainer:
             image, image_id = self.loaders['test'].dataset[best_reconstructed_test_image_id_index]
             
             # save the test image (tensor)
-            self.best_top_images.append(image)
+            self.top_images.append(image)
             
             # save the test image id
-            self.best_imgs_ids.append(image_id)
+            self.imgs_ids.append(image_id)
             
             # save the test image reconstruction error (i.e. loss value)
-            self.best_imgs_losses.append(best_reconstructed_test_image_loss)
+            self.imgs_losses.append(best_reconstructed_test_image_loss)
 
         # saved top_images are list of tensor, so cast to a tensor with torch.stack() function
-        self.best_top_images = torch.stack(self.best_top_images) #torch.Size(TOP_WORST_RECONSTRUCTED_TEST_IMAGES, C, H, W)
+        self.top_images = torch.stack(self.top_images) #torch.Size(TOP_WORST_RECONSTRUCTED_TEST_IMAGES, C, H, W)
     
     def visualize_model_as_graph_image(self) -> None:   
         # when running on VSCode run the below command
@@ -1984,25 +1944,61 @@ class Model_Trainer:
                                                     directory = self.main_folder_path)
         # visualize graph with .visual_graph() if in Jupyter Notebook
         # vq_vae_implemented_model_graph.visual_graph
-    def plot_codebook_PCA(self, epoch_id = None):
-        if not os.path.exists(self.main_folder_path + 'PCA_2D/'):
-            os.mkdir(self.main_folder_path + 'PCA_2D/')
-        if not os.path.exists(self.main_folder_path + 'PCA_3D/'):
-            os.mkdir(self.main_folder_path + 'PCA_3D/')
-        if not os.path.exists(self.main_folder_path + 'Cummulative_Explained_Variance_PCA/'):
-            os.mkdir(self.main_folder_path + 'Cummulative_Explained_Variance_PCA/')
+
+    def codebook_visualization(self) -> None:
+        if not self.model.args_VQ['train_with_quantization']:
+            return None
         
-        frames_per_second = 1#10#5#10#1
-        format_list = ['mp4', 'gif']
+        self.plot_codebook_PCA(epoch_id = None)
+        
+        #LDA - requires labeled data
+        if self.model.VQ.K != 2:
+            # UMAP args
+            n_neighbors = 3
+            min_dist = 0.1
+            #n_components = 2 #2D space for projection
+            metric = 'cosine'
+            
+            #UMAP https://umap-learn.readthedocs.io/en/latest/parameters.html
+            E_umap = umap.UMAP(n_neighbors=n_neighbors,
+                                min_dist=min_dist, #n_components = n_components,
+                                metric=metric).fit_transform(E)
+            plt.figure()
+            #plt.scatter(E_umap[:,0], E_umap[:,1], alpha=0.3)
+            for i in range(self.model.VQ.K):
+                plt.scatter(E_umap[i,0],
+                            E_umap[i,1],
+                            alpha=0.3,
+                            color = 'k',
+                            lw=1)#marker = target_name[i]
+            
+            plt.title("UMAP of the codebook E")
+            plt.xlabel('First UMAP component')
+            plt.ylabel('Second UMAP component')
+            plt.grid()
+            plt.savefig(self.main_folder_path + f"/E_UMAP_1st_2nd_PCs.png")
+            plt.close()
+        
+        #TSNE
+        
+        # PLOT PCA TSNE UMAP
+
+    def visualize_interpolations(self):
+        # Visualizing interpolations
+        pass
+    
+    def visualize_reconstructions(self):
+        # Visualizing reconstructions
+        pass
+    
+    def plot_codebook_PCA(self, epoch_id = None):
         if epoch_id != None:
             self.epoch_ids_PCA.append(epoch_id)
         
         NUMBER_OF_PRINCIPAL_COMPONENTS = [2,3]
-        
         digit_size = len(str(self.NUM_EPOCHS))
-        
         for n_components in NUMBER_OF_PRINCIPAL_COMPONENTS:
-            E = self.model.VQ.E.weight.data.detach().cpu() # dim = K x D matrix
+            E = self.model.VQ.E.weight.data.cpu() # dim = K x D matrix
             # PCA
             pca = PCA(n_components=n_components)
             E_pca = pca.fit(E).transform(E) # dim = K x 2
@@ -2029,21 +2025,18 @@ class Model_Trainer:
                 plt.grid()
             
                 if epoch_id == None:
-                    plt.title(f"PCA of the codebook E\n({compoonents_explained_variance_ratio*100 :.1f}% of the data variablility captured by two PCs)")
-                    plt.savefig(self.main_folder_path + f"PCA_2D/9999_E_PCA_1st_2nd_PCs.png")
+                    plt.title(f"PCA of the codebook E ({compoonents_explained_variance_ratio*100 :.1f}% of the data variablility captured by two PCs)")
+                    plt.savefig(self.main_folder_path + f"/9999_E_PCA_1st_2nd_PCs.png")
                     
-                    if self.PCA_decomp_in_every_epochs:
-                        for format_ in format_list:
-                            with imageio.get_writer(self.main_folder_path + f"PCA_2PCs_{format_}.{format_}", mode='I', fps = frames_per_second) as writer:
-                                for epoch_id_PCA in self.epoch_ids_PCA:
-                                    filename = self.main_folder_path + f"PCA_2D/{ str(epoch_id_PCA).zfill(digit_size)}_E_PCA_1st_2nd_PCs.png"
-                                    image = imageio.imread(filename)
-                                    writer.append_data(image)
-                                writer.close()
+                    with imageio.get_writer(self.main_folder_path + '/PCA_2PCs_gif.mp4', mode='I', duration = 0.5) as writer:
+                        for epoch_id_PCA in self.epoch_ids_PCA:
+                            filename = self.main_folder_path + f"/{ str(epoch_id_PCA).zfill(digit_size)}_E_PCA_1st_2nd_PCs.png"
+                            image = imageio.imread(filename)
+                            writer.append_data(image)
                                         
                 else:
-                    plt.title(f"(epoch = {str(epoch_id)}) PCA of the codebook E\n({compoonents_explained_variance_ratio*100 :.1f}% of the data variablility captured by two PCs)")
-                    plt.savefig(self.main_folder_path + f"PCA_2D/{ str(epoch_id).zfill(digit_size) }_E_PCA_1st_2nd_PCs.png")
+                    plt.title(f"(epoch = {str(epoch_id)}) PCA of the codebook E ({compoonents_explained_variance_ratio*100 :.1f}% of the data variablility captured by two PCs)")
+                    plt.savefig(self.main_folder_path + f"/{ str(epoch_id).zfill(digit_size) }_E_PCA_1st_2nd_PCs.png")
                 plt.close()
             
             if n_components == 3:
@@ -2060,148 +2053,59 @@ class Model_Trainer:
                     ax.scatter3D(E_pca[i,0], E_pca[i,1], E_pca[i,2], color = 'k', lw=lw, marker = target_name[i])
 
                 # Plot x, y, z even ticks
-                # ticks = np.linspace(-6, 6, num=10)
+                # ticks = np.linspace(-3, 3, num=5)
                 # ax.set_xticks(ticks)
                 # ax.set_yticks(ticks)
                 # ax.set_zticks(ticks)
                 
                 # Plot x, y, z labels
-                ax.set_xlabel('PC1')#, rotation=150)
+                ax.set_xlabel('PC1', rotation=150)
                 ax.set_ylabel('PC2')
-                ax.set_zlabel('PC3')#, rotation=60)
+                ax.set_zlabel('PC3', rotation=60)
                 
                 ax.grid(True)
             
                 if epoch_id == None:
-                    plt.title(f"PCA of the codebook E\n({compoonents_explained_variance_ratio*100 :.1f}% of the data variablility captured by three PCs)")
-                    plt.savefig(self.main_folder_path + f"PCA_3D/9999_E_PCA_1st_2nd_3rd_PCs.png")
+                    plt.title(f"PCA of the codebook E ({compoonents_explained_variance_ratio*100 :.1f}% of the data variablility captured by three PCs)")
+                    plt.savefig(self.main_folder_path + f"/9999_E_PCA_1st_2nd_3rd_PCs.png")
                     
-                    if self.PCA_decomp_in_every_epochs:
-                        for format_ in format_list:
-                            with imageio.get_writer(self.main_folder_path + f"PCA_3PCs_{format_}.{format_}", mode='I',fps = frames_per_second) as writer:
-                                for epoch_id_PCA in self.epoch_ids_PCA:
-                                    filename = self.main_folder_path + f"PCA_3D/{ str(epoch_id_PCA).zfill(digit_size)}_E_PCA_1st_2nd_3rd_PCs.png"
-                                    image = imageio.imread(filename)
-                                    writer.append_data(image)
-                                writer.close()
+                    with imageio.get_writer(self.main_folder_path + '/PCA_3PCs_gif.mp4', mode='I', duration = 0.5) as writer:
+                        for epoch_id_PCA in self.epoch_ids_PCA:
+                            filename = self.main_folder_path + f"/{ str(epoch_id_PCA).zfill(digit_size)}_E_PCA_1st_2nd_3rd_PCs.png"
+                            image = imageio.imread(filename)
+                            writer.append_data(image)
                     
                 else:
-                    plt.title(f"(epoch = {str(epoch_id)}) PCA of the codebook E\n({compoonents_explained_variance_ratio*100 :.1f}% of the data variablility captured by three PCs)")
-                    plt.savefig(self.main_folder_path + f"PCA_3D/{ str(epoch_id).zfill(digit_size) }_E_PCA_1st_2nd_3rd_PCs.png")
+                    plt.title(f"(epoch = {str(epoch_id)}) PCA of the codebook E ({compoonents_explained_variance_ratio*100 :.1f}% of the data variablility captured by three PCs)")
+                    plt.savefig(self.main_folder_path + f"/{ str(epoch_id).zfill(digit_size) }_E_PCA_1st_2nd_3rd_PCs.png")
                 plt.close()
+            
+        # get first top-10 components
+        n_components = 10
+        # PCA
+        E = self.model.VQ.E.weight.data.cpu() # dim = K x D matrix
+        pca = PCA(n_components=n_components)
+        E_pca = pca.fit(E).transform(E) # dim = K x 2
+        cumsum_explained_variance_ratio_array = np.cumsum(pca.explained_variance_ratio_) 
+        plt.plot(np.arange(1, 1 + n_components), cumsum_explained_variance_ratio_array)
+        plt.xlabel('Number of PC')
+        plt.ylabel('Cumulative Explained Variance')
+        plt.title('Cumulative Explained Variance')
+        plt.grid()
         
-        E = self.model.VQ.E.weight.data.detach().cpu() # dim = K x D matrix
-        if E.shape[0] > 4:
-            # get first top-10 components
-            n_components = 5
-            # PCA
+        if epoch_id == None:
+            plt.savefig(self.main_folder_path + f"/9999_Cumulative_Explained_Variance_PCA.png")
+        else:
+            plt.savefig(self.main_folder_path + f"/{ str(epoch_id).zfill(digit_size) }_Cumulative_Explained_Variance_PCA.png")
             
-            pca = PCA(n_components=n_components)
-            E_pca = pca.fit(E).transform(E) # dim = K x 2
-            cumsum_explained_variance_ratio_array = np.cumsum(pca.explained_variance_ratio_) 
-            plt.figure()
-            plt.plot(np.arange(1, 1 + n_components), cumsum_explained_variance_ratio_array)
-            plt.xlabel('Number of PCs')
-            plt.ylabel('Cumulative Explained Variance')
-            plt.title(f'Cumulative Explained Variance (Epoch num. = {epoch_id})')
-            if epoch_id == None:
-                plt.legend([f'curve after {self.NUM_EPOCHS} epochs'])
-            else:
-                plt.legend([f'curve after {epoch_id} epochs'])
-            
-            plt.grid(True)
-            
-            if epoch_id == None:
-                #plt.legend([f"epoch {e}" for e in np.arange( int(self.NUM_EPOCHS*0.05) ,self.NUM_EPOCHS + 1, int(self.NUM_EPOCHS*0.05))])
-                plt.savefig(self.main_folder_path + f"9999_Cumulative_Explained_Variance_PCA.png")
-                
-                if self.PCA_decomp_in_every_epochs:
-                    for format_ in format_list:
-                        with imageio.get_writer(self.main_folder_path + f"Cumulative_Explained_Variance_PCA_{format_}.{format_}", mode='I',fps = frames_per_second) as writer:
-                            for epoch_id_PCA in self.epoch_ids_PCA:
-                                filename = self.main_folder_path + f"Cummulative_Explained_Variance_PCA/{ str(epoch_id_PCA).zfill(digit_size)}_Cumulative_Explained_Variance_PCA.png"
-                                image = imageio.imread(filename)
-                                writer.append_data(image)
-                            writer.close()
-            else:
-                plt.savefig(self.main_folder_path + f"Cummulative_Explained_Variance_PCA/{ str(epoch_id).zfill(digit_size) }_Cumulative_Explained_Variance_PCA.png")
-            plt.close()
             
 
 
-    def codebook_visualization(self) -> None:
-        if not self.model.args_VQ['train_with_quantization']:
-            return None
-        
-        #self.plot_codebook_PCA(epoch_id = None)
-        
-        #LDA - requires labeled data
-        if self.model.VQ.K != 2:
-            # UMAP args
-            n_neighbors = 3
-            min_dist = 0.1
-            #n_components = 2 #2D space for projection
-            metric = 'cosine'
-            E = self.model.VQ.E.weight.data.detach().cpu() # dim = K x D matrix
-            #UMAP https://umap-learn.readthedocs.io/en/latest/parameters.html
-            E_umap = umap.UMAP(n_neighbors=n_neighbors,
-                                min_dist=min_dist, #n_components = n_components,
-                                metric=metric).fit_transform(E)
-            plt.figure()
-            #plt.scatter(E_umap[:,0], E_umap[:,1], alpha=0.3)
-            for i in range(self.model.VQ.K):
-                plt.scatter(E_umap[i,0],
-                            E_umap[i,1],
-                            alpha=0.3,
-                            color = 'k',
-                            lw=1)#marker = target_name[i]
-            
-            plt.title("UMAP of the codebook E")
-            plt.xlabel('First UMAP component')
-            plt.ylabel('Second UMAP component')
-            plt.grid()
-            plt.savefig(self.main_folder_path + f"E_UMAP_1st_2nd_PCs.png")
-            plt.close()
-        
-        #TSNE
-        
-        # PLOT PCA TSNE UMAP
-
-    def visualize_interpolations(self):
-        # Visualizing interpolations
-        pass
-    
-    def visualize_reconstructions(self):
-        # Visualizing reconstructions
-        pass
-    
-    def visualize_discrete_codes(self, compose_transforms, dataset_str = 'test', create_plot_for_every_image_in_dataset = False, jupyter_show_images = False):
-        assert(dataset_str in ['train', 'val', 'test'], f"The dataset can only be train, val or test and current dataset is {dataset_str}")
-        
-        
-        MAX_NUMBER_OF_IMAGES_TO_COVER = None#200#None#200#None
-        
+    def visualize_discrete_codes(self, dataset_str = 'test'):
         # Visualizing the discrete codes from input images input-tensor of size (B, C, H, W)
         digit_size = len(str(len(self.loaders[dataset_str].dataset)))
         self.model.eval()
 
-        if not os.path.exists(self.main_folder_path + 'test_image_PLUS_encoding_counter_per_token_position_PLUS_histogram_of_codewords_usages/'):
-            os.mkdir(self.main_folder_path + 'test_image_PLUS_encoding_counter_per_token_position_PLUS_histogram_of_codewords_usages/')
-        
-        # best images
-        best_images_full_path = self.main_folder_path + 'test_image_PLUS_encoding_counter_per_token_position_PLUS_histogram_of_codewords_usages/best_imgs/'
-        if not os.path.exists(best_images_full_path):
-            os.mkdir(best_images_full_path)
-        
-        # worst images
-        worst_images_full_path = self.main_folder_path + 'test_image_PLUS_encoding_counter_per_token_position_PLUS_histogram_of_codewords_usages/worst_imgs/'
-        if not os.path.exists(worst_images_full_path):
-            os.mkdir(worst_images_full_path)
-        
-        # all images
-        all_images_full_path =self.main_folder_path + 'test_image_PLUS_encoding_counter_per_token_position_PLUS_histogram_of_codewords_usages/_imgs/' 
-        if not os.path.exists(all_images_full_path):
-            os.mkdir(all_images_full_path)
 
         # for every image in the input batch plot three subplots on next to each other:
         # original image
@@ -2217,337 +2121,88 @@ class Model_Trainer:
         # put loaded model in the evaulation mode
         self.model.eval()
         
-        #
-        count_of_encoding_indices_per_token_position = torch.zeros((self.model.VQ.K, self.model.VQ.M+1,self.model.VQ.M+1), device='cpu')
+        # output every tensor in the vector quantization process 
+        self.model.VQ.output_whole_quantization_process = True
+
+        self.visualize_discrete_codes_output = {}
+        self.visualize_discrete_codes_output[dataset_str + '_image_id']= []
+        #self.visualize_discrete_codes_output['count_codebook_words_used_in_' + dataset_str] = torch.zeros(self.model.VQ.K, device=self.model.device)#counting words used
         
-        # counter 0,1,2,3.... across dataset
+        #self.visualize_discrete_codes_output['count_K_codebook_indices_used_per_token_position_used_in_' + dataset_str] = torch.zeros((self.model.VQ.K, self.model.VQ.M+1,self.model.VQ.M+1), device=self.model.device)#counting words used
+        
+        
+        count_of_encoding_indices_per_token_position = torch.zeros((self.model.VQ.K, self.model.VQ.M+1,self.model.VQ.M+1), device=self.model.device)
         index_ = -1
-        
-        # iterate image by image in the dataset
         for image_batch, image_id_batch in self.loaders[dataset_str]:
-            if MAX_NUMBER_OF_IMAGES_TO_COVER != None:
-                if index_ > MAX_NUMBER_OF_IMAGES_TO_COVER:
-                    # hard stop at MAX_NUMBER_OF_IMAGES_TO_COVER-th image if MAX_NUMBER_OF_IMAGES_TO_COVER is defined (if MAX_NUMBER_OF_IMAGES_TO_COVER is not None)
-                    break
-            
-            
-            # inc. image counter by 1
             index_ += 1
-            
-            # it has to be image by image (because we are plotting image by image plots) hence batch-size has to be 1
             if self.loaders[dataset_str].batch_size != 1:
                 assert(self.loaders[dataset_str].batch_size == 1, f"Mini-batch size of the test set should be 1, because of visualization and plotting later on in the code.")
+            
+            # remember the test_image_id (i.e. id of the test image)
+            self.visualize_discrete_codes_output[dataset_str + '_image_id'].append(image_id_batch.item())
+            
+            
             
             with torch.no_grad():
                 # move the image tensor to the device
                 image_batch = image_batch.to(self.device)
                 
                 # (VQ + Encoder) forward pass 
-                # output every tensor in the vector quantization process 
-                self.model.VQ.output_whole_quantization_process = True
                 e_and_q_latent_loss, Zq, e_latent_loss, q_latent_loss, estimate_codebook_words, encoding_indices, estimate_codebook_words_freq, estimate_codebook_words_prob, inputs, D  = self.model.VQ(self.model.encoder(image_batch))
-                
-                self.model.VQ.output_whole_quantization_process = False
-                
-                #self.model.VQ(self.model.encoder(image_batch))
-                
-                e_and_q_latent_loss, encoding_indices, estimate_codebook_words_freq, estimate_codebook_words_prob, inputs, D = e_and_q_latent_loss.cpu(), encoding_indices.cpu(), estimate_codebook_words_freq.cpu(), estimate_codebook_words_prob.cpu(), inputs.cpu(), D.cpu()
                 # e_and_q_latent_loss, e_latent_loss, q_latent_loss are scalars
                 # Zq is BCHW tensor
                 # estimate_codebook_words vector of size (K,)
                 # encoding_indices vector of size (BHW,)
                 encoding_indices_tensor = encoding_indices.view(-1, self.model.VQ.M+1, self.model.VQ.M+1)
-                B = encoding_indices_tensor.size(0)
-                #self.visualize_discrete_codes_output['count_codebook_words_per_token_position_used_in_' + dataset_str]
+                self.visualize_discrete_codes_output['count_codebook_words_per_token_position_used_in_' + dataset_str]
                 
-                count_of_encoding_indices_per_image = torch.zeros((self.model.VQ.M+1, self.model.VQ.M+1), device = 'cpu')
-
+                count_of_encoding_indices_per_image = torch.zeros((self.model.VQ.M+1, self.model.VQ.M+1), device = self.model.device)
+                
                 for tokens_row_position in range(self.model.VQ.M + 1):
                     for tokens_column_position in range(self.model.VQ.M + 1):
                         unique_encoding_indices_per_image_per_position, count_of_unique_encoding_indices_per_image_per_position = torch.unique(input = encoding_indices_tensor[:, tokens_row_position, tokens_column_position], sorted=True, return_inverse=False, return_counts=True, dim=0)
                         
-                        # this tensor count_of_encoding_indices_per_token_position is used later to produce other plots so do not deleete it!
                         count_of_encoding_indices_per_token_position[unique_encoding_indices_per_image_per_position.view(-1), tokens_row_position, tokens_column_position] += count_of_unique_encoding_indices_per_image_per_position.view(-1).float()
                         
-                        #count_of_encoding_indices_per_image[unique_encoding_indices_per_image_per_position.view(-1), tokens_row_position, tokens_column_position] +=count_of_unique_encoding_indices_per_image_per_position.view(-1).float()
-                        # TO DO OBAVEZNO !
-                        count_of_encoding_indices_per_image[tokens_row_position, tokens_column_position] = unique_encoding_indices_per_image_per_position.view(-1)[0].float()
-
-                if (create_plot_for_every_image_in_dataset) or (image_id_batch in self.best_imgs_ids) or (image_id_batch in self.worst_imgs_ids):
-                    fig, axs = plt.subplots(1,4, figsize=(15,6), gridspec_kw={'width_ratios': [1, 1, 1, 1], 'height_ratios': [1]})
-                    #matplotlib.rcParams.update(matplotlib.rcParamsDefault)
-                    #plt.rcParams['text.usetex'] = True
-                    #fig.set_size_inches(15, 7)
-                    fig.suptitle(f"{index_+1}. image from {dataset_str} dataset", fontsize=20)
-
-                    #plt.subplot(1, 3, 1)
-                    # have to renormalize and show original image here
-                    #image_batch_original_img = image_batch_original_img.view(1, image_batch_original_img.size(0), image_batch_original_img.size(1), image_batch_original_img.size(2))
-                    image_batch_original_img = to_img(image_batch.cpu(), compose_transforms)
-
-                    axs[0].imshow(np.transpose(image_batch_original_img[0,:,:,:], (1, 2, 0))) # H,W,C
-                    axs[0].set_title(f"Original {image_batch_original_img.size(1)}x{image_batch_original_img.size(2)}x{image_batch_original_img.size(3)} image "\
-                        + r"$X$" + f"dec_id= {str(image_id_batch).zfill(5)}\nbin_id = {(str(bin(image_id_batch))[2:]).zfill(14)}")
-                    axs[0].set_xlabel(r"$W$")
-                    axs[0].set_ylabel(r"$H$")
-                    #plt.subplot(1, 3, 2)
-                    #different heatmaps
-                    #axs[1].imshow(count_of_encoding_indices_per_image)
-                    #axs[1].matshow(count_of_encoding_indices_per_image)
-                    #axs[1].imshow(count_of_encoding_indices_per_image, cmap='hot', interpolation='nearest')
-                    #axs[1] = 
-                    sns.heatmap(data = count_of_encoding_indices_per_image.int().numpy(), linewidth=0.5, annot=True, ax=axs[1], cbar = False, xticklabels=np.arange(1,2 + self.model.VQ.M), yticklabels=np.arange(1,2 + self.model.VQ.M), square = True,  fmt='d', cmap='Blues')
-                    #plt.show()
-                    # different ways to show heatmap https://stackoverflow.com/questions/33282368/plotting-a-2d-heatmap
-
-                    axs[1].set_title(f"The indices of codebook " + r"$E$" + f"\n({self.model.VQ.M+1}x{self.model.VQ.M+1} {self.model.VQ.D}-dimensional vectors that form " + r"$Z_q$" + f" tensor)")
-                    axs[1].set_xlabel(r"$W_e$")
-                    axs[1].set_ylabel(r"$H_e$")
-                    #axs[1].set_xticks(np.arange(0,1 + self.model.VQ.M))
-                    #axs[1].set_yticks(np.arange(0,1 + self.model.VQ.M))
-                    unique_encoding_indices_per_image, count_of_unique_encoding_indices_per_image = torch.unique(input = count_of_encoding_indices_per_image.view(-1), sorted=True, return_inverse=False, return_counts=True, dim=0)
-                    histogram_unique_encoding_indices_per_image = np.zeros(self.model.VQ.K)
-                    histogram_unique_encoding_indices_per_image[unique_encoding_indices_per_image.view(-1).numpy().astype(int)] = count_of_unique_encoding_indices_per_image.view(-1).numpy().astype(int)
-                    histogram_unique_encoding_indices_per_image = 100*histogram_unique_encoding_indices_per_image/histogram_unique_encoding_indices_per_image.sum()
-                    histogram_unique_encoding_indices_per_image = [float('nan') if x==0 else x for x in histogram_unique_encoding_indices_per_image]
-
-                    #plot reconstruction
-                    image_batch_recon  = self.model.decoder(Zq)
-                    recon_error = (F.mse_loss(image_batch_recon, image_batch) / self.train_data_variance)
-                    image_batch_recon_img = to_img(image_batch_recon.cpu(), compose_transforms)
-                    axs[2].imshow(np.transpose(image_batch_recon_img[0,:,:,:], (1, 2, 0))) # H,W,C
-                    axs[2].set_title(f"Reconstructed image " + r"$X_{rec}$" + " with loss\n"+ \
-                                    r"$\mathcal{L}$" + f" = {(recon_error.item() + e_and_q_latent_loss.item() )*1e6 :.0f}" + r"$\cdot10^{-6}$=" + "\n" +\
-                                    #f"\n(1/var)||X - X_rec ||^2 ({recon_error.item()*1e6 :.0f}e-6)"+\
-                                    r"$\frac{1}{VAR[X_{train}]} ||X - X_{rec}||^2_2 $" + f" ( = {recon_error.item()*1e6 :.0f}" + r"$\cdot10^{-6}$" + f";{recon_error.item()/(recon_error.item() + e_and_q_latent_loss.item()) * 100. :.0f}%)\n" + \
-                                    #f"\n+ (1+beta)*||Z_e-Z_q||^2 ({e_and_q_latent_loss.item()*1e6 :.0f}e-6)")
-                                    r"$+(1+\beta) || \frac{Z_e}{||Z_e||_2} - \frac{Z_q}{||Z_q||_2}||^2_2 $" + f" ( = {e_and_q_latent_loss.item()*1e6 :.0f}" + r"$\cdot10^{-6}$" + f";{e_and_q_latent_loss.item()/(recon_error.item() + e_and_q_latent_loss.item()) * 100. :.0f}%)")
-                    axs[2].set_xlabel(r"$W$")
-                    axs[2].set_ylabel(r"$H$")
-                    
-                    # histogram of current tokens for a current image
-                    markerline, stemline, baseline = axs[3].stem(np.arange(0, self.model.VQ.K), histogram_unique_encoding_indices_per_image, label = 'Token count')
-                    plt.setp(stemline, linewidth = 1)
-                    plt.setp(stemline, color = 'k')
-                    plt.setp(markerline, markersize = 5)
-                    plt.setp(markerline, color = 'k')
-                    plt.setp(baseline, color = 'k')
-                    
-                    axs[3].plot(np.arange(0, self.model.VQ.K), np.ones(self.model.VQ.K) * (1. / (self.model.VQ.M + 1) ** 2) * 100, color = 'm', label = 'Uniform dist.')
-                    axs[3].set_title(f"Percentage count of {(self.model.VQ.M+1)**2} tokens")
-                    
-                    #axs[3].legend(loc="upper left")
-
-                    used_codewords = unique_encoding_indices_per_image.cpu().numpy().tolist()
-
-                    #xticklabels = [ str(idx_) if idx_ in used_codewords else "" for idx_ in range(self.model.VQ.K)]
-                    #xticklabels = [ ("\n"+x) if x_idx % 2 == 1 else x for x_idx, x in enumerate(xticklabels)]
-                    
-                    xticklabels = []
-                    counter_ = 0
-                    for idx_ in range(self.model.VQ.K):
-                        if idx_ in used_codewords:
-                            counter_ += 1
-                            xticklabels.append(str(idx_) if counter_%2==1 else ("\n" + str(idx_)))
-                        else:
-                            xticklabels.append("")
-                    axs[3].xaxis.set_ticks(np.arange(0, self.model.VQ.K))
-                    axs[3].set_xticklabels(xticklabels, fontdict = {'fontsize' : 8})
-                    plt.setp(axs[3].get_xticklabels(), rotation=30, horizontalalignment='right')
-
-                    
-                    # yticklabels = [y_value for y_value in histogram_unique_encoding_indices_per_image if not(np.isnan(y_value))] 
-                    # yticklabels.append((1. / (self.model.VQ.M + 1) ** 2) * 100) #uniform dist value
-                    # yticklabels = sorted(yticklabels)
-                    # yticklabels = np.unique(np.array(yticklabels))
-                    # yticklabels = [str(round(y_value,1)) for y_value in yticklabels]
-                    # yticklabels = ["0"] + yticklabels # append minimum value of the plot, i.e., 0%
-                    # yticklabels = yticklabels + ["40"] # append minimum value of the plot, i.e., 40%
-                    # axs[3].set_yticklabels(yticklabels)
-                    for x_,y_ in zip(np.arange(0, self.model.VQ.K), histogram_unique_encoding_indices_per_image):
-                        if not(np.isnan(y_)):
-                            axs[3].annotate( f"{y_: .0f}", xy=(x_,y_), xytext=(0,5), textcoords='offset points',ha='center')
-                    
-                    
-                    axs[3].set_ylim(bottom=0, top=40)#the top is 40% this can be chaned ! (but if some token is used 40% or more then we are in a serious problem, I think)
-                    axs[3].yaxis.set_major_formatter(FormatStrFormatter('%.0f'))
-                    
-                    axs[3].grid(True)
-                    
-                    axs[3].set_xlabel(r"$K$" + f"-sized codebook indices")
-                    axs[3].set_ylabel(f"Rounded percentage token count")
-                    plt.tight_layout()
-
-                    # save for all images
-                    if create_plot_for_every_image_in_dataset:
-                        fig.savefig(all_images_full_path + f"{str(index_+1).zfill(digit_size)}_th_test_image_PLUS_encoding_counter_per_token_position_PLUS_histogram_of_codewords_usages.png")
-                        if jupyter_show_images:
-                            fig.show()
-                            return
-                        
-                    # do worst/best images split
-                    if image_id_batch in self.best_imgs_ids:
-                        index_in_best_array = self.best_imgs_ids.index(image_id_batch.item())
-                        loss_of_index_in_best_array = self.best_imgs_losses[index_in_best_array]
-                        fig.suptitle(f"{index_in_best_array+1}/{len(self.best_imgs_ids)} best reconstructed images (according to loss func. value) from {dataset_str} dataset", fontsize=20)
-                        fig.savefig(best_images_full_path + f"{str(index_in_best_array+1).zfill(digit_size)}_th_best_{dataset_str}_img_loss_{int(round(loss_of_index_in_best_array*1e6,0))} e-6.png")
-
-                    if image_id_batch in self.worst_imgs_ids:
-                        index_in_worst_array = self.worst_imgs_ids.index(image_id_batch.item())
-                        loss_of_index_in_worst_array = self.worst_imgs_losses[index_in_worst_array]
-                        fig.suptitle(f"{index_in_worst_array+1}/{len(self.worst_imgs_ids)} worst reconstructed images (according to loss func. value) from {dataset_str} dataset", fontsize=20)
-                        fig.savefig(worst_images_full_path + f"{str(index_in_worst_array+1).zfill(digit_size)}_th_worst_{dataset_str}_img_loss_{int(round(loss_of_index_in_worst_array*1e6,0))} e-6.png")
-                    
-                    plt.close()    
-            
-        # total number of codewords to code those images per codeword (1...K) in the codebook
-        count_of_encoding_indices = count_of_encoding_indices_per_token_position.sum(dim=2).sum(dim=1).view(-1) # size=(K,)
-        # total number of codewords to code those images is hence count_of_encoding_indices.sum()
-        MAX_OCCURANCES_OF_SINGLE_ENCODING = count_of_encoding_indices.max().item()
-        TOTAL_TOKEN_NUMBER = count_of_encoding_indices.sum().item() # = (number of images) * (M+1)^2
+                        count_of_encoding_indices_per_image[unique_encoding_indices_per_image_per_position.view(-1), tokens_row_position, tokens_column_position] +=count_of_unique_encoding_indices_per_image_per_position.view(-1).float()
+                
+                
+                plt.subplot(1, 3, 1)
+                plt.imshow(image_batch[index_, :, :, :])
+                plt.title(f"{index_+1}. input image of size ({image_batch.size()[0]},{image_batch.size()[1]},{image_batch.size()[2]},{image_batch.size()[3]})")
+                plt.savefig(self.main_folder_path + f"/{ str({index_+1}).zfill(digit_size)}_Cumulative_Explained_Variance_PCA.png")
+                
+                plt.subplot(1, 3, 2)
+                plt.imshow(count_of_encoding_indices_per_image)
+                plt.title(f"Zq indices on {index_+1}. image - image of the size ({1},{1},{self.model.VQ.M + 1},{self.model.VQ.M + 1})")
+                unique_encoding_indices_per_image, count_of_unique_encoding_indices_per_image = torch.unique(input = count_of_encoding_indices_per_image.view(-1), sorted=True, return_inverse=False, return_counts=True, dim=0)
+                histogram_unique_encoding_indices_per_image = torch.zeros(self.model.VQ.K, device = self.model.device)
+                histogram_unique_encoding_indices_per_image[unique_encoding_indices_per_image.view(-1)] = count_of_unique_encoding_indices_per_image.view(-1).float()
+                
+                plt.subplot(1, 3, 3)
+                plt.stem(np.arange(1, 1 + self.model.VQ.K), histogram_unique_encoding_indices_per_image)
+                plt.title(  f"Codebook usage hisogram on {i+1}. image\n" + \ 
+                            f"(estimated codebook entropy = " + r'$\hat{H}(E)$' + f" = {np.log2(estimate_codebook_words) : .1f} bits;" + \
+                            f" estimated perplexity = " + r'$2^{\hat{H}(E)}$' + f" = {estimate_codebook_words : .1f} )")
+                
         
-        
-        #estimate probability of codewords usage
-        prob_count_of_encoding_indices = count_of_encoding_indices/count_of_encoding_indices.sum()
-        log_prob_count_of_encoding_indices = torch.log2(1e-12 + prob_count_of_encoding_indices)
-        entropy_prob_count_of_encoding_indices = - torch.sum(prob_count_of_encoding_indices * log_prob_count_of_encoding_indices)
-        perplexity_prob_count_of_encoding_indices = 2**(entropy_prob_count_of_encoding_indices)
-        
-        #entropy_report_str = r"$H(E)$"+ f" = {np.log2(self.model.VQ.K)} bits;  "+r"$\hat{H}(E)$"+f" = {entropy_prob_count_of_encoding_indices :.1f} bits ({entropy_prob_count_of_encoding_indices/np.log2(self.model.VQ.K)*100 :.1f} % of ideal)"
-        #perplexity_report_str = r"$2^{H(E)}$"+f" = {self.model.VQ.K};  "+r"$2^{\hat{H}(E)}$"+f" = {perplexity_prob_count_of_encoding_indices :.1f} ({perplexity_prob_count_of_encoding_indices/self.model.VQ.K*100 :.1f} % of ideal)"
+        count_of_encoding_indices = count_of_encoding_indices_per_token_position.sum(dim=2).sum(dim=1).view(-1)
 
-        entropy_report_str = r"$\hat{H}(E)$"+"/"+r"$H(E)$"+ f" = {entropy_prob_count_of_encoding_indices :.1f} / {np.log2(self.model.VQ.K)} bits ({entropy_prob_count_of_encoding_indices/np.log2(self.model.VQ.K)*100 :.1f}%)"
-        perplexity_report_str = r"$2^{\hat{H}(E)}$"+"/"+r"$2^{H(E)}$"+f" = {perplexity_prob_count_of_encoding_indices :.1f} / {self.model.VQ.K} ({perplexity_prob_count_of_encoding_indices/self.model.VQ.K*100 :.1f}%)"
-
-        
-        
-        fig, axs = plt.subplots(self.model.VQ.M + 1, self.model.VQ.M + 1, figsize=(13,13), gridspec_kw={'width_ratios': [1] * (self.model.VQ.M + 1) , 'height_ratios': [1] * (self.model.VQ.M + 1)}, sharex = True, sharey=True)
-        title_ = f"Percentage of codebook indices used in the {int(TOTAL_TOKEN_NUMBER / (self.model.VQ.M + 1)**2)}-sized {dataset_str} dataset per token position\n" + entropy_report_str + "  " + perplexity_report_str + f"[unif. dist. {(1. / self.model.VQ.K) * 100 : .1f}%] "
-        fig.suptitle(title_, fontsize=20)
-
-        #count_of_encoding_indices_per_token_position
-        # will use this as y-axis top limit
-        MAX_PROBABILITY_PERCENTAGE = [count_of_encoding_indices_per_token_position[:, tokens_row_position, tokens_column_position].view(-1).cpu().numpy()  for tokens_row_position in range(self.model.VQ.M + 1) for tokens_column_position in range(self.model.VQ.M + 1)]
-        MAX_PROBABILITY_PERCENTAGE = max([(x/x.sum()*100.).max() for x in MAX_PROBABILITY_PERCENTAGE])
+        fig, axs = plt.subplots(self.model.VQ.M + 1, self.model.VQ.M + 1)
         for tokens_row_position in range(self.model.VQ.M + 1): 
             for tokens_column_position in range(self.model.VQ.M + 1):
                 x_axis_histogram_data = np.arange(self.model.VQ.K)
                 y_axis_histogram_data = count_of_encoding_indices_per_token_position[:, tokens_row_position, tokens_column_position].view(-1).cpu().numpy()
+                axs[tokens_row_position, tokens_column_position].stem(x_axis_histogram_data, y_axis_histogram_data)
+                axs[tokens_row_position, tokens_column_position].set_title(f"Axis [{tokens_row_position}, {tokens_column_position}] (# of tokens = {np.sum(y_axis_histogram_data)})")
                 
-                perplexity_ = 2**(-np.sum((y_axis_histogram_data/y_axis_histogram_data.sum()) * np.log2((1e-12 + y_axis_histogram_data/y_axis_histogram_data.sum()))))
-                
-                total_number_of_images = int(np.sum(y_axis_histogram_data))
-                
-                markerline, stemline, baseline = axs[tokens_row_position, tokens_column_position].stem(x_axis_histogram_data, y_axis_histogram_data / y_axis_histogram_data.sum() * 100, basefmt=" ", linefmt = ':', markerfmt = 'o')
-                #plt.setp(stemline, linewidth = 1)
-                #plt.setp(markerline, markersize = 2)
-                #plt.setp(baseline, linewidth = 0)
-                plt.setp(stemline, color = 'k')
-                plt.setp(markerline, markersize = 5)
-                plt.setp(markerline, color = 'k')
-                plt.setp(baseline, color = 'k')
-                
-                
-                
-                axs[tokens_row_position, tokens_column_position].set_title(f"Token [{tokens_row_position},{tokens_column_position}]  "+  r"$2^{\hat{H}(E)}$" +f"={perplexity_ :.1f}")
-                axs[tokens_row_position, tokens_column_position].set_xlim(left=0, right=self.model.VQ.K)
-                axs[tokens_row_position, tokens_column_position].set_ylim(bottom=0, top=MAX_PROBABILITY_PERCENTAGE+2)#count_of_encoding_indices_per_token_position.max())
-                
-                axs[tokens_row_position, tokens_column_position].plot(np.arange(0, self.model.VQ.K), np.ones(self.model.VQ.K) * (1. / self.model.VQ.K) * 100, color = 'm') # np.ones(self.model.VQ.K) * (total_number_of_images * 1. / self.model.VQ.K)
-                
-                axs[tokens_row_position, tokens_column_position].yaxis.set_major_formatter(FormatStrFormatter('%.0f'))
-                axs[tokens_row_position, tokens_column_position].grid(True)
-                
-                max_number_of_annotations = 2
-                max_value, is_max_value_annotated = np.sort((y_axis_histogram_data / y_axis_histogram_data.sum() * 100))[-1], False
-                second_max_value, is_second_max_value_annotated = np.sort((y_axis_histogram_data / y_axis_histogram_data.sum() * 100))[-2], False
-                for x_,y_ in zip(np.arange(0, self.model.VQ.K), y_axis_histogram_data / y_axis_histogram_data.sum() * 100):
-                    #if y_ == (y_axis_histogram_data / y_axis_histogram_data.sum() * 100).max(): # only higest % elment
-                    if y_ == max_value and not(is_max_value_annotated):
-                        axs[tokens_row_position, tokens_column_position].annotate(f"({x_}, {y_:.0f}%)", xy=(x_,y_), xytext=(0,5), textcoords='offset points',ha='center')
-                        
-                        max_number_of_annotations -= 1
-                        is_max_value_annotated = True
-                        
-                        if max_value == second_max_value:
-                            is_second_max_value_annotated = True
-                            max_number_of_annotations -= 1
-                    
-                    if y_ == second_max_value and not(is_second_max_value_annotated):
-                        axs[tokens_row_position, tokens_column_position].annotate(f"({x_}, {y_:.0f}%)", xy=(x_,y_), xytext=(0,5), textcoords='offset points',ha='center')
-                        max_number_of_annotations -= 1
-                    
-                        
-                    if max_number_of_annotations == 0:
-                        break
-                        #break
-
-                
-                #axs[tokens_row_position, tokens_column_position].set_xlabel("Entries in the Codebook")
-        # for ax in axs.flat:
-        #     ax.set(xlabel = f"sorted {self.model.VQ.K}-codebook indices", 
-        #         ylabel = f"count of codebook indices used in the {dataset_str} dataset")
+        for ax in axs.flat:
+            ax.set(xlabel = f"sorted {self.model.VQ.K}-codebook indices", 
+                   ylabel = f"count of codebook indices used in the {dataset_str} dataset")
 
         # Hide x labels and tick labels for top plots and y ticks for right plots.
         for ax in axs.flat:
             ax.label_outer()
-
-        
-        fig.supxlabel(f"{self.model.VQ.K}-Entries (codewords) in the Codebook", fontsize=20)
-        fig.supylabel("Percent of the used codeword in a specific token T position", fontsize=20)
-        fig.savefig(self.main_folder_path + f"(M+1)_x_(M+1)_token_position_usage_across_{dataset_str}_dataset.png")
-        plt.close()
-
-        # occurances of codeword indices accross all positions
-        # use this tensor -> count_of_encoding_indices
-
-        fig,ax = plt.subplots(1, figsize=(8,8))
-
-
-        markerline, stemline, baseline = ax.stem(np.arange(0, self.model.VQ.K), prob_count_of_encoding_indices * 100, label = 'Real Hist.', linefmt = ':', markerfmt = 'o')
-        plt.setp(stemline, linewidth = 1)
-        plt.setp(stemline, color = 'k')
-        plt.setp(markerline, markersize = 5)
-        plt.setp(markerline, color = 'k')
-        plt.setp(baseline, color = 'k')
-
-        ax.plot(np.arange(0, self.model.VQ.K), np.ones(self.model.VQ.K) * (1. / self.model.VQ.K) * 100, label = 'Ideal Hist. (Uniform Dist.)', color = 'm')
-
-        #plt.setp(baseline, linewidth = 0)
-
-        ax.legend()
-
-        ax.set_title(f"Histogram in % of used tokens to quantize the WHOLE {dataset_str} dataset of {int(TOTAL_TOKEN_NUMBER / (self.model.VQ.M + 1)**2)} images\n" + entropy_report_str + " " + perplexity_report_str)
-
-        used_codewords = unique_encoding_indices_per_image.cpu().numpy().tolist()
-
-        xticklabels = [ str(idx_) if idx_ % 2 == 0 else ("\n"+str(idx_)) for idx_ in range(self.model.VQ.K)]
-
-        #for idx_, xticklabel in enumerate(xticklabels):
-        #    if idx_ in xticklabels:
-        #        xticklabels[idx_] = str(idx_)
-        ax.xaxis.set_ticks(np.arange(0, self.model.VQ.K))
-
-        ax.set_xticklabels(xticklabels)
-        plt.setp(ax.get_xticklabels(), rotation=30, horizontalalignment='right')
-
-        ax.yaxis.set_major_formatter(FormatStrFormatter('%.0f'))
-
-        ax.set_xlabel(f"Codewords entries in the Codebook")
-        ax.set_ylabel(f"Percent of the codeword occurrence across all token position")
-        
-        for x_,y_ in zip(np.arange(0, self.model.VQ.K), prob_count_of_encoding_indices*100):
-            # only annotate above uniform distrubition samples
-            
-            if y_>(1. / self.model.VQ.K) * 100:
-                ax.annotate(f"({x_}, {y_:.0f}%)", xy=(x_,y_), xytext=(0,5), textcoords='offset points',ha='center')
-                    
-        
-
-        plt.tight_layout()
-        ax.grid(True)
-        fig.savefig(self.main_folder_path + f"codewords_usage_across_{dataset_str}_dataset.png")
-        plt.close()
         # # TO DO
         # # all names have to be unique
         # all_shape_features           = ['FILL_NOFILL',
@@ -2563,20 +2218,3 @@ class Model_Trainer:
         # #histograms per position
         # for tokens_row_position in range(self.model.VQ.M + 1):
         #     for tokens_column_position in range(self.model.VQ.M + 1):
-        
-class EarlyStopper:
-    def __init__(self, patience=1, min_delta=0):
-        self.patience = patience
-        self.min_delta = min_delta
-        self.counter = 0
-        self.min_validation_loss = np.inf
-
-    def early_stop(self, validation_loss):
-        if validation_loss < self.min_validation_loss:
-            self.min_validation_loss = validation_loss
-            self.counter = 0
-        elif validation_loss > (self.min_validation_loss + self.min_delta):
-            self.counter += 1
-            if self.counter >= self.patience:
-                return True
-        return False

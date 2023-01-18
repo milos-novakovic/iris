@@ -86,7 +86,7 @@ for change_channel_size_across_layers in change_channel_size_across_layers_array
                         
                         compression_gain = round(input_bits / compressed_number_of_bits_per_image,3)
                         current_time_str = time.strftime("%H:%M:%S %d.%m.%Y", time.gmtime(time.time()))
-                        log_str = f"[{current_time_str}] {run_id}) Finished running for K = {k} & D = {d} & M = {m} & beta = {beta} & max_channel_number = {max_channel_number} (i.e. bits = {compressed_number_of_bits_per_image}) change_channel_size_across_layers = {change_channel_size_across_layers}"
+                        log_str = f"[{current_time_str}] {run_id}) Started running for K = {k} & D = {d} & M = {m} & beta = {beta} & max_channel_number = {max_channel_number} (i.e. bits = {compressed_number_of_bits_per_image}) change_channel_size_across_layers = {change_channel_size_across_layers}"
                         with open('log_all.txt', 'a') as f:
                             f.write(f"Started {log_str}:\n")
                             f.write(f"\n--------------------------------------------------- \n\n")
@@ -97,7 +97,7 @@ for change_channel_size_across_layers in change_channel_size_across_layers_array
                         os.system(command)
                         TOTAL_TRAINING_TIME = int(np.floor(time.time() - START_TIME))
                         minutes, seconds = divmod(TOTAL_TRAINING_TIME, 60)
-                        hours, minutes = divmod(m, 60)
+                        hours, minutes = divmod(minutes, 60)
                         TOTAL_TRAINING_TIME = f"{hours}:{minutes}:{seconds} h/m/s"             
                         
                         current_time_str = time.strftime("%H:%M:%S %d.%m.%Y", time.gmtime(time.time()))
