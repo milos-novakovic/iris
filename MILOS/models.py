@@ -1,6 +1,7 @@
 import yaml
 from yaml.loader import SafeLoader
 import itertools
+import glob
 from collections import OrderedDict
 from matplotlib.colors import ListedColormap
 import matplotlib
@@ -34,6 +35,25 @@ import pandas as pd
 from mpl_toolkits import mplot3d
 import imageio
 from matplotlib.ticker import FormatStrFormatter
+
+from helper_functions import get_hyperparam_from_config_file
+
+class EarlyStopper:
+    def __init__(self, patience=1, min_delta=0):
+        self.patience = patience
+        self.min_delta = min_delta
+        self.counter = 0
+        self.min_validation_loss = np.inf
+
+    def early_stop(self, validation_loss):
+        if validation_loss < self.min_validation_loss:
+            self.min_validation_loss = validation_loss
+            self.counter = 0
+        elif validation_loss > (self.min_validation_loss + self.min_delta):
+            self.counter += 1
+            if self.counter >= self.patience:
+                return True
+        return False
 
 def conv2d_dims(h_in,w_in,k,s,p,d):
     h_out, w_out = None, None
@@ -942,6 +962,7 @@ class Model_Trainer:
         self.train_data_variance=args['train_data_variance']#float32 number represents the variance of all the training images across all chanels and pixels
         self.PCA_decomp_in_every_epochs = args['PCA_decomp_in_every_epochs']
         self.logger_path = args['logger_path']
+        self.config_path = args['config_path']
         
         self.epoch_ids_PCA = []
         # create and init self.optimizer
@@ -983,13 +1004,13 @@ class Model_Trainer:
         
         # if we use EMA update of the codebook then we do not have || Z_e.detach() - Z_q ||^2 loss term (i.e. self.train_multiple_losses_avg['VQ_codebook_loss'] = self.val_multiple_losses_avg['VQ_codebook_loss'] = 0)
         non_reconstruction_loss_str = 'beta' if self.model.args_VQ['use_EMA'] else '(1+beta)'
-        
+        #+f"Total elapsed time in Training Epoch    = {train_duration_sec_str};\n"\
+        #+f"Total elapsed time in Validation Epoch  = {val_duration_sec_str};\n"\
+        current_local_time = time.strftime("%H:%M:%S %d.%m.%Y", time.localtime(time.time()))
         intermediate_training_stats : str = \
-                 f"Epoch {current_epoch+1}/{self.NUM_EPOCHS};\n"\
-                +f"Training   Samples Mini-Batch size      = {self.loaders['train'].batch_size};\n"\
-                +f"Validation Samples Mini-Batch size      = {self.loaders['val'].batch_size};\n"\
-                +f"Total elapsed time in Training Epoch    = {train_duration_sec_str};\n"\
-                +f"Total elapsed time in Validation Epoch  = {val_duration_sec_str};\n"\
+                f"[{current_local_time}]\n"\
+                +f"Epoch {current_epoch+1}/{self.NUM_EPOCHS};\n"\
+                +f"Training/Validation   Samples Mini-Batch size      = {self.loaders['train'].batch_size}/{self.loaders['val'].batch_size};\n"\
                 +f"Total elapsed time from begining        = {duration_sec_str};\n"\
                 +f"Curr. Avg. Train Loss across Mini-Batch = {current_avg_train_loss *1e6 : .1f} e-6; = "\
                                     +f"(1/var)*||X-X_r||^2 = {self.train_multiple_losses_avg['reconstruction_loss'][-1] *1e6 : .1f} e-6 = {self.train_multiple_losses_avg['reconstruction_loss'][-1]/current_avg_train_loss*100:.1f} %; "\
@@ -1488,10 +1509,10 @@ class Model_Trainer:
             plt.savefig(self.main_folder_path + 'semilog_train_val_loss_per_epoch.png')
             plt.close()
             
-            
-            # SEMILOG-Y SCALE for individual Loss terms applied to training loss
-            DROP_FIRST_N_EPOCHS = 100
             TOTAL_EPOCH_NUMBER = len(self.train_loss_avg)
+            # SEMILOG-Y SCALE for individual Loss terms applied to training loss
+            DROP_FIRST_N_EPOCHS = int(0.05 * TOTAL_EPOCH_NUMBER)
+            
             X_AXIS = np.arange(DROP_FIRST_N_EPOCHS, TOTAL_EPOCH_NUMBER)
             plt.figure(figsize=(45,15))
             legend_labels = []
@@ -1557,8 +1578,8 @@ class Model_Trainer:
             
             
             # SEMILOG-Y SCALE for individual Loss terms applied to validation loss
-            DROP_FIRST_N_EPOCHS = 100
             TOTAL_EPOCH_NUMBER = len(self.train_loss_avg)
+            DROP_FIRST_N_EPOCHS = int(0.05*TOTAL_EPOCH_NUMBER)
             X_AXIS = np.arange(DROP_FIRST_N_EPOCHS, TOTAL_EPOCH_NUMBER)
             plt.figure(figsize=(45,15))
             legend_labels = []
@@ -2178,6 +2199,7 @@ class Model_Trainer:
     def visualize_discrete_codes(self, compose_transforms, dataset_str = 'test', create_plot_for_every_image_in_dataset = False, jupyter_show_images = False):
         assert(dataset_str in ['train', 'val', 'test'], f"The dataset can only be train, val or test and current dataset is {dataset_str}")
         
+        self.compose_transforms = compose_transforms
         
         MAX_NUMBER_OF_IMAGES_TO_COVER = None#200#None#200#None
         
@@ -2185,23 +2207,36 @@ class Model_Trainer:
         digit_size = len(str(len(self.loaders[dataset_str].dataset)))
         self.model.eval()
 
-        if not os.path.exists(self.main_folder_path + 'test_image_PLUS_encoding_counter_per_token_position_PLUS_histogram_of_codewords_usages/'):
-            os.mkdir(self.main_folder_path + 'test_image_PLUS_encoding_counter_per_token_position_PLUS_histogram_of_codewords_usages/')
+        self.visualize_tokens_path = self.main_folder_path + 'test_image_PLUS_encoding_counter_per_token_position_PLUS_histogram_of_codewords_usages/'
+        if not os.path.exists(self.visualize_tokens_path):
+            os.mkdir(self.visualize_tokens_path)
         
         # best images
-        best_images_full_path = self.main_folder_path + 'test_image_PLUS_encoding_counter_per_token_position_PLUS_histogram_of_codewords_usages/best_imgs/'
-        if not os.path.exists(best_images_full_path):
-            os.mkdir(best_images_full_path)
-        
+        self.best_images_full_path = self.main_folder_path + 'test_image_PLUS_encoding_counter_per_token_position_PLUS_histogram_of_codewords_usages/best_imgs/'
+        if not os.path.exists(self.best_images_full_path):
+            os.mkdir(self.best_images_full_path)
+        #clear the content of the folder
+        files = glob.glob(self.best_images_full_path + '*')
+        for f in files:
+            os.remove(f)
+                
         # worst images
-        worst_images_full_path = self.main_folder_path + 'test_image_PLUS_encoding_counter_per_token_position_PLUS_histogram_of_codewords_usages/worst_imgs/'
-        if not os.path.exists(worst_images_full_path):
-            os.mkdir(worst_images_full_path)
+        self.worst_images_full_path = self.main_folder_path + 'test_image_PLUS_encoding_counter_per_token_position_PLUS_histogram_of_codewords_usages/worst_imgs/'
+        if not os.path.exists(self.worst_images_full_path):
+            os.mkdir(self.worst_images_full_path)
+            #clear the content of the folder
+        files = glob.glob(self.worst_images_full_path + '*')
+        for f in files:
+            os.remove(f)
         
         # all images
-        all_images_full_path =self.main_folder_path + 'test_image_PLUS_encoding_counter_per_token_position_PLUS_histogram_of_codewords_usages/_imgs/' 
-        if not os.path.exists(all_images_full_path):
-            os.mkdir(all_images_full_path)
+        self.all_images_full_path =self.main_folder_path + 'test_image_PLUS_encoding_counter_per_token_position_PLUS_histogram_of_codewords_usages/_imgs/' 
+        if not os.path.exists(self.all_images_full_path):
+            os.mkdir(self.all_images_full_path)
+        #clear the content of the folder
+        files = glob.glob(self.all_images_full_path + '*')
+        for f in files:
+            os.remove(f)
 
         # for every image in the input batch plot three subplots on next to each other:
         # original image
@@ -2283,11 +2318,22 @@ class Model_Trainer:
                     #plt.subplot(1, 3, 1)
                     # have to renormalize and show original image here
                     #image_batch_original_img = image_batch_original_img.view(1, image_batch_original_img.size(0), image_batch_original_img.size(1), image_batch_original_img.size(2))
-                    image_batch_original_img = to_img(image_batch.cpu(), compose_transforms)
+                    image_batch_original_img = to_img(image_batch.cpu(), self.compose_transforms)
 
+                    
+                    
                     axs[0].imshow(np.transpose(image_batch_original_img[0,:,:,:], (1, 2, 0))) # H,W,C
-                    axs[0].set_title(f"Original {image_batch_original_img.size(1)}x{image_batch_original_img.size(2)}x{image_batch_original_img.size(3)} image "\
-                        + r"$X$" + f"dec_id= {str(image_id_batch).zfill(5)}\nbin_id = {(str(bin(image_id_batch))[2:]).zfill(14)}")
+                    
+                    if self.config_path == "/home/novakovm/iris/MILOS/toy_shapes_config.yaml":
+                        TOTAL_NUMBER_OF_SHAPES = get_hyperparam_from_config_file(self.config_path, "TOTAL_NUMBER_OF_SHAPES")
+                        bin_id = (str(bin(image_id_batch))[2:]).zfill(14 * TOTAL_NUMBER_OF_SHAPES)
+                        if TOTAL_NUMBER_OF_SHAPES == 2:
+                            bin_id = bin_id[:len(bin_id)//2] + "\n" + bin_id[len(bin_id)//2:]
+                        axs[0].set_title(f"Org. {image_batch_original_img.size(1)}x{image_batch_original_img.size(2)}x{image_batch_original_img.size(3)} image "\
+                            + r"$X$" + f"dec= {str(image_id_batch.item()).zfill(digit_size)}\nbin= {bin_id}")
+                    else:
+                        axs[0].set_title(f"Org. {image_batch_original_img.size(1)}x{image_batch_original_img.size(2)}x{image_batch_original_img.size(3)} image "\
+                            + r"$X$" + f"\nid= {str(image_id_batch.item()).zfill(digit_size)}")
                     axs[0].set_xlabel(r"$W$")
                     axs[0].set_ylabel(r"$H$")
                     #plt.subplot(1, 3, 2)
@@ -2300,7 +2346,7 @@ class Model_Trainer:
                     #plt.show()
                     # different ways to show heatmap https://stackoverflow.com/questions/33282368/plotting-a-2d-heatmap
 
-                    axs[1].set_title(f"The indices of codebook " + r"$E$" + f"\n({self.model.VQ.M+1}x{self.model.VQ.M+1} {self.model.VQ.D}-dimensional vectors that form " + r"$Z_q$" + f" tensor)")
+                    axs[1].set_title(f"The indices of codebook " + r"$E$" + f"\n({self.model.VQ.M+1}x{self.model.VQ.M+1} {self.model.VQ.D}-dim. vectors that form " + r"$Z_q$" + f" tensor)")
                     axs[1].set_xlabel(r"$W_e$")
                     axs[1].set_ylabel(r"$H_e$")
                     #axs[1].set_xticks(np.arange(0,1 + self.model.VQ.M))
@@ -2314,7 +2360,7 @@ class Model_Trainer:
                     #plot reconstruction
                     image_batch_recon  = self.model.decoder(Zq)
                     recon_error = (F.mse_loss(image_batch_recon, image_batch) / self.train_data_variance)
-                    image_batch_recon_img = to_img(image_batch_recon.cpu(), compose_transforms)
+                    image_batch_recon_img = to_img(image_batch_recon.cpu(), self.compose_transforms)
                     axs[2].imshow(np.transpose(image_batch_recon_img[0,:,:,:], (1, 2, 0))) # H,W,C
                     axs[2].set_title(f"Reconstructed image " + r"$X_{rec}$" + " with loss\n"+ \
                                     r"$\mathcal{L}$" + f" = {(recon_error.item() + e_and_q_latent_loss.item() )*1e6 :.0f}" + r"$\cdot10^{-6}$=" + "\n" +\
@@ -2380,7 +2426,7 @@ class Model_Trainer:
 
                     # save for all images
                     if create_plot_for_every_image_in_dataset:
-                        fig.savefig(all_images_full_path + f"{str(index_+1).zfill(digit_size)}_th_test_image_PLUS_encoding_counter_per_token_position_PLUS_histogram_of_codewords_usages.png")
+                        fig.savefig(self.all_images_full_path + f"{str(index_+1).zfill(digit_size)}_th_test_image_PLUS_encoding_counter_per_token_position_PLUS_histogram_of_codewords_usages.png")
                         if jupyter_show_images:
                             fig.show()
                             return
@@ -2390,13 +2436,13 @@ class Model_Trainer:
                         index_in_best_array = self.best_imgs_ids.index(image_id_batch.item())
                         loss_of_index_in_best_array = self.best_imgs_losses[index_in_best_array]
                         fig.suptitle(f"{index_in_best_array+1}/{len(self.best_imgs_ids)} best reconstructed images (according to loss func. value) from {dataset_str} dataset", fontsize=20)
-                        fig.savefig(best_images_full_path + f"{str(index_in_best_array+1).zfill(digit_size)}_th_best_{dataset_str}_img_loss_{int(round(loss_of_index_in_best_array*1e6,0))} e-6.png")
+                        fig.savefig(self.best_images_full_path + f"{str(index_in_best_array+1).zfill(digit_size)}_th_best_{dataset_str}_img_loss_{int(round(loss_of_index_in_best_array*1e6,0))} e-6.png")
 
                     if image_id_batch in self.worst_imgs_ids:
                         index_in_worst_array = self.worst_imgs_ids.index(image_id_batch.item())
                         loss_of_index_in_worst_array = self.worst_imgs_losses[index_in_worst_array]
                         fig.suptitle(f"{index_in_worst_array+1}/{len(self.worst_imgs_ids)} worst reconstructed images (according to loss func. value) from {dataset_str} dataset", fontsize=20)
-                        fig.savefig(worst_images_full_path + f"{str(index_in_worst_array+1).zfill(digit_size)}_th_worst_{dataset_str}_img_loss_{int(round(loss_of_index_in_worst_array*1e6,0))} e-6.png")
+                        fig.savefig(self.worst_images_full_path + f"{str(index_in_worst_array+1).zfill(digit_size)}_th_worst_{dataset_str}_img_loss_{int(round(loss_of_index_in_worst_array*1e6,0))} e-6.png")
                     
                     plt.close()    
             
@@ -2449,7 +2495,7 @@ class Model_Trainer:
                 
                 
                 
-                axs[tokens_row_position, tokens_column_position].set_title(f"Token [{tokens_row_position},{tokens_column_position}]  "+  r"$2^{\hat{H}(E)}$" +f"={perplexity_ :.1f}")
+                axs[tokens_row_position, tokens_column_position].set_title(f"T[{tokens_row_position},{tokens_column_position}] "+  r"$2^{\hat{H}(E)}$" +f"={perplexity_ :.1f}")
                 axs[tokens_row_position, tokens_column_position].set_xlim(left=0, right=self.model.VQ.K)
                 axs[tokens_row_position, tokens_column_position].set_ylim(bottom=0, top=MAX_PROBABILITY_PERCENTAGE+2)#count_of_encoding_indices_per_token_position.max())
                 
@@ -2564,19 +2610,251 @@ class Model_Trainer:
         # for tokens_row_position in range(self.model.VQ.M + 1):
         #     for tokens_column_position in range(self.model.VQ.M + 1):
         
-class EarlyStopper:
-    def __init__(self, patience=1, min_delta=0):
-        self.patience = patience
-        self.min_delta = min_delta
-        self.counter = 0
-        self.min_validation_loss = np.inf
 
-    def early_stop(self, validation_loss):
-        if validation_loss < self.min_validation_loss:
-            self.min_validation_loss = validation_loss
-            self.counter = 0
-        elif validation_loss > (self.min_validation_loss + self.min_delta):
-            self.counter += 1
-            if self.counter >= self.patience:
-                return True
-        return False
+    
+            
+    def original_reconstructed_changed_reconstucted_tokens_changed_tokens(self,
+                                                                        image_batch,# one image, it is the tensor of shape = (1,C,H,W)
+                                                                        image_id_batch,#id
+                                                                        new_encoding_indices, # new encoding_indices tensor of size (1, self.model.VQ.M+1, self.model.VQ.M+1) [where every element is an integer that is in the range 0, ..., (K - 1)] to generate a new Zq -> Zq_new so that a new image can be generated
+                                                                        index_ = 0,
+                                                                        dataset_str = 'test',
+                                                                        create_plot_for_every_image_in_dataset = False, 
+                                                                        jupyter_show_images = False):
+        digit_size = len(str(len(self.loaders[dataset_str].dataset)))
+        self.model.eval()
+        
+        
+        #count_of_encoding_indices_per_token_position = torch.zeros((self.model.VQ.K, self.model.VQ.M+1,self.model.VQ.M+1), device='cpu')
+        
+        with torch.no_grad():
+            # move the image tensor to the device
+            image_batch = image_batch.to(self.device)
+            
+            # (VQ + Encoder) forward pass 
+            # output every tensor in the vector quantization process 
+            self.model.VQ.output_whole_quantization_process = True
+            e_and_q_latent_loss, Zq, e_latent_loss, q_latent_loss, estimate_codebook_words, encoding_indices, estimate_codebook_words_freq, estimate_codebook_words_prob, inputs, D  = self.model.VQ(self.model.encoder(image_batch))
+            
+            self.model.VQ.output_whole_quantization_process = False
+            
+            #self.model.VQ(self.model.encoder(image_batch))
+            
+            e_and_q_latent_loss, encoding_indices, estimate_codebook_words_freq, estimate_codebook_words_prob, inputs, D = e_and_q_latent_loss.cpu(), encoding_indices.cpu(), estimate_codebook_words_freq.cpu(), estimate_codebook_words_prob.cpu(), inputs.cpu(), D.cpu()
+            # e_and_q_latent_loss, e_latent_loss, q_latent_loss are scalars
+            # Zq is BCHW tensor
+            # estimate_codebook_words vector of size (K,)
+            # encoding_indices vector of size (BHW,)
+            #encoding_indices_tensor = encoding_indices.view(-1, self.model.VQ.M+1, self.model.VQ.M+1)
+            #B = encoding_indices_tensor.size(0)
+            #self.visualize_discrete_codes_output['count_codebook_words_per_token_position_used_in_' + dataset_str]
+            
+            """
+            count_of_encoding_indices_per_image = torch.zeros((self.model.VQ.M+1, self.model.VQ.M+1), device = 'cpu')
+            
+            
+            for tokens_row_position in range(self.model.VQ.M + 1):
+                for tokens_column_position in range(self.model.VQ.M + 1):
+                    unique_encoding_indices_per_image_per_position, count_of_unique_encoding_indices_per_image_per_position = torch.unique(input = encoding_indices_tensor[:, tokens_row_position, tokens_column_position], sorted=True, return_inverse=False, return_counts=True, dim=0)
+                    
+                    # this tensor count_of_encoding_indices_per_token_position is used later to produce other plots so do not deleete it!
+                    # count_of_encoding_indices_per_token_position[unique_encoding_indices_per_image_per_position.view(-1), tokens_row_position, tokens_column_position] += count_of_unique_encoding_indices_per_image_per_position.view(-1).float()
+                    
+                    #count_of_encoding_indices_per_image[tokens_row_position, tokens_column_position] = unique_encoding_indices_per_image_per_position.view(-1)[0].float() # worse, I think
+                    count_of_encoding_indices_per_image[tokens_row_position, tokens_column_position] = unique_encoding_indices_per_image_per_position.view(-1).float().item() # better, I think
+                    
+            """
+        
+            fig, axs = plt.subplots(1,5, figsize=(30,8), gridspec_kw={'width_ratios': [1, 1, 1, 1, 1], 'height_ratios': [1]})
+            #matplotlib.rcParams.update(matplotlib.rcParamsDefault)
+            #plt.rcParams['text.usetex'] = True
+            #fig.set_size_inches(15, 7)
+            fig.suptitle(f"{index_}. custom {dataset_str} image", fontsize=20)
+
+            #plt.subplot(1, 3, 1)
+            # have to renormalize and show original image here
+            #image_batch_original_img = image_batch_original_img.view(1, image_batch_original_img.size(0), image_batch_original_img.size(1), image_batch_original_img.size(2))
+            image_batch_original_img = to_img(image_batch.cpu(), self.compose_transforms)
+
+            axs[0].imshow(np.transpose(image_batch_original_img[0,:,:,:], (1, 2, 0))) # H,W,C
+            #axs[0].set_title(f"Original {image_batch_original_img.size(1)}x{image_batch_original_img.size(2)}x{image_batch_original_img.size(3)} image "\
+            #    + r"$X$" + f"dec_id= {str(image_id_batch).zfill(5)}\nbin_id = {(str(bin(image_id_batch))[2:]).zfill(14)}")
+            
+            if self.config_path == "/home/novakovm/iris/MILOS/toy_shapes_config.yaml":
+                    TOTAL_NUMBER_OF_SHAPES = get_hyperparam_from_config_file(self.config_path, "TOTAL_NUMBER_OF_SHAPES")
+                    bin_id = (str(bin(image_id_batch))[2:]).zfill(14 * TOTAL_NUMBER_OF_SHAPES)
+                    if TOTAL_NUMBER_OF_SHAPES == 2:
+                        bin_id = bin_id[:len(bin_id)//2] + "\n" + bin_id[len(bin_id)//2:]
+                    axs[0].set_title(f"Org. {image_batch_original_img.size(1)}x{image_batch_original_img.size(2)}x{image_batch_original_img.size(3)} image "\
+                        + r"$X$" + f" dec= {str(image_id_batch.item()).zfill(digit_size)}\nbin= {bin_id}")
+            else:
+                axs[0].set_title(f"Org. {image_batch_original_img.size(1)}x{image_batch_original_img.size(2)}x{image_batch_original_img.size(3)} image "\
+                    + r"$X$" + f"\nid= {str(image_id_batch.item()).zfill(digit_size)}")
+                
+            axs[0].set_xlabel(r"$W$")
+            axs[0].set_ylabel(r"$H$")
+
+
+            #plot reconstruction
+            image_batch_recon  = self.model.decoder(Zq).cpu()
+            recon_error = (F.mse_loss(image_batch_recon, image_batch.cpu()) / self.train_data_variance)
+            image_batch_recon_img = to_img(image_batch_recon.cpu(), self.compose_transforms)
+            axs[1].imshow(np.transpose(image_batch_recon_img[0,:,:,:], (1, 2, 0))) # H,W,C
+            axs[1].set_title(f"Reconstructed image " + r"$X_{rec}$" + " with loss\n"+ \
+                            r"$\mathcal{L}$" + f" = {(recon_error.item() + e_and_q_latent_loss.item() )*1e6 :.0f}" + r"$\cdot10^{-6}$=" + "\n" +\
+                            #f"\n(1/var)||X - X_rec ||^2 ({recon_error.item()*1e6 :.0f}e-6)"+\
+                            r"$\frac{1}{VAR[X_{train}]} ||X - X_{rec}||^2_2 $" + f" ( = {recon_error.item()*1e6 :.0f}" + r"$\cdot10^{-6}$" + f";{recon_error.item()/(recon_error.item() + e_and_q_latent_loss.item()) * 100. :.0f}%)\n" + \
+                            #f"\n+ (1+beta)*||Z_e-Z_q||^2 ({e_and_q_latent_loss.item()*1e6 :.0f}e-6)")
+                            r"$+(1+\beta) || \frac{Z_e}{||Z_e||_2} - \frac{Z_q}{||Z_q||_2}||^2_2 $" + f" ( = {e_and_q_latent_loss.item()*1e6 :.0f}" + r"$\cdot10^{-6}$" + f";{e_and_q_latent_loss.item()/(recon_error.item() + e_and_q_latent_loss.item()) * 100. :.0f}%)")
+            axs[1].set_xlabel(r"$W$")
+            axs[1].set_ylabel(r"$H$")
+            
+            
+            
+            #plot reconstruction of chaned Zq
+            Zq_new = self.model.VQ.generate_new_Zq(new_encoding_indices = new_encoding_indices, B = 1)
+            image_batch_recon_from_Zq_new  = self.model.decoder(Zq_new).cpu() 
+            image_batch_recon_from_Zq_new_recon_error = (F.mse_loss(image_batch_recon_from_Zq_new, image_batch.cpu()) / self.train_data_variance)
+            
+            
+            #recon_error = (F.mse_loss(image_batch_recon, image_batch) / self.train_data_variance)
+            image_batch_recon_from_Zq_new_img = to_img(image_batch_recon_from_Zq_new.cpu(), self.compose_transforms)
+            axs[2].imshow(np.transpose(image_batch_recon_from_Zq_new_img[0,:,:,:], (1, 2, 0))) # H,W,C
+            axs[2].set_title("Reconstructed image "+ r"$\tilde{X}$" + " from the " + r"$\tilde{Z}_q$" + " token map\n" +\
+                            r"$\frac{1}{VAR[X_{train}]} ||X - X_{rec}||^2_2 $" + f" = {image_batch_recon_from_Zq_new_recon_error.item()*1e6 :.0f}" + r"$\cdot10^{-6}$")
+            # axs[2].set_title(f"Reconstructed image " + r"$X_{rec}$" + " with loss\n"+ \
+            #                 r"$\mathcal{L}$" + f" = {(recon_error.item() + e_and_q_latent_loss.item() )*1e6 :.0f}" + r"$\cdot10^{-6}$=" + "\n" +\
+            #                 #f"\n(1/var)||X - X_rec ||^2 ({recon_error.item()*1e6 :.0f}e-6)"+\
+            #                 r"$\frac{1}{VAR[X_{train}]} ||X - X_{rec}||^2_2 $" + f" ( = {recon_error.item()*1e6 :.0f}" + r"$\cdot10^{-6}$" + f";{recon_error.item()/(recon_error.item() + e_and_q_latent_loss.item()) * 100. :.0f}%)\n" + \
+            #                 #f"\n+ (1+beta)*||Z_e-Z_q||^2 ({e_and_q_latent_loss.item()*1e6 :.0f}e-6)")
+            #                 r"$+(1+\beta) || \frac{Z_e}{||Z_e||_2} - \frac{Z_q}{||Z_q||_2}||^2_2 $" + f" ( = {e_and_q_latent_loss.item()*1e6 :.0f}" + r"$\cdot10^{-6}$" + f";{e_and_q_latent_loss.item()/(recon_error.item() + e_and_q_latent_loss.item()) * 100. :.0f}%)")
+            axs[2].set_xlabel(r"$W$")
+            axs[2].set_ylabel(r"$H$")
+            
+            
+            
+            
+            
+            #plt.subplot(1, 3, 2)
+            #different heatmaps
+            #axs[1].imshow(count_of_encoding_indices_per_image)
+            #axs[1].matshow(count_of_encoding_indices_per_image)
+            #axs[1].imshow(count_of_encoding_indices_per_image, cmap='hot', interpolation='nearest')
+            #axs[1] = 
+        
+            #sns.heatmap(data = count_of_encoding_indices_per_image.int().numpy(), linewidth=0.5, annot=True, ax=axs[3], cbar = False, xticklabels=np.arange(1,2 + self.model.VQ.M), yticklabels=np.arange(1,2 + self.model.VQ.M), square = True,  fmt='d', cmap='Blues')
+            sns.heatmap(data = encoding_indices.view(self.model.VQ.M+1, self.model.VQ.M+1).cpu().int().numpy(), linewidth=0.5, annot=True, ax=axs[3], cbar = False, xticklabels=np.arange(1,2 + self.model.VQ.M), yticklabels=np.arange(1,2 + self.model.VQ.M), square = True,  fmt='d', cmap='Blues')
+            
+            # different ways to show heatmap https://stackoverflow.com/questions/33282368/plotting-a-2d-heatmap
+
+            axs[3].set_title(f"The original token map "+ r"$Z_q$"+" of the org. image " + r"$X$" + f"\n({self.model.VQ.M+1}x{self.model.VQ.M+1} {self.model.VQ.D}-dimensional vectors that form " + r"$Z_q$" + f" tensor)")
+            axs[3].set_xlabel(r"$W_e$")
+            axs[3].set_ylabel(r"$H_e$")
+            #axs[1].set_xticks(np.arange(0,1 + self.model.VQ.M))
+            #axs[1].set_yticks(np.arange(0,1 + self.model.VQ.M))
+            
+            #plt.subplot(1, 3, 2)
+            #different heatmaps
+            #axs[1].imshow(count_of_encoding_indices_per_image)
+            #axs[1].matshow(count_of_encoding_indices_per_image)
+            #axs[1].imshow(count_of_encoding_indices_per_image, cmap='hot', interpolation='nearest')
+            #axs[1] = 
+            sns.heatmap(data = new_encoding_indices.view(self.model.VQ.M+1, self.model.VQ.M+1).cpu().int().numpy(), linewidth=0.5, annot=True, ax=axs[4], cbar = False, xticklabels=np.arange(1,2 + self.model.VQ.M), yticklabels=np.arange(1,2 + self.model.VQ.M), square = True,  fmt='d', cmap='Blues')
+            #plt.show()
+            # different ways to show heatmap https://stackoverflow.com/questions/33282368/plotting-a-2d-heatmap
+
+            axs[4].set_title(f"The changed token map " + r"$\tilde{Z}_q$")
+            axs[4].set_xlabel(r"$W_e$")
+            axs[4].set_ylabel(r"$H_e$")
+            #axs[1].set_xticks(np.arange(0,1 + self.model.VQ.M))
+            #axs[1].set_yticks(np.arange(0,1 + self.model.VQ.M))
+            
+            
+            """"
+            unique_encoding_indices_per_image, count_of_unique_encoding_indices_per_image = torch.unique(input = count_of_encoding_indices_per_image.view(-1), sorted=True, return_inverse=False, return_counts=True, dim=0)
+            histogram_unique_encoding_indices_per_image = np.zeros(self.model.VQ.K)
+            histogram_unique_encoding_indices_per_image[unique_encoding_indices_per_image.view(-1).numpy().astype(int)] = count_of_unique_encoding_indices_per_image.view(-1).numpy().astype(int)
+            histogram_unique_encoding_indices_per_image = 100*histogram_unique_encoding_indices_per_image/histogram_unique_encoding_indices_per_image.sum()
+            histogram_unique_encoding_indices_per_image = [float('nan') if x==0 else x for x in histogram_unique_encoding_indices_per_image]
+
+            # histogram of current tokens for a current image
+            markerline, stemline, baseline = axs[3].stem(np.arange(0, self.model.VQ.K), histogram_unique_encoding_indices_per_image, label = 'Token count')
+            plt.setp(stemline, linewidth = 1)
+            plt.setp(stemline, color = 'k')
+            plt.setp(markerline, markersize = 5)
+            plt.setp(markerline, color = 'k')
+            plt.setp(baseline, color = 'k')
+            
+            axs[3].plot(np.arange(0, self.model.VQ.K), np.ones(self.model.VQ.K) * (1. / (self.model.VQ.M + 1) ** 2) * 100, color = 'm', label = 'Uniform dist.')
+            axs[3].set_title(f"Percentage count of {(self.model.VQ.M+1)**2} tokens")
+            
+            #axs[3].legend(loc="upper left")
+            
+
+            used_codewords = unique_encoding_indices_per_image.cpu().numpy().tolist()
+
+            #xticklabels = [ str(idx_) if idx_ in used_codewords else "" for idx_ in range(self.model.VQ.K)]
+            #xticklabels = [ ("\n"+x) if x_idx % 2 == 1 else x for x_idx, x in enumerate(xticklabels)]
+            
+            xticklabels = []
+            counter_ = 0
+            for idx_ in range(self.model.VQ.K):
+                if idx_ in used_codewords:
+                    counter_ += 1
+                    xticklabels.append(str(idx_) if counter_%2==1 else ("\n" + str(idx_)))
+                else:
+                    xticklabels.append("")
+            axs[3].xaxis.set_ticks(np.arange(0, self.model.VQ.K))
+            axs[3].set_xticklabels(xticklabels, fontdict = {'fontsize' : 8})
+            plt.setp(axs[3].get_xticklabels(), rotation=30, horizontalalignment='right')
+
+            
+            # yticklabels = [y_value for y_value in histogram_unique_encoding_indices_per_image if not(np.isnan(y_value))] 
+            # yticklabels.append((1. / (self.model.VQ.M + 1) ** 2) * 100) #uniform dist value
+            # yticklabels = sorted(yticklabels)
+            # yticklabels = np.unique(np.array(yticklabels))
+            # yticklabels = [str(round(y_value,1)) for y_value in yticklabels]
+            # yticklabels = ["0"] + yticklabels # append minimum value of the plot, i.e., 0%
+            # yticklabels = yticklabels + ["40"] # append minimum value of the plot, i.e., 40%
+            # axs[3].set_yticklabels(yticklabels)
+            for x_,y_ in zip(np.arange(0, self.model.VQ.K), histogram_unique_encoding_indices_per_image):
+                if not(np.isnan(y_)):
+                    axs[3].annotate( f"{y_: .0f}", xy=(x_,y_), xytext=(0,5), textcoords='offset points',ha='center')
+            
+            
+            axs[3].set_ylim(bottom=0, top=40)#the top is 40% this can be chaned ! (but if some token is used 40% or more then we are in a serious problem, I think)
+            axs[3].yaxis.set_major_formatter(FormatStrFormatter('%.0f'))
+            
+            axs[3].grid(True)
+            
+            axs[3].set_xlabel(r"$K$" + f"-sized codebook indices")
+            axs[3].set_ylabel(f"Rounded percentage token count")
+            plt.tight_layout()
+            """
+            fig.savefig(self.all_images_full_path + f"{str(index_).zfill(digit_size)}_custom_image.png")
+            if jupyter_show_images:
+                plt.show()
+            plt.close()
+            """
+            # save for all images
+            if create_plot_for_every_image_in_dataset:
+                
+                if jupyter_show_images:
+                    fig.show()
+                    return
+                
+            # do worst/best images split
+            if image_id_batch in self.best_imgs_ids:
+                index_in_best_array = self.best_imgs_ids.index(image_id_batch.item())
+                loss_of_index_in_best_array = self.best_imgs_losses[index_in_best_array]
+                fig.suptitle(f"{index_in_best_array+1}/{len(self.best_imgs_ids)} best reconstructed images (according to loss func. value) from {dataset_str} dataset", fontsize=20)
+                fig.savefig(self.best_images_full_path + f"{str(index_in_best_array+1).zfill(digit_size)}_th_best_{dataset_str}_img_loss_{int(round(loss_of_index_in_best_array*1e6,0))} e-6.png")
+
+            if image_id_batch in self.worst_imgs_ids:
+                index_in_worst_array = self.worst_imgs_ids.index(image_id_batch.item())
+                loss_of_index_in_worst_array = self.worst_imgs_losses[index_in_worst_array]
+                fig.suptitle(f"{index_in_worst_array+1}/{len(self.worst_imgs_ids)} worst reconstructed images (according to loss func. value) from {dataset_str} dataset", fontsize=20)
+                fig.savefig(self.worst_images_full_path + f"{str(index_in_worst_array+1).zfill(digit_size)}_th_worst_{dataset_str}_img_loss_{int(round(loss_of_index_in_worst_array*1e6,0))} e-6.png")
+            
+            plt.close()  
+            """

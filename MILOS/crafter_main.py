@@ -17,7 +17,7 @@ DATA_PATH =             get_hyperparam_from_config_file(config_path, 'DATA_PATH'
 ROOT_PATH =             get_hyperparam_from_config_file(config_path, 'ROOT_PATH')
 LOGGER_PATH =           get_hyperparam_from_config_file(config_path, 'LOGGER_PATH')
 MAX_TOTAL_IMAGE_NUMBER =get_hyperparam_from_config_file(config_path, 'MAX_TOTAL_IMAGE_NUMBER')
-
+SEED=                   get_hyperparam_from_config_file(config_path, 'SEED')
 # load train/val/test dataset percentage take adds up to 100 (percent)
 train_dataset_percentage= get_hyperparam_from_config_file(config_path, 'train_dataset_percentage')
 val_dataset_percentage  = get_hyperparam_from_config_file(config_path, 'val_dataset_percentage')
@@ -42,7 +42,7 @@ for dataset_str in data_paths:
     
     data_path = data_paths[dataset_str]
     
-    #make folder if it does not exist
+    #make folder, if it does not exist
     if not os.path.exists(data_path):
         os.mkdir(data_path)
         
@@ -52,46 +52,64 @@ for dataset_str in data_paths:
         os.remove(f)
 
 
-unique_image_number = 0
-
-unique_image_number_array = []
+number_of_all_available_images = 0 # this should be about 1 million
+# counts the number of all available images
 for pt_file_id in range(MAX_NUMBER_OF_PT_FILES):
     tensor_img_dsc_path = data_paths['data']
-    
     tensor_img_src_path = ELOI_DATA_PATH
     tensor_img_src_name = f"{pt_file_id}.pt"
-    
     loaded_tensor = torch.load(tensor_img_src_path + tensor_img_src_name)
     tensor_imgs = loaded_tensor['observations']
-    
+    batch_size = tensor_imgs.size(0)
+    number_of_all_available_images += batch_size
+
+# generation of image ids (image indices) from the number_of_all_available_images
+# only pick a random subset of size MAX_TOTAL_IMAGE_NUMBER
+# and sort the array of those randomly picket subset of image ids
+all_available_image_ids = np.arange(number_of_all_available_images)
+np.random.seed(SEED)
+shuffled_all_available_image_ids = all_available_image_ids.copy()
+np.random.shuffle(shuffled_all_available_image_ids)
+shuffled_all_available_image_ids = shuffled_all_available_image_ids[:MAX_TOTAL_IMAGE_NUMBER]
+shuffled_all_available_image_ids = np.sort(shuffled_all_available_image_ids)
+image_ids = shuffled_all_available_image_ids
+np.save(ROOT_PATH+"all_nonshuffled_image_ids.npy", image_ids)
+
+
+# subsampling of MAX_TOTAL_IMAGE_NUMBER image number of images from the original dataset
+image_id = 0
+counter_ = 0
+for pt_file_id in range(MAX_NUMBER_OF_PT_FILES):
+    # dsc
+    tensor_img_dsc_path = data_paths['data']
+    # src
+    tensor_img_src_path = ELOI_DATA_PATH
+    tensor_img_src_name = f"{pt_file_id}.pt"
+    # load batch of images as loaded_tensor
+    loaded_tensor = torch.load(tensor_img_src_path + tensor_img_src_name)
+    tensor_imgs = loaded_tensor['observations']
+    # iterate over the loaded batch
     for batch_idx in range(tensor_imgs.size(0)):
-        
-        #tensor_img_dsc_name = f"{str(TOTAL_IMAGE_NUMBER).zfill(7)}_curr_id_{pt_file_id}_past_id.pt"
-        tensor_img_dsc_name = 'color_img_' + str(unique_image_number).zfill(len(str(MAX_TOTAL_IMAGE_NUMBER))) + ".png"
-        
-        current_img = tensor_imgs[batch_idx, :, :, :].view(C,H,W).cpu().permute(1, 2, 0).numpy() #HWC
-        
-        plt.imsave(tensor_img_dsc_path+tensor_img_dsc_name, current_img)
+        # if the current image id is in the image ids take that picture and save it at the desired location
+        if image_id in image_ids:
+            tensor_img_dsc_name = 'color_img_' + str(image_id).zfill(len(str(MAX_TOTAL_IMAGE_NUMBER))) + ".png"
+            current_img = tensor_imgs[batch_idx, :, :, :].view(C,H,W).cpu().permute(1, 2, 0).numpy() #HWC
+            plt.imsave(tensor_img_dsc_path+tensor_img_dsc_name, current_img)
+            counter_ += 1
         
         #torch.save(tensor_imgs[batch_idx, :, :, :], tensor_img_dsc_path+tensor_img_dsc_name)
-        unique_image_number_array.append(unique_image_number)
-        unique_image_number += 1
+        #image_ids.append(image_id)
+        # increase the image id coutner
+        image_id += 1
         
-        if unique_image_number % 10000 == 0:
+        # print out the progress
+        if counter_ % 10000 == 0:
             with open(LOGGER_PATH, 'a') as f:
-                f.write(f"{unique_image_number}/{MAX_TOTAL_IMAGE_NUMBER} image generated! ({unique_image_number / MAX_TOTAL_IMAGE_NUMBER * 100 : .1f}%).\n")
-            
-        if unique_image_number >= MAX_TOTAL_IMAGE_NUMBER:
-            break
-    if unique_image_number >= MAX_TOTAL_IMAGE_NUMBER:
-            break
-        
-unique_image_number_array = np.array(unique_image_number_array)
-np.save(ROOT_PATH+"all_nonshuffled_image_ids.npy", unique_image_number_array)
+                f.write(f"{counter_}/{MAX_TOTAL_IMAGE_NUMBER} image generated! ({counter_ / MAX_TOTAL_IMAGE_NUMBER * 100 : .1f}%).\n")
 
-SEED=1
+# data train/val/test splitting
 np.random.seed(SEED)
-shuffled_image_ids = unique_image_number_array.copy()
+shuffled_image_ids = image_ids.copy()
 np.random.shuffle(shuffled_image_ids)
 N = len(shuffled_image_ids)
 # secure no overlap with train, validation and test datasets
@@ -103,23 +121,23 @@ val_shuffled_image_ids = shuffled_image_ids[int(N* train_dataset_percentage/100)
 test_shuffled_image_ids = shuffled_image_ids[int(N* (train_dataset_percentage/100 + val_dataset_percentage/100)):]
 #check that everything adds up
 assert(N == len(train_shuffled_image_ids) + len(val_shuffled_image_ids) + len(test_shuffled_image_ids))
-
+# save the split
 np.save(ROOT_PATH+"train_shuffled_image_ids.npy", train_shuffled_image_ids)
 np.save(ROOT_PATH+"val_shuffled_image_ids.npy", val_shuffled_image_ids)
 np.save(ROOT_PATH+"test_shuffled_image_ids.npy", test_shuffled_image_ids)
 
 
-
-shuffled_image_ids = {'train':train_shuffled_image_ids, 'val':val_shuffled_image_ids, 'test':test_shuffled_image_ids}
-
 #cut operation from DATA to either DATA_TEST or DATA_VALIDATE or DATA_TEST
-for unique_image_number in unique_image_number_array:
+shuffled_image_ids = {'train':train_shuffled_image_ids, 
+                      'val':val_shuffled_image_ids, 
+                      'test':test_shuffled_image_ids}
+for image_id in image_ids:
     img_src_path = data_paths['data']
-    img_src_name = 'color_img_' + str(unique_image_number).zfill(len(str(MAX_TOTAL_IMAGE_NUMBER))) + ".png"
-    
+    img_src_name = 'color_img_' + str(image_id).zfill(len(str(MAX_TOTAL_IMAGE_NUMBER))) + ".png"
     for dataset_str in ['train', 'val', 'test']:
-        if unique_image_number in shuffled_image_ids[dataset_str]:
+        if image_id in shuffled_image_ids[dataset_str]:
             img_dsc_path = data_paths[dataset_str]
             img_dsc_name = img_src_name # keep the name same
             #cut operation from DATA to either DATA_TEST or DATA_VALIDATE or DATA_TEST
-            os.rename(src=img_src_path+img_src_name,dst=img_dsc_path+img_dsc_name)
+            os.rename(src=img_src_path+img_src_name,
+                      dst=img_dsc_path+img_dsc_name)

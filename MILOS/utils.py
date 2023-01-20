@@ -10,6 +10,7 @@ import yaml
 from yaml.loader import SafeLoader
 import os
 import time
+from helper_functions import get_hyperparam_from_config_file
 
 INT = np.int64
 FLOAT = np.float64
@@ -66,14 +67,26 @@ milos_config_path = '/home/novakovm/iris/MILOS/milos_config.yaml'
 with open(milos_config_path) as f:
     data = yaml.load(f, Loader=SafeLoader)
 
-# constant
-COOR_BEGIN =                   [one_info for one_info in data['COOR_BEGIN']]
-
 extract_yaml_data = lambda data, data_value, data_key = 'file_info': [ dict_[data_value] for dict_ in data[data_key]
                                                                         if data_value in dict_][0]
 
+# TOTAL_NUMBER_OF_SHAPES =       extract_yaml_data(data, 'TOTAL_NUMBER_OF_SHAPES')#[dict_['TOTAL_NUMBER_OF_SHAPES'] for dict_ in data['file_info'] if 'TOTAL_NUMBER_OF_SHAPES' in dict_][0]    
+
+TOTAL_NUMBER_OF_SHAPES = get_hyperparam_from_config_file("/home/novakovm/iris/MILOS/toy_shapes_config.yaml", "TOTAL_NUMBER_OF_SHAPES")
+#TOTAL_NUMBER_OF_IMAGES =       extract_yaml_data(data, 'TOTAL_NUMBER_OF_IMAGES')#[dict_['TOTAL_NUMBER_OF_IMAGES'] for dict_ in data['file_info'] if 'TOTAL_NUMBER_OF_IMAGES' in dict_][0]
+TOTAL_NUMBER_OF_IMAGES = get_hyperparam_from_config_file("/home/novakovm/iris/MILOS/toy_shapes_config.yaml", "TOTAL_NUMBER_OF_IMAGES")
+MAX_TOTAL_IMAGE_NUMBER = TOTAL_NUMBER_OF_IMAGES if TOTAL_NUMBER_OF_SHAPES == 1 \
+                        else get_hyperparam_from_config_file("/home/novakovm/iris/MILOS/toy_shapes_config.yaml", "MAX_TOTAL_IMAGE_NUMBER")
+print(f"TOTAL_NUMBER_OF_SHAPES = {TOTAL_NUMBER_OF_SHAPES}")
+print(f"TOTAL_NUMBER_OF_IMAGES = {TOTAL_NUMBER_OF_IMAGES}")
+print(f"MAX_TOTAL_IMAGE_NUMBER = {MAX_TOTAL_IMAGE_NUMBER}")
+
 # total number of shapes per image can be 1 or 2
-TOTAL_NUMBER_OF_SHAPES =       extract_yaml_data(data, 'TOTAL_NUMBER_OF_SHAPES')#[dict_['TOTAL_NUMBER_OF_SHAPES'] for dict_ in data['file_info'] if 'TOTAL_NUMBER_OF_SHAPES' in dict_][0]
+
+# constant
+COOR_BEGIN =                   [one_info for one_info in data['COOR_BEGIN']]
+
+
 
 THEORETICAL_MAX_NUMBER_OF_DIFFERENT_IMAGES = 1
 # 1 bits
@@ -106,7 +119,6 @@ THEORETICAL_MAX_NUMBER_OF_BITS_TO_ENCODER_AN_IMAGE = np.int64(np.log2(np.float64
 
 assert(2** THEORETICAL_MAX_NUMBER_OF_BITS_TO_ENCODER_AN_IMAGE == THEORETICAL_MAX_NUMBER_OF_DIFFERENT_IMAGES, f"{2** THEORETICAL_MAX_NUMBER_OF_BITS_TO_ENCODER_AN_IMAGE} is not equal to {THEORETICAL_MAX_NUMBER_OF_DIFFERENT_IMAGES} ; Number of bits has to be a positive integer!")
 
-TOTAL_NUMBER_OF_IMAGES =       extract_yaml_data(data, 'TOTAL_NUMBER_OF_IMAGES')#[dict_['TOTAL_NUMBER_OF_IMAGES'] for dict_ in data['file_info'] if 'TOTAL_NUMBER_OF_IMAGES' in dict_][0]
 
 # Test
 #TEST_TOTAL_NUMBER_OF_IMAGES = [dict_['TEST_TOTAL_NUMBER_OF_IMAGES'] for dict_ in data['file_info'] if 'TEST_TOTAL_NUMBER_OF_IMAGES' in dict_][0]

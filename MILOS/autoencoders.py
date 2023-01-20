@@ -115,9 +115,13 @@ def inference(config_path = "/home/novakovm/iris/MILOS/toy_shapes_config.yaml"):
     beta, max_channel_number = args_VQ['beta'], args_VQ['max_channel_number']
 
     # Encoder Residual Block arguments
-    res_block_args_encoder = {'block_size' : get_hyperparam_from_config_file(config_path, 'res_block_size'), 'C_mid' : get_hyperparam_from_config_file(config_path, 'res_blocks_channel_number_in_hidden_layers')}
+    res_block_args_encoder = {'block_size' : get_hyperparam_from_config_file(config_path, 'res_block_size'), 
+                              'C_mid' : get_hyperparam_from_config_file(config_path, 'res_blocks_channel_number_in_hidden_layers'),
+                              'res_block_use_BN' : get_hyperparam_from_config_file(config_path, 'res_block_use_BN'),
+                              'res_block_use_bias' : get_hyperparam_from_config_file(config_path, 'res_block_use_bias')
+                              }
     # Decoder Residual Block arguments
-    res_block_args_decoder = {'block_size' : get_hyperparam_from_config_file(config_path, 'res_block_size'), 'C_mid' : get_hyperparam_from_config_file(config_path, 'res_blocks_channel_number_in_hidden_layers')}
+    res_block_args_decoder = res_block_args_encoder.copy()
     # Encoder and Decoder args
     args_encoder = {'M' : args_VQ['M'], 'D' : args_VQ['D'], 'C_in' : C, 'H_in' : H, 'W_in' : W , 'use_BN' : get_hyperparam_from_config_file(config_path, 'use_BN')}
     args_decoder = {'M' : args_VQ['M'], 'D' : args_VQ['D'], 'use_BN' : get_hyperparam_from_config_file(config_path, 'use_BN')}
@@ -149,6 +153,7 @@ def inference(config_path = "/home/novakovm/iris/MILOS/toy_shapes_config.yaml"):
     training_args['loaders']            = {'train' : train_data_loader, 'val' : val_data_loader, 'test' : test_data_loader}
     training_args['optimizer_settings'] = {'optimization_algorithm':'Adam','lr':LEARNING_RATE} #torch.optim.Adam(params=model.parameters(), lr=LEARNING_RATE)#, weight_decay=1e-5)
     training_args['logger_path']        = LOGGER_PATH
+    training_args['config_path']        = config_path
     # if PCA_decomp_in_every_epochs True then it considerably (from 50mins to 70 mins, i.e. 40%!) slows down the training loop!!!
     training_args['PCA_decomp_in_every_epochs'] = PCA_decomp_in_every_epochs
     # .item() because it is one element np.array; and we square it because we want variance and not the standard deviation

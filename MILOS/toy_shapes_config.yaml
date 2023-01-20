@@ -1,8 +1,8 @@
 training_hyperparams:
   - NUM_WORKERS: 4 #4 #NUM_WORKERS = 4# see what this represents exactly!
-  - USE_PRETRAINED_MODEL: False
-  - USE_PRETRAINED_MODEL_run_id : 972
-  - USE_PRETRAINED_MODEL_current_time_str : "2023_01_17_23_00_53"
+  - USE_PRETRAINED_MODEL: True
+  - USE_PRETRAINED_MODEL_run_id : 100 #972
+  - USE_PRETRAINED_MODEL_current_time_str : "2023_01_19_16_24_47" # for 972 "2023_01_17_23_00_53"
   - USE_GPU: True
   - NUM_EPOCHS: 200 #200 #2000 #40 #2000 #2000 #400 #200 #1000 #100 #200 #10 #20
   - BATCH_SIZE_TRAIN: 256
@@ -21,34 +21,51 @@ training_hyperparams:
   - H : 64
   - W : 64
   - C : 3
-  - MAX_TOTAL_IMAGE_NUMBER : 268_435_456 #900_000 #10_000 #10_000 #100000  #16384 #= 2^14
+  - MAX_TOTAL_IMAGE_NUMBER : 268_435_456  #16384 #= 2^14
+  - TOTAL_NUMBER_OF_IMAGES : 100_000 # THIS IS ONLY FOR TOY SHAPES DATASET!
+  - TOTAL_NUMBER_OF_SHAPES : 2
   - train_dataset_percentage: 75.0  # 6/8
   - val_dataset_percentage: 12.5    # 1/8
   - test_dataset_percentage: 12.5   # 1/8
   - DATA_PATH: '/home/novakovm/DATA/'
   - ROOT_PATH : '/home/novakovm/iris/MILOS/'
-  # vqvae
-  - run_id : 949 #600
+  - data_generator_path : "/home/novakovm/iris/MILOS/main.py"
+  - LOGGER_PATH : "/home/novakovm/iris/MILOS/log_all.txt"
+
+  # TRAINING SETTINGS
+  - SEED : 1
+  - model_name: "VQ_VAE"
+  - run_id : 100 #600
+  - SET_VAR_TO_ONE : False # sets variance in the denominator of the reconstruction loss to one (1)
+  - requires_normalization_with_sphere_projection : True
+  - train_with_quantization : True
+  - PCA_decomp_in_every_epochs : False
+
+  # VQ SETTINGS
   - K : 256
   - M : 3 #15 #31 #15#7#3#1
   - beta : 0.25
   - use_EMA : False
   - gamma : 0.99
   - D : 32 #32
-  - SET_VAR_TO_ONE : False # sets variance in the denominator of the reconstruction loss to one (1)
-  - requires_normalization_with_sphere_projection : True
-  - train_with_quantization : True
-  - max_channel_number : 256 #256
+
+  # RESIDUAL NET SETTINGS
   - res_blocks_channel_number_in_hidden_layers : 32
   - res_block_size : 2
+  - res_block_use_BN : True
+  - res_block_use_bias : True # before 19th Jan this was False
+
+  # ENC. DEC. NET SETTINGS
   - use_BN : False
+  - max_channel_number : 256 #256
   - divisor_value : 2
-  - PCA_decomp_in_every_epochs : False
-  - GENERATE_DATA : False   # only in crafter
-  - data_generator_path : "/home/novakovm/iris/MILOS/main.py"
-  - PREPROCESS_DATA : False # only in crafter
-  - INFERENCE_DATA : True  # only in crafter
-  - LOGGER_PATH : "/home/novakovm/iris/MILOS/log_all.txt"
+  
+  # CONTROL OF THE RUN() LOOP
+  - GENERATE_DATA : False   
+  - PREPROCESS_DATA : False
+  - INFERENCE_DATA : True  
+
+  # CONTROL OF THE INFERENCE RUN
   - RUN_MODEL_TESTING : True
   - RUN_TRAIN_VAL_AVG_LOSS_OVER_EPOCHS : True
   - RUN_SCATTER_FOR_SPECIFIC_CLASSES : True
@@ -59,5 +76,3 @@ training_hyperparams:
   - RUN_PCA_ON_CODEBOOK : True
   - RUN_TOKEN_VIZUALIZATION : True
   - SAVE_RESULTS_TO_CSV : True
-  - model_name: "VQ_VAE"
-

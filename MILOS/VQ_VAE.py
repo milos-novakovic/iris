@@ -180,32 +180,32 @@ class VectorQuantizer(nn.Module):
         else:
             return e_and_q_latent_loss, Zq, e_latent_loss.item(), q_latent_loss.item(), estimate_codebook_words.item()
     
+    def generate_new_Zq(self, new_encoding_indices, B): # Encoding indices = dims (B*H*W) x 1 [a vector that is consistent of integers from the set {0 , 1, ..., K-2, K - 1}, because it supposed to represent a vector of codebook indices]
+        H, W = self.M+1, self.M+1
+        Zq_new = self.E(new_encoding_indices).view(B, H, W, self.D) # dim.=(B,H,W,C)
+        if self.requires_normalization_with_sphere_projection:
+            Zq_new = F.normalize(input = Zq_new, p = 2, dim = -1)
+        Zq_new = Zq_new.permute(0, 3, 1, 2).contiguous()  # dim.=(B,C,H,W)
+        return Zq_new
+    
 class Residual(nn.Module):
     def __init__(self, res_block_args):
         super(Residual, self).__init__()
         C_in = res_block_args['C_in']
         C_mid =res_block_args['C_mid']
+        res_block_use_BN = res_block_args['res_block_use_BN']
+        res_block_use_bias = res_block_args['res_block_use_bias']
         
-        self.residual_block = nn.Sequential(
-            # maybe add BN?
-            nn.BatchNorm2d(C_in),
-            nn.ReLU(True),
-            nn.Conv2d(in_channels=C_in,
-                      out_channels = C_mid, #num_residual_hiddens,#32
-                      kernel_size=3, 
-                      stride=1,
-                      padding=1,
-                      bias=False), 
-            # H & W stay the same, just number of ch. changes from C_in to C_mid
-            nn.BatchNorm2d(C_mid),
-            nn.ReLU(True),
-            nn.Conv2d(in_channels=C_mid,#num_residual_hiddens, #32
-                      out_channels=C_in,#num_hiddens,#128
-                      kernel_size=1,
-                      stride=1,
-                      bias=False)
-            # H & W stay the same, just number of ch. changes from C_mid to C_in
-        )
+        self.residual_block = nn.Sequential()
+        if res_block_use_BN:
+            self.residual_block.add_module(f"BN_{0}", nn.BatchNorm2d(C_in))
+        self.residual_block.add_module(f"ReLU_{0}", nn.ReLU(res_block_use_BN))
+        self.residual_block.add_module(f"conv_{0}", nn.Conv2d(in_channels=C_in, out_channels = C_mid, kernel_size=3, stride=1, padding=1, bias=res_block_use_bias))
+        
+        if res_block_use_BN:
+            self.residual_block.add_module(f"BN_{1}", nn.BatchNorm2d(C_mid))
+        self.residual_block.add_module(f"ReLU_{1}", nn.ReLU(res_block_use_BN))
+        self.residual_block.add_module(f"conv_{1}", nn.Conv2d(in_channels=C_mid, out_channels=C_in, kernel_size=1, stride=1, bias= res_block_use_bias))
     
     def forward(self, x):
         # two CNN (resulution-agnostic) layers and input are simply added to create a residual path

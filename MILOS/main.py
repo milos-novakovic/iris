@@ -1,5 +1,6 @@
 from image_generator import *
-
+from helper_functions import get_hyperparam_from_config_file
+import glob
 def get_image_binary_code(image_id : int, THEORETICAL_MAX_NUMBER_OF_BITS_TO_ENCODER_AN_IMAGE:int) -> list:
     # 0 <= image_id <= (2**THEORETICAL_MAX_NUMBER_OF_BITS_TO_ENCODER_AN_IMAGE)-1
     # if image_id = 3
@@ -70,22 +71,18 @@ def get_shape_specific_stats(image_binary_code : list, shape_generic_stats : dic
     return shape_specific_stats
     
     
-def train_val_test_split(data_folder_path : str, # = '/home/novakovm/DATA'
-                        train_folder_path : str, # = '/home/novakovm/DATA_TRAIN'
-                        val_folder_path : str,   # = '/home/novakovm/DATA_VALIDATE'
-                        test_folder_path : str,  # = '/home/novakovm/DATA_TEST'
+def train_val_test_split(data_paths : dict,
                         train_val_test_split_indices:dict, # {'train':(6/8)*2**L,'val':(7/8)*2**L,'test':(8/8)*2**L}
                         image_ids : np.array,
-                        SEED : int,
-                        N = None):
+                        SEED : int):
     np.random.seed(SEED)
-    np.random.shuffle(image_ids)
-    shuffled_image_ids = image_ids
+    shuffled_image_ids = image_ids.copy()
+    np.random.shuffle(shuffled_image_ids)
+    
     # if TOTAL_NUMBER_OF_SHAPES == 1:
     #     N = len(shuffled_image_ids)
     # elif TOTAL_NUMBER_OF_SHAPES == 2:
     #     N = TOTAL_NUMBER_OF_IMAGES
-    N = TOTAL_NUMBER_OF_IMAGES
     
     # secure no overlap with train, validation and test datasets
     
@@ -100,34 +97,20 @@ def train_val_test_split(data_folder_path : str, # = '/home/novakovm/DATA'
     
     #path = '/home/novakovm/DATA_TEST' #current_working_absoulte_path + '/DATA_TEST'
     
-    # clear train, validation and test folders
-    os.system('rm -rf %s/*' % train_folder_path)
-    os.system('rm -rf %s/*' % val_folder_path)
-    os.system('rm -rf %s/*' % test_folder_path)
-        
-    # cut training data from from DATA to DATA_TRAIN
-    img_dsc_path = train_folder_path
-    for train_image_id in train_shuffled_image_ids:
-        img_name = 'color_img_' + str(train_image_id).zfill(len(str(N))) + '.png'
-        img_src_path =  data_folder_path + '/' + img_name        
-        os.system('cp ' + img_src_path + ' ' + img_dsc_path)
-        os.system('rm ' + img_src_path)
-        
-    # cut validation data from from DATA to DATA_VALIDATE
-    img_dsc_path = val_folder_path
-    for val_image_id in val_shuffled_image_ids:
-        img_name = 'color_img_' + str(val_image_id).zfill(len(str(N))) + '.png'
-        img_src_path =  data_folder_path + '/' + img_name        
-        os.system('cp ' + img_src_path + ' ' + img_dsc_path)
-        os.system('rm ' + img_src_path)
-        
-    # cut test data from from DATA to DATA_TEST
-    img_dsc_path = test_folder_path
-    for test_image_id in test_shuffled_image_ids:
-        img_name = 'color_img_' + str(test_image_id).zfill(len(str(N))) + '.png'
-        img_src_path =  data_folder_path + '/' + img_name        
-        os.system('cp ' + img_src_path + ' ' + img_dsc_path)
-        os.system('rm ' + img_src_path)
+    # cut operation from DATA to either DATA_TEST or DATA_VALIDATE or DATA_TEST
+    shuffled_image_ids = {'train':train_shuffled_image_ids, 
+                          'val':val_shuffled_image_ids,
+                          'test':test_shuffled_image_ids}
+    for image_id in image_ids:
+        img_src_path = data_paths['data']
+        img_src_name = 'color_img_' + str(image_id).zfill(len(str(MAX_TOTAL_IMAGE_NUMBER))) + ".png"
+        for dataset_str in ['train', 'val', 'test']:
+            if image_id in shuffled_image_ids[dataset_str]:
+                img_dsc_path = data_paths[dataset_str]
+                img_dsc_name = img_src_name # keep the name same
+                #cut operation from DATA to either DATA_TEST or DATA_VALIDATE or DATA_TEST
+                os.rename(src=img_src_path+img_src_name,
+                          dst=img_dsc_path+img_dsc_name)
         
     # Only files left in folder '/home/novakovm/DATA' are:
     # all_generated_shapes.csv
@@ -145,22 +128,48 @@ H,W = file_info_dict['H'], file_info_dict['W']
 #TOTAL_NUMBER_OF_IMAGES = TRAIN_TOTAL_NUMBER_OF_IMAGES# if TRAIN_MODE else TEST_TOTAL_NUMBER_OF_IMAGES
 image_id = 0
 image_ids = []
+config_path = "/home/novakovm/iris/MILOS/toy_shapes_config.yaml"
+LOGGER_PATH =           get_hyperparam_from_config_file(config_path, 'LOGGER_PATH')
+SEED =                  get_hyperparam_from_config_file(config_path, 'SEED')
 
-absolute_image_counter = 0
-from helper_functions import get_hyperparam_from_config_file
-LOGGER_PATH = get_hyperparam_from_config_file("/home/novakovm/iris/MILOS/toy_shapes_config.yaml", 'LOGGER_PATH')
+TRAIN_DATA_PATH =       get_hyperparam_from_config_file(config_path, 'TRAIN_DATA_PATH')
+VAL_DATA_PATH =         get_hyperparam_from_config_file(config_path, 'VAL_DATA_PATH')
+TEST_DATA_PATH =        get_hyperparam_from_config_file(config_path, 'TEST_DATA_PATH')
+DATA_PATH =             get_hyperparam_from_config_file(config_path, 'DATA_PATH')
+ROOT_PATH =             get_hyperparam_from_config_file(config_path, 'ROOT_PATH')
 
-while image_id < TOTAL_NUMBER_OF_IMAGES:
+# create root folder if it does not exist
+if not os.path.exists(ROOT_PATH):
+    os.mkdir(ROOT_PATH)
+data_paths= {}
+data_paths['train'] = TRAIN_DATA_PATH
+data_paths['val']   = VAL_DATA_PATH
+data_paths['test']  = TEST_DATA_PATH
+data_paths['data']  = DATA_PATH
+
+for dataset_str in data_paths:    
+    data_path = data_paths[dataset_str]
+    # make folder, if it does not exist
+    if not os.path.exists(data_path):
+        os.mkdir(data_path)
+    # clear the content of the folder
+    files = glob.glob(data_path + '*')
+    for f in files:
+        os.remove(f)
+
+all_used_image_ids = np.arange(TOTAL_NUMBER_OF_IMAGES)
+if TOTAL_NUMBER_OF_SHAPES == 2: # in this case we can not pick every image hence we need a subset
+    all_used_image_ids = np.arange(MAX_TOTAL_IMAGE_NUMBER)
+    np.random.seed(SEED)
+    np.random.shuffle(all_used_image_ids)
+    all_used_image_ids = all_used_image_ids[:TOTAL_NUMBER_OF_IMAGES]
+    all_used_image_ids = np.sort(all_used_image_ids)
+
+for idx_image_id, image_id in enumerate(all_used_image_ids): #while image_id < TOTAL_NUMBER_OF_IMAGES:
     image_ids.append(image_id)
-    absolute_image_counter += 1
-    
-    if TOTAL_NUMBER_OF_SHAPES == 1 and image_id % 1000 == 0 and image_id > 0:
-        message = f"Generated {image_id}-th image!"
-        with open(LOGGER_PATH, 'a') as f:
-                f.write(f"{message}\n")
-            
-    if TOTAL_NUMBER_OF_SHAPES == 2 and absolute_image_counter % 1000 == 0:
-        message = f"Generated {image_id/TOTAL_NUMBER_OF_IMAGES * 100 : .2f} % of partical dataset! With {absolute_image_counter}-th image!"
+         
+    if idx_image_id % 1000 == 0:
+        message = f"Generated {idx_image_id/TOTAL_NUMBER_OF_IMAGES * 100 : .2f} % of partical dataset! Total of {idx_image_id} images generated."
         with open(LOGGER_PATH, 'a') as f:
                 f.write(f"{message}\n")
         
@@ -173,11 +182,13 @@ while image_id < TOTAL_NUMBER_OF_IMAGES:
     # np.random.seed(SEED)
     
     file_info_dict : dict = {key:val for one_info in data['file_info'] for key,val in one_info.items()}
+    file_info_dict['TOTAL_NUMBER_OF_SHAPES'] = TOTAL_NUMBER_OF_SHAPES
+    
     # if TEST_MODE:
     #     file_info_dict['file_path'] = file_info_dict['TEST_file_path']
         
     file_info_dict['image_objects'] = {'background_color' : np.array([BACKGROUND_COLOR], dtype=UINT)}    
-    file_info_dict['file_version'] = '_' + str(image_id).zfill(len(str(TOTAL_NUMBER_OF_IMAGES)))
+    file_info_dict['file_version'] = '_' + str(image_id).zfill(len(str(MAX_TOTAL_IMAGE_NUMBER)))
     
     generated_image = GeneratedImage(file_info_dict)
     generated_image.generate_image()
@@ -199,11 +210,8 @@ while image_id < TOTAL_NUMBER_OF_IMAGES:
 
     # fills or no fills
     FILL_NOFILL_np = np.array(FILL_NOFILL).astype(int)
-
     
-    
-    ## Shape Generic stats
-        
+    ## Shape Generic stats    
     shape_generic_stats  = {}
     #shape_generic_stats['shape_id'] = 0
     shape_generic_stats['shape_center_x'] = X_CENTER_SPACE_np
@@ -246,8 +254,10 @@ while image_id < TOTAL_NUMBER_OF_IMAGES:
             # TODO
             #simple id (i.e. the order of shape creation)
             shape_specific_stats['shape_id'] = i
-        else:
+        elif TOTAL_NUMBER_OF_SHAPES == 1:
             shape_specific_stats['shape_id'] = None # the value will be overwritten this is a place-holder
+        else:
+            assert(False)
         
         shape_specific_stats['image_id'] = file_info_dict['file_version'][1:]
         
@@ -323,17 +333,15 @@ while image_id < TOTAL_NUMBER_OF_IMAGES:
         DF_all_shapes_variable_data= DF_all_shapes_variable_data[['image_id', 'shape_id'] + COLUMNS + ['shape_color_word']]
         DF_all_shapes_variable_data.to_csv(CSV_FILE_PATH, mode='a', index=False, header= not(os.path.isfile(CSV_FILE_PATH)))
 
-    
-    
-    if TOTAL_NUMBER_OF_SHAPES == 1:
-        image_id += 1 # to generate every image
+    # if TOTAL_NUMBER_OF_SHAPES == 1:
+    #     image_id += 1 # to generate every image
         
-    if TOTAL_NUMBER_OF_SHAPES == 2:
-        # to generate every random sample 
-        np.random.seed(1)
-        #image_id += np.random.randint(low = 1000, high=10000, size=1, dtype=int)[0] # 200k images come from this
-        image_id += np.random.randint(low = 2000, high=20000, size=1, dtype=int)[0] # 100k images come from this
-        #image_id += np.random.randint(low = 5000, high=50000, size=1, dtype=int)[0] # 30k images come from this
+    # if TOTAL_NUMBER_OF_SHAPES == 2:
+    #     # to generate every random sample 
+    #     np.random.seed(1)
+    #     #image_id += np.random.randint(low = 1000, high=10000, size=1, dtype=int)[0] # 200k images come from this
+    #     image_id += np.random.randint(low = 2000, high=20000, size=1, dtype=int)[0] # 100k images come from this
+    #     #image_id += np.random.randint(low = 5000, high=50000, size=1, dtype=int)[0] # 30k images come from this
         
         
     
@@ -355,13 +363,8 @@ train_val_test_split_indices['train'] = int((train_dataset_percentage/100)*len(i
 train_val_test_split_indices['val'] = int(((train_dataset_percentage+val_dataset_percentage)/100)*len(image_ids))
 train_val_test_split_indices['test'] = int(len(image_ids))
 
-
-SEED = 0
 train_shuffled_image_ids, val_shuffled_image_ids, test_shuffled_image_ids = \
-train_val_test_split(   data_folder_path = data_folder_path,
-                        train_folder_path = train_folder_path,
-                        val_folder_path = val_folder_path,
-                        test_folder_path = test_folder_path,
+train_val_test_split(   data_paths = data_paths,
                         train_val_test_split_indices = train_val_test_split_indices,
                         image_ids = image_ids,
                         SEED = SEED)
