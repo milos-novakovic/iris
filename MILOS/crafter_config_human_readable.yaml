@@ -1,0 +1,76 @@
+training_hyperparams:
+  - NUM_WORKERS: 4 #4 #NUM_WORKERS = 4# see what this represents exactly!
+  - USE_PRETRAINED_MODEL: True
+  - USE_PRETRAINED_MODEL_run_id : 500 #600
+  - USE_PRETRAINED_MODEL_current_time_str : "2023_01_19_15_57_00" #"2023_01_18_01_34_27"
+  - USE_GPU: True
+  - NUM_EPOCHS: 20 #500
+  - BATCH_SIZE_TRAIN: 256
+  - BATCH_SIZE_VAL: 256
+  - BATCH_SIZE_TEST: 1
+  - LEARNING_RATE: 1000 #e-6
+  - TRAIN_DATA_PATH: '/home/novakovm/crafter/DATA_TRAIN/'
+  - VAL_DATA_PATH: '/home/novakovm/crafter/DATA_VALIDATE/'
+  - TEST_DATA_PATH: '/home/novakovm/crafter/DATA_TEST/'
+  # mean and std per 3 chanells (r,g,b)
+  - TRAIN_IMAGES_MEAN_FILE_PATH: '/home/novakovm/crafter/RGB_mean.npy'
+  - TRAIN_IMAGES_STD_FILE_PATH: '/home/novakovm/crafter/RGB_std.npy'
+  # mean and std for all data images (i.e. across all 3 chanells)
+  - TRAIN_IMAGES_TOTAL_MEAN_FILE_PATH: '/home/novakovm/crafter/train_dataset_mean.npy'
+  - TRAIN_IMAGES_TOTAL_STD_FILE_PATH: '/home/novakovm/crafter/train_dataset_std.npy'
+  - H : 64
+  - W : 64
+  - C : 3
+  - MAX_TOTAL_IMAGE_NUMBER : 900_000 #900_000 #10_000 #10_000 #100000  #16384 #= 2^14
+  - train_dataset_percentage: 75.0  # 6/8
+  - val_dataset_percentage: 12.5    # 1/8
+  - test_dataset_percentage: 12.5   # 1/8
+  - DATA_PATH: '/home/novakovm/crafter/DATA/'
+  - ROOT_PATH : '/home/novakovm/crafter/'
+  - data_generator_path : "/home/novakovm/iris/MILOS/crafter_main.py"
+  - LOGGER_PATH : "/home/novakovm/iris/MILOS/crafter_logger.txt"
+  
+  # TRAINING SETTINGS
+  - SEED : 1
+  - model_name: "VQ_VAE"
+  - run_id : 500 #600
+  - SET_VAR_TO_ONE : False # sets variance in the denominator of the reconstruction loss to one (1)
+  - requires_normalization_with_sphere_projection : True
+  - train_with_quantization : True
+  - PCA_decomp_in_every_epochs : False
+
+  # VQ SETTINGS
+  - K : 256
+  - M : 7 #15 #31 #15#7#3#1
+  - beta : 0.25
+  - use_EMA : False
+  - gamma : 0.99
+  - D : 128 #32
+
+  # RESIDUAL NET SETTINGS
+  - res_blocks_channel_number_in_hidden_layers : 32
+  - res_block_size : 2
+  - res_block_use_BN : True
+  - res_block_use_bias : True # before 19th Jan this was False
+
+  # ENC. DEC. NET SETTINGS
+  - use_BN : False
+  - max_channel_number : 256
+  - divisor_value : 2
+  
+  # CONTROL OF THE RUN() LOOP
+  - GENERATE_DATA : False
+  - PREPROCESS_DATA : False
+  - INFERENCE_DATA : True # put to true
+
+  # CONTROL OF THE INFERENCE RUN
+  - RUN_MODEL_TESTING : True
+  - RUN_TRAIN_VAL_AVG_LOSS_OVER_EPOCHS : True
+  - RUN_SCATTER_FOR_SPECIFIC_CLASSES : False # doesnt have much sense to put in on true at this point
+  - RUN_TOP_WORST_RECONSTRUCTED_TEST_IMAGES : True
+  - RUN_TOP_BEST_RECONSTRUCTED_TEST_IMAGES : True
+  - RUN_MODEL_VIZUALIZATION : True
+  - RUN_CODEBOOK_VISUALIZATION : True
+  - RUN_PCA_ON_CODEBOOK : True
+  - RUN_TOKEN_VIZUALIZATION : True
+  - SAVE_RESULTS_TO_CSV : True

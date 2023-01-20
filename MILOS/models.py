@@ -1277,8 +1277,10 @@ class Model_Trainer:
                 #     k_,d_,m_ = self.model.args_VQ['K'], self.model.args_VQ['D'], self.model.args_VQ['M']
                 #     print(f"The model is learning, for K = {k_}, D= {d_}, M = {m_}")
                 #     raise KeyboardInterrupt
+            
+            # DO NOT DO EARLY STOPPING
             # early stopping
-            if (epoch+1) >= int(0.9* self.NUM_EPOCHS):
+            if False and (epoch+1) >= int(0.9* self.NUM_EPOCHS):
                 #if early_stopping(validation_loss = self.val_loss_avg[-1]):
                 if 1.05 * self.min_val_loss >= self.val_loss_avg[-1]:
                     print(self.get_intermediate_training_stats_str(current_epoch = epoch, start_time_training = START_TIME_TRAINING))
