@@ -2320,7 +2320,7 @@ class Model_Trainer:
                     #plt.subplot(1, 3, 1)
                     # have to renormalize and show original image here
                     #image_batch_original_img = image_batch_original_img.view(1, image_batch_original_img.size(0), image_batch_original_img.size(1), image_batch_original_img.size(2))
-                    image_batch_original_img = to_img(image_batch.cpu(), self.compose_transforms)
+                    image_batch_original_img = to_img(image_batch.clone().cpu(), self.compose_transforms)
 
                     
                     
@@ -2362,7 +2362,7 @@ class Model_Trainer:
                     #plot reconstruction
                     image_batch_recon  = self.model.decoder(Zq)
                     recon_error = (F.mse_loss(image_batch_recon, image_batch) / self.train_data_variance)
-                    image_batch_recon_img = to_img(image_batch_recon.cpu(), self.compose_transforms)
+                    image_batch_recon_img = to_img(image_batch_recon.clone().cpu(), self.compose_transforms)
                     axs[2].imshow(np.transpose(image_batch_recon_img[0,:,:,:], (1, 2, 0))) # H,W,C
                     axs[2].set_title(f"Reconstructed image " + r"$X_{rec}$" + " with loss\n"+ \
                                     r"$\mathcal{L}$" + f" = {(recon_error.item() + e_and_q_latent_loss.item() )*1e6 :.0f}" + r"$\cdot10^{-6}$=" + "\n" +\
@@ -2631,18 +2631,33 @@ class Model_Trainer:
         
         with torch.no_grad():
             # move the image tensor to the device
-            image_batch = image_batch.to(self.device)
+            #image_batch = image_batch.to(self.device)
             
             # (VQ + Encoder) forward pass 
             # output every tensor in the vector quantization process 
             self.model.VQ.output_whole_quantization_process = True
-            e_and_q_latent_loss, Zq, e_latent_loss, q_latent_loss, estimate_codebook_words, encoding_indices, estimate_codebook_words_freq, estimate_codebook_words_prob, inputs, D  = self.model.VQ(self.model.encoder(image_batch))
-            
+            #image_batch_with_model_device = image_batch.detach().clone().to(self.device)
+            e_and_q_latent_loss, Zq, _, _, _, encoding_indices, _, _, _, _  = self.model.VQ(self.model.encoder(image_batch.to(self.device)))
             self.model.VQ.output_whole_quantization_process = False
+            
+            # original Zq reconstruction done on model.device
+            image_batch_recon  = self.model.decoder(Zq)
+            
+            # new changed Zq reconstruction done on model.device
+            Zq_new = self.model.VQ.generate_new_Zq(new_encoding_indices.to(self.device), B = 1)
+            image_batch_recon_from_Zq_new  = self.model.decoder(Zq_new)
+            
+            # put everything on cpu
+            image_batch = image_batch.cpu()
+            image_batch_recon = image_batch_recon.cpu()
+            image_batch_recon_from_Zq_new = image_batch_recon_from_Zq_new.cpu()
+            encoding_indices = encoding_indices.cpu()
+            
+            e_and_q_latent_loss = e_and_q_latent_loss.cpu()
             
             #self.model.VQ(self.model.encoder(image_batch))
             
-            e_and_q_latent_loss, encoding_indices, estimate_codebook_words_freq, estimate_codebook_words_prob, inputs, D = e_and_q_latent_loss.cpu(), encoding_indices.cpu(), estimate_codebook_words_freq.cpu(), estimate_codebook_words_prob.cpu(), inputs.cpu(), D.cpu()
+            #e_and_q_latent_loss, encoding_indices, estimate_codebook_words_freq, estimate_codebook_words_prob, inputs, D = e_and_q_latent_loss.cpu(), encoding_indices.cpu(), estimate_codebook_words_freq.cpu(), estimate_codebook_words_prob.cpu(), inputs.cpu(), D.cpu()
             # e_and_q_latent_loss, e_latent_loss, q_latent_loss are scalars
             # Zq is BCHW tensor
             # estimate_codebook_words vector of size (K,)
@@ -2667,16 +2682,16 @@ class Model_Trainer:
                     
             """
         
-            fig, axs = plt.subplots(1,5, figsize=(30,8), gridspec_kw={'width_ratios': [1, 1, 1, 1, 1], 'height_ratios': [1]})
+            fig, axs = plt.subplots(1,5, figsize=(35,10), gridspec_kw={'width_ratios': [1, 1, 1, 1, 1], 'height_ratios': [1]}) # for figsize = (30,8) the output plot will be of size 3000x800 pixels, to avoid the imageio package errors one has to have height and width of the image in pixels divisible by the macro_block_size=16 to avoid this error " IMAGEIO FFMPEG_WRITER WARNING: input image is not divisible by macro_block_size=16, resizing from (3000, 800) to (3008, 800) to ensure video compatibility with most codecs and players. To prevent resizing, make your input image divisible by the macro_block_size or set the macro_block_size to 1 (risking incompatibility). "
             #matplotlib.rcParams.update(matplotlib.rcParamsDefault)
             #plt.rcParams['text.usetex'] = True
             #fig.set_size_inches(15, 7)
-            fig.suptitle(f"{index_}. custom {dataset_str} image", fontsize=20)
+            fig.suptitle(f"{index_}. custom image derived from id = {image_id_batch.item()} image from {dataset_str} dataset", fontsize=20)
 
             #plt.subplot(1, 3, 1)
             # have to renormalize and show original image here
             #image_batch_original_img = image_batch_original_img.view(1, image_batch_original_img.size(0), image_batch_original_img.size(1), image_batch_original_img.size(2))
-            image_batch_original_img = to_img(image_batch.cpu(), self.compose_transforms)
+            image_batch_original_img = to_img(image_batch.clone(), self.compose_transforms)
 
             axs[0].imshow(np.transpose(image_batch_original_img[0,:,:,:], (1, 2, 0))) # H,W,C
             #axs[0].set_title(f"Original {image_batch_original_img.size(1)}x{image_batch_original_img.size(2)}x{image_batch_original_img.size(3)} image "\
@@ -2698,9 +2713,9 @@ class Model_Trainer:
 
 
             #plot reconstruction
-            image_batch_recon  = self.model.decoder(Zq).cpu()
-            recon_error = (F.mse_loss(image_batch_recon, image_batch.cpu()) / self.train_data_variance)
-            image_batch_recon_img = to_img(image_batch_recon.cpu(), self.compose_transforms)
+            
+            recon_error = (F.mse_loss(image_batch_recon, image_batch) / self.train_data_variance)
+            image_batch_recon_img = to_img(image_batch_recon.clone(), self.compose_transforms)
             axs[1].imshow(np.transpose(image_batch_recon_img[0,:,:,:], (1, 2, 0))) # H,W,C
             axs[1].set_title(f"Reconstructed image " + r"$X_{rec}$" + " with loss\n"+ \
                             r"$\mathcal{L}$" + f" = {(recon_error.item() + e_and_q_latent_loss.item() )*1e6 :.0f}" + r"$\cdot10^{-6}$=" + "\n" +\
@@ -2714,13 +2729,12 @@ class Model_Trainer:
             
             
             #plot reconstruction of chaned Zq
-            Zq_new = self.model.VQ.generate_new_Zq(new_encoding_indices = new_encoding_indices, B = 1)
-            image_batch_recon_from_Zq_new  = self.model.decoder(Zq_new).cpu() 
-            image_batch_recon_from_Zq_new_recon_error = (F.mse_loss(image_batch_recon_from_Zq_new, image_batch.cpu()) / self.train_data_variance)
+             
+            image_batch_recon_from_Zq_new_recon_error = (F.mse_loss(image_batch_recon_from_Zq_new, image_batch) / self.train_data_variance)
             
             
             #recon_error = (F.mse_loss(image_batch_recon, image_batch) / self.train_data_variance)
-            image_batch_recon_from_Zq_new_img = to_img(image_batch_recon_from_Zq_new.cpu(), self.compose_transforms)
+            image_batch_recon_from_Zq_new_img = to_img(image_batch_recon_from_Zq_new.clone(), self.compose_transforms)
             axs[2].imshow(np.transpose(image_batch_recon_from_Zq_new_img[0,:,:,:], (1, 2, 0))) # H,W,C
             axs[2].set_title("Reconstructed image "+ r"$\tilde{X}$" + " from the " + r"$\tilde{Z}_q$" + " token map\n" +\
                             r"$\frac{1}{VAR[X_{train}]} ||X - X_{rec}||^2_2 $" + f" = {image_batch_recon_from_Zq_new_recon_error.item()*1e6 :.0f}" + r"$\cdot10^{-6}$")
@@ -2733,10 +2747,6 @@ class Model_Trainer:
             axs[2].set_xlabel(r"$W$")
             axs[2].set_ylabel(r"$H$")
             
-            
-            
-            
-            
             #plt.subplot(1, 3, 2)
             #different heatmaps
             #axs[1].imshow(count_of_encoding_indices_per_image)
@@ -2745,7 +2755,7 @@ class Model_Trainer:
             #axs[1] = 
         
             #sns.heatmap(data = count_of_encoding_indices_per_image.int().numpy(), linewidth=0.5, annot=True, ax=axs[3], cbar = False, xticklabels=np.arange(1,2 + self.model.VQ.M), yticklabels=np.arange(1,2 + self.model.VQ.M), square = True,  fmt='d', cmap='Blues')
-            sns.heatmap(data = encoding_indices.view(self.model.VQ.M+1, self.model.VQ.M+1).cpu().int().numpy(), linewidth=0.5, annot=True, ax=axs[3], cbar = False, xticklabels=np.arange(1,2 + self.model.VQ.M), yticklabels=np.arange(1,2 + self.model.VQ.M), square = True,  fmt='d', cmap='Blues')
+            sns.heatmap(data = encoding_indices.view(self.model.VQ.M+1, self.model.VQ.M+1).int().numpy(), linewidth=0.5, annot=True, ax=axs[3], cbar = False, xticklabels=np.arange(1,2 + self.model.VQ.M), yticklabels=np.arange(1,2 + self.model.VQ.M), square = True,  fmt='d', cmap='Blues')
             
             # different ways to show heatmap https://stackoverflow.com/questions/33282368/plotting-a-2d-heatmap
 
@@ -2761,7 +2771,7 @@ class Model_Trainer:
             #axs[1].matshow(count_of_encoding_indices_per_image)
             #axs[1].imshow(count_of_encoding_indices_per_image, cmap='hot', interpolation='nearest')
             #axs[1] = 
-            sns.heatmap(data = new_encoding_indices.view(self.model.VQ.M+1, self.model.VQ.M+1).cpu().int().numpy(), linewidth=0.5, annot=True, ax=axs[4], cbar = False, xticklabels=np.arange(1,2 + self.model.VQ.M), yticklabels=np.arange(1,2 + self.model.VQ.M), square = True,  fmt='d', cmap='Blues')
+            sns.heatmap(data = new_encoding_indices.view(self.model.VQ.M+1, self.model.VQ.M+1).int().numpy(), linewidth=0.5, annot=True, ax=axs[4], cbar = False, xticklabels=np.arange(1,2 + self.model.VQ.M), yticklabels=np.arange(1,2 + self.model.VQ.M), square = True,  fmt='d', cmap='Blues')
             #plt.show()
             # different ways to show heatmap https://stackoverflow.com/questions/33282368/plotting-a-2d-heatmap
 
@@ -2833,7 +2843,8 @@ class Model_Trainer:
             axs[3].set_ylabel(f"Rounded percentage token count")
             plt.tight_layout()
             """
-            fig.savefig(self.all_images_full_path + f"{str(index_).zfill(digit_size)}_custom_image.png")
+            fig.savefig(self.all_images_full_path + f"{str(index_).zfill(digit_size)}_custom_image_{image_id_batch.item()}.png")
+            
             if jupyter_show_images:
                 plt.show()
             plt.close()
@@ -2860,3 +2871,71 @@ class Model_Trainer:
             
             plt.close()  
             """
+            
+    def change_one_token(self,
+                        dataset_type = "test",
+                        image_index_in_dataset = None):
+        #if trainers == None:
+        
+        M = self.model.VQ.M
+        K = self.model.VQ.K
+        
+        if image_index_in_dataset == None:
+            # pick random image from the dataset_type 
+            # image_batch, image_id_batch = next(iter(self.loaders[dataset_type]))\
+            image_index_in_dataset = np.random.choice(len(self.loaders[dataset_type].dataset))
+            
+            
+        # pick an image from the dataset_type dataset
+        # that is indexed by image_index = {0, ..., len(loader_dataset)-1}
+        loader_dataset = self.loaders[dataset_type].dataset
+        image_batch,image_id_batch = loader_dataset[image_index_in_dataset]
+
+
+        # put image_batch into batch size of 1 (with .unsqueeze(0) function),
+        # then detach it for safety, clone it and then move it to the cpu
+        image_batch = image_batch.unsqueeze(0).detach().clone().cpu()
+        image_id_batch = torch.tensor(image_id_batch).cpu()
+        
+        self.model.eval()
+        self.model.VQ.output_whole_quantization_process = True
+        _, _, _, _, _, encoding_indices, _, _, _, _  = \
+            self.model.VQ(self.model.encoder(image_batch.detach().clone().to(self.device)))
+        self.model.VQ.output_whole_quantization_process = False
+        
+        encoding_indices = encoding_indices.cpu()
+        
+        
+        changed_token_map_position_range = np.arange(K)
+        
+        
+        digit_size = len(str(len(self.loaders[dataset_type].dataset)))
+        
+        for changed_token_map_position_row in np.arange(M+1):
+            for changed_token_map_position_column in np.arange(M+1):
+                
+                
+                for index_, changed_token_map_position_value in enumerate(changed_token_map_position_range):
+                    
+                    new_encoding_indices = encoding_indices.detach().clone().cpu().view(M+1,M+1)
+                    new_encoding_indices[changed_token_map_position_row, changed_token_map_position_column] = changed_token_map_position_value
+                    new_encoding_indices = new_encoding_indices.view(-1,1)
+                    
+                    self.original_reconstructed_changed_reconstucted_tokens_changed_tokens( image_batch = image_batch,
+                                                                                            image_id_batch = image_id_batch,# one image, it is the tensor of shape = (1,C,H,W)
+                                                                                            new_encoding_indices = new_encoding_indices,
+                                                                                            index_ = index_,
+                                                                                            dataset_str= dataset_type,
+                                                                                            create_plot_for_every_image_in_dataset = False,
+                                                                                            jupyter_show_images = False)
+                
+                # make gif and mp4 from generated images   
+                frames_per_second = 5#10#5#10#1
+                format_list = ['mp4', 'gif']
+                for format_ in format_list:
+                    with imageio.get_writer(self.visualize_tokens_path + f"_{str(changed_token_map_position_row).zfill(1)}_x_{str(changed_token_map_position_column).zfill(1)}_token_changed_{format_}.{format_}", mode='I', fps = frames_per_second) as writer:
+                        for index_, changed_token_map_position_value in enumerate(changed_token_map_position_range):
+                            filename =  self.all_images_full_path + f"{str(index_).zfill(digit_size)}_custom_image_{image_id_batch.item()}.png"
+                            image = imageio.imread(filename)
+                            writer.append_data(image)
+                        writer.close()

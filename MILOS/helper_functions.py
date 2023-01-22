@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import ImageGrid
+import imageio
 
 
 def get_hyperparam_from_config_file(config_file_path, hyperparam_name):
@@ -244,3 +245,33 @@ def visualise_output(images, model, compose_transforms, imgs_ids, imgs_losses, s
         #show(original_images,reconstructed_images,imgs_ids, imgs_losses)
         #plt.savefig('./SHOW_IMAGES/autoencoder_output_test_50_images.png',bbox_inches='tight')
         #plt.close()
+
+
+                    
+def update_yaml(yaml_folder_name = "/home/novakovm/iris/MILOS/",
+                yaml_file_name = "toy_shapes_config",
+                get_new_data_from_human_readable_yaml_file = False,
+                key = "NUM_WORKERS", 
+                value = 5,
+                value_type = int,
+                source = "training_hyperparams"):
+    # make a new yaml config file from human readable version of that same file
+    yaml_full_dsc_path = yaml_folder_name + yaml_file_name +".yaml"
+    if get_new_data_from_human_readable_yaml_file:
+        yaml_full_src_path = yaml_folder_name + yaml_file_name+ "_human_readable" +".yaml"
+        data_dict = yaml.load(open(yaml_full_src_path, 'r'), Loader=yaml.FullLoader)
+        with open(yaml_full_dsc_path, 'w') as yaml_file:
+            yaml_file.write( yaml.dump(data_dict, default_flow_style=False))
+    
+    if key != None and value != None:
+        # update the newly created non-human readable file
+        data_dict = yaml.load(open(yaml_full_dsc_path, 'r'), Loader=yaml.FullLoader)
+        # pick the desired source list in the data dict. yaml file
+        data_source_list = data_dict[source]
+        # find the index in the list where the desired key is
+        data_source_list_key_index = [idx for idx, data_key in enumerate(data_source_list) if key in data_key][0]
+        # update step
+        data_source_list[data_source_list_key_index][key] = value_type(value)
+        # save the change
+        with open(yaml_full_dsc_path, 'w') as yaml_file:
+            yaml_file.write( yaml.dump(data_dict, default_flow_style=False))

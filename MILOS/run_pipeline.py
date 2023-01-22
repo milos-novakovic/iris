@@ -1,14 +1,16 @@
 from helper_functions import get_hyperparam_from_config_file
 from autoencoders import inference
 from find_mean_std import find_mean_std
-
+import sys
 import numpy as np
 import os
 
-
-# "/home/novakovm/iris/MILOS/crafter_config.yaml"
+# config_path is either 
 # "/home/novakovm/iris/MILOS/toy_shapes_config.yaml"
-def run(config_path):
+# or
+# "/home/novakovm/iris/MILOS/crafter_config.yaml"
+def run(config_path = None):
+    config_path = sys.argv[1]
     
     ROOT_PATH =     get_hyperparam_from_config_file(config_path, 'ROOT_PATH')  
     GENERATE_DATA = get_hyperparam_from_config_file(config_path, 'GENERATE_DATA')
@@ -51,3 +53,6 @@ def run(config_path):
         return inference(config_path)
     
     return None
+
+if __name__ == "__main__":
+    run()

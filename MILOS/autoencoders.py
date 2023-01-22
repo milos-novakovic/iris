@@ -74,7 +74,8 @@ def inference(config_path = "/home/novakovm/iris/MILOS/toy_shapes_config.yaml"):
     RUN_PCA_ON_CODEBOOK =                   get_hyperparam_from_config_file(config_path, 'RUN_PCA_ON_CODEBOOK')
     RUN_TOKEN_VIZUALIZATION =               get_hyperparam_from_config_file(config_path, 'RUN_TOKEN_VIZUALIZATION')
     SAVE_RESULTS_TO_CSV =                   get_hyperparam_from_config_file(config_path, 'SAVE_RESULTS_TO_CSV')
-
+    VISUALIZE_THE_CHANGE_OF_CODEBOOK_TOKENS=get_hyperparam_from_config_file(config_path, 'VISUALIZE_THE_CHANGE_OF_CODEBOOK_TOKENS')
+    
     SET_VAR_TO_ONE  =                      get_hyperparam_from_config_file(config_path, 'SET_VAR_TO_ONE')
       
     zero_mean_unit_std_transform = transforms.Compose([
@@ -395,6 +396,7 @@ def inference(config_path = "/home/novakovm/iris/MILOS/toy_shapes_config.yaml"):
 
             ### TRAINING LOSS RESULTS ###
             'last_train_loss_value':[trainer.train_loss_avg[-1]],
+            'min_train_loss_value':[trainer.min_train_loss],
             
             'last_train_loss_value:(1/var)||X - X_rec ||^2':[trainer.train_multiple_losses_avg['reconstruction_loss'][-1]],
             'last_train_loss_value: (1+beta)*||Z_e-Z_q||^2':[trainer.train_multiple_losses_avg['VQ_codebook_loss'][-1] + beta * trainer.train_multiple_losses_avg['commitment_loss'][-1]],
@@ -408,6 +410,7 @@ def inference(config_path = "/home/novakovm/iris/MILOS/toy_shapes_config.yaml"):
             
             ### VALIDATION LOSS RESULTS ###
             'last_val_loss_value':[trainer.val_loss_avg[-1]],
+            'min_val_loss_value':[trainer.min_val_loss],
             
             'last_val_loss_value:(1/var)||X - X_rec ||^2':[trainer.val_multiple_losses_avg['reconstruction_loss'][-1]],
             'last_val_loss_value: (1+beta)*||Z_e-Z_q||^2':[trainer.val_multiple_losses_avg['VQ_codebook_loss'][-1] + beta * trainer.val_multiple_losses_avg['commitment_loss'][-1]],
@@ -453,6 +456,22 @@ def inference(config_path = "/home/novakovm/iris/MILOS/toy_shapes_config.yaml"):
         # saving of the log. results in a csv file
         with open(log_results_file_path + "log_results.csv", 'a') as f:
             results_df.to_csv(f, index = False, header=f.tell()==0)
-
-    
+            
+    if VISUALIZE_THE_CHANGE_OF_CODEBOOK_TOKENS:
+        # WORST
+        dataset_type = "test" #"toy_dataset", "test"
+        image_id_in_dataset = trainer.worst_imgs_ids[0]
+        image_index_in_dataset = np.where(trainer.loaders[dataset_type].dataset.image_ids == image_id_in_dataset)[0][0]
+        trainer.change_one_token(dataset_type = "test", image_index_in_dataset = image_index_in_dataset)
+        # BEST
+        dataset_type = "test" #"toy_dataset", "test"
+        image_id_in_dataset = trainer.best_imgs_ids[0]
+        image_index_in_dataset = np.where(trainer.loaders[dataset_type].dataset.image_ids == image_id_in_dataset)[0][0]
+        trainer.change_one_token(dataset_type = "test", image_index_in_dataset = image_index_in_dataset)
+        # OR PICK ANY IMAGE
+        # dataset_type = "test" # ANY DATASET
+        # image_id_in_dataset = trainer.best_imgs_ids[0] # ANY IMAGE ID IN THE SELECTED DATASET
+        # image_index_in_dataset = np.where(trainer.loaders[dataset_type].dataset.image_ids == image_id_in_dataset)[0][0]
+        # trainer.change_one_token(dataset_type = "test", image_index_in_dataset = image_index_in_dataset)
+        
     return trainer
