@@ -1318,6 +1318,13 @@ class Model_Trainer:
         np.save(self.train_loss_avg_path,self.train_loss_avg)
         np.save(self.val_loss_avg_path,self.val_loss_avg)
         
+        self.min_train_loss = np.array(self.min_train_loss)
+        self.min_val_loss = np.array(self.min_val_loss)
+        self.min_train_loss_path = self.main_folder_path + self.model_name + '_min_train_loss_' + self.current_time_str + '.npy'
+        self.min_val_loss_path = self.main_folder_path + self.model_name + '_min_val_loss_' + self.current_time_str + '.npy'
+        np.save(self.min_train_loss_path,self.min_train_loss)
+        np.save(self.min_val_loss_path,self.min_val_loss)
+        
         # create training/validation avg. losses per loss term as numpy arrays to the above specified file paths
         for loss_term in ['reconstruction_loss','commitment_loss', 'VQ_codebook_loss']:
                 self.train_multiple_losses_avg[loss_term] = np.array(self.train_multiple_losses_avg[loss_term])
@@ -1726,6 +1733,30 @@ class Model_Trainer:
         
         x_scatter = self.test_samples_loss['test_image_id']
         y_scatter = self.test_samples_loss['total_loss']
+        
+        if len(x_scatter) > 3000: #> 2048:
+            # Two-shapes dataset with 112'500 test samples
+            x_scatter_temp = np.zeros(2 * len(x_scatter))
+            y_scatter_temp = np.zeros(2 * len(y_scatter))
+            for idx_ in range(0, 2*len(x_scatter), 2):
+                
+                binary_value_x = bin(x_scatter[idx_ // 2])[2:].zfill(28)
+                
+                first_14_bits = "0b" + binary_value_x[:14]
+                last_14_bits  = "0b" + binary_value_x[14:]
+                
+                first_14_bits_image_id = int(first_14_bits, 2)
+                last_14_bits_image_id  = int(last_14_bits,  2)                
+                
+                x_scatter_temp[idx_] =      first_14_bits_image_id
+                x_scatter_temp[idx_ + 1] =  last_14_bits_image_id
+                
+                y_scatter_temp[idx_]     = y_scatter[idx_ // 2]
+                y_scatter_temp[idx_ + 1] = y_scatter[idx_ // 2]
+            
+            x_scatter = x_scatter_temp
+            y_scatter = y_scatter_temp
+        
         
         # all names have to be unique
         all_shape_features           = ['FILL_NOFILL',
@@ -2930,10 +2961,11 @@ class Model_Trainer:
                                                                                             jupyter_show_images = False)
                 
                 # make gif and mp4 from generated images   
-                frames_per_second = 5#10#5#10#1
-                format_list = ['mp4', 'gif']
+                frames_per_second = 2#10#5#10#1
+                #format_list = ['mp4', 'gif']
+                format_list = ['mp4']
                 for format_ in format_list:
-                    with imageio.get_writer(self.visualize_tokens_path + f"_{str(changed_token_map_position_row).zfill(1)}_x_{str(changed_token_map_position_column).zfill(1)}_token_changed_{format_}.{format_}", mode='I', fps = frames_per_second) as writer:
+                    with imageio.get_writer(self.visualize_tokens_path + f"_{str(changed_token_map_position_row).zfill(1)}_x_{str(changed_token_map_position_column).zfill(1)}_token_changed_{image_id_batch.item()}_format_{format_}.{format_}", mode='I', fps = frames_per_second) as writer:
                         for index_, changed_token_map_position_value in enumerate(changed_token_map_position_range):
                             filename =  self.all_images_full_path + f"{str(index_).zfill(digit_size)}_custom_image_{image_id_batch.item()}.png"
                             image = imageio.imread(filename)

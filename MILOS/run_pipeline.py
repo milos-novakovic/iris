@@ -4,7 +4,7 @@ from find_mean_std import find_mean_std
 import sys
 import numpy as np
 import os
-
+TF_CPP_MIN_LOG_LEVEL="2"
 # config_path is either 
 # "/home/novakovm/iris/MILOS/toy_shapes_config.yaml"
 # or

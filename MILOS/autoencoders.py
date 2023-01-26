@@ -63,6 +63,9 @@ def inference(config_path = "/home/novakovm/iris/MILOS/toy_shapes_config.yaml"):
     run_id =                                get_hyperparam_from_config_file(config_path, 'run_id')
     USE_PRETRAINED_MODEL_run_id =           get_hyperparam_from_config_file(config_path, 'USE_PRETRAINED_MODEL_run_id')
     USE_PRETRAINED_MODEL_current_time_str = get_hyperparam_from_config_file(config_path, 'USE_PRETRAINED_MODEL_current_time_str')
+    
+    if USE_PRETRAINED_MODEL:
+        run_id = USE_PRETRAINED_MODEL_run_id
 
     RUN_MODEL_TESTING =                     get_hyperparam_from_config_file(config_path, 'RUN_MODEL_TESTING')
     RUN_TRAIN_VAL_AVG_LOSS_OVER_EPOCHS=     get_hyperparam_from_config_file(config_path, 'RUN_TRAIN_VAL_AVG_LOSS_OVER_EPOCHS')
@@ -258,7 +261,13 @@ def inference(config_path = "/home/novakovm/iris/MILOS/toy_shapes_config.yaml"):
         trainer.val_metrics_perplexity_path = trainer.main_folder_path  + trainer.model_name + '_val_perplexity_' + trainer.current_time_str + '.npy'
         trainer.train_metrics['perplexity'] = np.load(trainer.train_metrics_perplexity_path)
         trainer.val_metrics['perplexity'] = np.load(trainer.val_metrics_perplexity_path)
-
+        
+        trainer.min_train_loss_path = trainer.main_folder_path + trainer.model_name + '_min_train_loss_' + trainer.current_time_str + '.npy'
+        trainer.min_val_loss_path = trainer.main_folder_path + trainer.model_name + '_min_val_loss_' + trainer.current_time_str + '.npy'
+        #uncomment this when you run the training again
+        #trainer.min_train_loss = np.load(trainer.min_train_loss_path)
+        #trainer.min_val_loss = np.load(trainer.min_val_loss_path)
+        
     #########################
     ### Testing the model ###
     #########################
@@ -458,14 +467,18 @@ def inference(config_path = "/home/novakovm/iris/MILOS/toy_shapes_config.yaml"):
             results_df.to_csv(f, index = False, header=f.tell()==0)
             
     if VISUALIZE_THE_CHANGE_OF_CODEBOOK_TOKENS:
-        # WORST
+        # 10th WORST image
+        #for i in range(5):
+        i=10
         dataset_type = "test" #"toy_dataset", "test"
-        image_id_in_dataset = trainer.worst_imgs_ids[0]
+        image_id_in_dataset = trainer.worst_imgs_ids[i]
         image_index_in_dataset = np.where(trainer.loaders[dataset_type].dataset.image_ids == image_id_in_dataset)[0][0]
         trainer.change_one_token(dataset_type = "test", image_index_in_dataset = image_index_in_dataset)
-        # BEST
+        
+        # 10th BEST image
+        i=10
         dataset_type = "test" #"toy_dataset", "test"
-        image_id_in_dataset = trainer.best_imgs_ids[0]
+        image_id_in_dataset = trainer.best_imgs_ids[i]
         image_index_in_dataset = np.where(trainer.loaders[dataset_type].dataset.image_ids == image_id_in_dataset)[0][0]
         trainer.change_one_token(dataset_type = "test", image_index_in_dataset = image_index_in_dataset)
         # OR PICK ANY IMAGE

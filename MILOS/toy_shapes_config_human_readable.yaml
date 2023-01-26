@@ -66,14 +66,14 @@ training_hyperparams:
   - INFERENCE_DATA : True  
 
   # CONTROL OF THE INFERENCE RUN
-  - RUN_MODEL_TESTING : True
-  - RUN_TRAIN_VAL_AVG_LOSS_OVER_EPOCHS : True
-  - RUN_SCATTER_FOR_SPECIFIC_CLASSES : False #True
-  - RUN_TOP_WORST_RECONSTRUCTED_TEST_IMAGES : False #True
-  - RUN_TOP_BEST_RECONSTRUCTED_TEST_IMAGES : False #True
-  - RUN_MODEL_VIZUALIZATION : False #True
-  - RUN_CODEBOOK_VISUALIZATION : False #True
-  - RUN_PCA_ON_CODEBOOK : False #True
-  - RUN_TOKEN_VIZUALIZATION : False #True
-  - SAVE_RESULTS_TO_CSV : True
-  - VISUALIZE_THE_CHANGE_OF_CODEBOOK_TOKENS : False #True
+  - RUN_MODEL_TESTING : True #True #true only when training
+  - RUN_TRAIN_VAL_AVG_LOSS_OVER_EPOCHS : True #True #true only when training
+  - RUN_SCATTER_FOR_SPECIFIC_CLASSES : False #false only when training
+  - RUN_TOP_WORST_RECONSTRUCTED_TEST_IMAGES : False #false only when training
+  - RUN_TOP_BEST_RECONSTRUCTED_TEST_IMAGES : False #false only when training
+  - RUN_MODEL_VIZUALIZATION : False #false only when training
+  - RUN_CODEBOOK_VISUALIZATION : False #false only when training
+  - RUN_PCA_ON_CODEBOOK : False #false only when training
+  - RUN_TOKEN_VIZUALIZATION : False #false only when training
+  - SAVE_RESULTS_TO_CSV : True #true only when training
+  - VISUALIZE_THE_CHANGE_OF_CODEBOOK_TOKENS : False #false only when training

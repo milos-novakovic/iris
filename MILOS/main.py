@@ -386,6 +386,8 @@ if GENERATE_STATS:
         
         # init stats.png figure
         fig, axs = plt.subplots(3, 3, figsize=(20, 10))
+        # NEW FIG for latex compatilitbity
+        # fig, axs = plt.subplots(4, 2, figsize=(30, 10))
         
         # get stats file name and file path
         STATS_FILE_NAME = f'stats{specific_name}.png'
@@ -458,18 +460,24 @@ if GENERATE_STATS:
             elif col == 'alpha':
                 col_space = alpha_CENTER_SPACE_np
                 bar_width = np.max(col_space)*5*1e-2
+                # NEW FIG for latex compatilitbity
+                # i,j = 2,0
                 i,j = 1,2
                 xlabel, ylabel, title = f'Possible *alpha*', '#', f'Histogram of *alpha*'
                 color = 'blue'
             elif col == 'shape_center_x':
                 col_space = X_CENTER_SPACE_np
                 bar_width = np.max(col_space)*5*1e-2
+                # NEW FIG for latex compatilitbity
+                # i,j = 3,0
                 i,j = 2,0
                 xlabel, ylabel, title = f'Possible *x_center*', '#', f'Histogram of *x_center*'
                 color = 'orange'
             elif col == 'shape_center_y':
                 col_space = Y_CENTER_SPACE_np
                 bar_width = np.max(col_space)*5*1e-2
+                # NEW FIG for latex compatilitbity
+                # i,j = 3,1
                 i,j = 2,1
                 xlabel, ylabel, title = f'Possible *y_center*', '#', f'Histogram of *y_center*'
                 color = 'orange'
@@ -502,6 +510,9 @@ if GENERATE_STATS:
             #plt.savefig(f'DATA/{col}_stats.png')
 
         # delete unused subplots
+        # NEW FIG for latex compatilitbity
+        # fig.delaxes(axs[2,1])
+        
         fig.delaxes(axs[0,2])
         fig.delaxes(axs[2,2])
         plt.tight_layout()

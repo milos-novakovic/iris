@@ -498,27 +498,38 @@ class Manual_Encoder(nn.Module):
         # self.sequential_convs.add_module(f"DropOut_{l}", nn.Dropout2d(p=dropout_p, inplace=True))
         #C_out = 32
         if M <= 15:
+            c_in = self.sequential_convs[l*nb_layers_in_a_block].out_channels
+            c_out = multiplier_value * c_in
             l+=1
-            self.sequential_convs.add_module(f"conv2d_{l}", nn.Conv2d(in_channels=self.sequential_convs[0].out_channels, out_channels=multiplier_value * self.sequential_convs[0].out_channels, kernel_size=k, stride=s, padding=p))
+            self.sequential_convs.add_module(f"conv2d_{l}", nn.Conv2d(in_channels=c_in, out_channels=c_out, kernel_size=k, stride=s, padding=p))
             self.sequential_convs.add_module(f"ReLU_{l}", nn.ReLU(True))
         if self.args_encoder['use_BN']:
-            self.sequential_convs.add_module(f"BN_{l}", nn.BatchNorm2d(self.sequential_convs[nb_layers_in_a_block].out_channels))
+            #self.sequential_convs.add_module(f"BN_{l}", nn.BatchNorm2d(self.sequential_convs[nb_layers_in_a_block].out_channels))
+            self.sequential_convs.add_module(f"BN_{l}", nn.BatchNorm2d(c_out))
         # self.sequential_convs.add_module(f"DropOut_{l}", nn.Dropout2d(p=dropout_p, inplace=True))
         #C_out = 64
         if M <= 7:
+            c_in = self.sequential_convs[l*nb_layers_in_a_block].out_channels
+            c_out = multiplier_value * c_in
             l+=1
-            self.sequential_convs.add_module(f"conv2d_{l}", nn.Conv2d(in_channels=self.sequential_convs[nb_layers_in_a_block].out_channels, out_channels=multiplier_value * self.sequential_convs[nb_layers_in_a_block].out_channels, kernel_size=k, stride=s, padding=p))
+            self.sequential_convs.add_module(f"conv2d_{l}", nn.Conv2d(in_channels=c_in, out_channels=c_out, kernel_size=k, stride=s, padding=p))
+            #self.sequential_convs.add_module(f"conv2d_{l}", nn.Conv2d(in_channels=self.sequential_convs[nb_layers_in_a_block].out_channels, out_channels=multiplier_value * self.sequential_convs[nb_layers_in_a_block].out_channels, kernel_size=k, stride=s, padding=p))
             self.sequential_convs.add_module(f"ReLU_{l}", nn.ReLU(True))
         if self.args_encoder['use_BN']:
-            self.sequential_convs.add_module(f"BN_{l}", nn.BatchNorm2d(self.sequential_convs[nb_layers_in_a_block*2].out_channels))
+            #self.sequential_convs.add_module(f"BN_{l}", nn.BatchNorm2d(self.sequential_convs[nb_layers_in_a_block*2].out_channels))
+            self.sequential_convs.add_module(f"BN_{l}", nn.BatchNorm2d(c_out))
         # self.sequential_convs.add_module(f"DropOut_{l}", nn.Dropout2d(p=dropout_p, inplace=True))
         #C_out = 128
         if M <= 3:
+            c_in = self.sequential_convs[l*nb_layers_in_a_block].out_channels
+            c_out = multiplier_value * c_in
             l+=1
-            self.sequential_convs.add_module(f"conv2d_{l}", nn.Conv2d(in_channels=self.sequential_convs[2*nb_layers_in_a_block].out_channels, out_channels=multiplier_value * self.sequential_convs[2*nb_layers_in_a_block].out_channels, kernel_size=k, stride=s, padding=p))
+            self.sequential_convs.add_module(f"conv2d_{l}", nn.Conv2d(in_channels=c_in, out_channels=c_out, kernel_size=k, stride=s, padding=p))
+            #self.sequential_convs.add_module(f"conv2d_{l}", nn.Conv2d(in_channels=self.sequential_convs[2*nb_layers_in_a_block].out_channels, out_channels=multiplier_value * self.sequential_convs[2*nb_layers_in_a_block].out_channels, kernel_size=k, stride=s, padding=p))
             self.sequential_convs.add_module(f"ReLU_{l}", nn.ReLU(True))
         if self.args_encoder['use_BN']:
-            self.sequential_convs.add_module(f"BN_{l}", nn.BatchNorm2d(self.sequential_convs[3*nb_layers_in_a_block].out_channels))
+            #self.sequential_convs.add_module(f"BN_{l}", nn.BatchNorm2d(self.sequential_convs[3*nb_layers_in_a_block].out_channels))
+            self.sequential_convs.add_module(f"BN_{l}", nn.BatchNorm2d(c_out))
         # self.sequential_convs.add_module(f"DropOut_{l}", nn.Dropout2d(p=dropout_p, inplace=True))
         #C_out = 256
         
@@ -527,8 +538,19 @@ class Manual_Encoder(nn.Module):
         self.residual_stack = ResidualStack(res_block_args) 
         #C_out = 256
         
-        if M == 1:
-            self.avg_pooling = nn.AvgPool2d(kernel_size=2, stride=2, padding=0)
+        #if M <= 1:
+        #    self.avg_pooling = nn.AvgPool2d(kernel_size=2, stride=2, padding=0)
+        if M <= 1:
+            c_in = self.sequential_convs[l*nb_layers_in_a_block].out_channels
+            c_out = multiplier_value * c_in
+            l+=1
+            self.sequential_convs.add_module(f"conv2d_{l}", nn.Conv2d(in_channels=c_in, out_channels=c_out, kernel_size=k, stride=s, padding=p))
+            #self.sequential_convs.add_module(f"conv2d_{l}", nn.Conv2d(in_channels=self.sequential_convs[3*nb_layers_in_a_block].out_channels, out_channels=multiplier_value * self.sequential_convs[3*nb_layers_in_a_block].out_channels, kernel_size=k, stride=s, padding=p))
+            self.sequential_convs.add_module(f"ReLU_{l}", nn.ReLU(True))
+        if self.args_encoder['use_BN']:
+            self.sequential_convs.add_module(f"BN_{l}", nn.BatchNorm2d(c_out))
+            #self.sequential_convs.add_module(f"BN_{l}", nn.BatchNorm2d(self.sequential_convs[3*nb_layers_in_a_block].out_channels))
+            
         # self.learned_avg_pooling = nn.Sequential()
         # l+=1
         # self.learned_avg_pooling.add_module(f"conv2d_{l}", nn.Conv2d(in_channels=self.sequential_convs[3*nb_layers_in_a_block].out_channels,
@@ -618,35 +640,53 @@ class Manual_Decoder(nn.Module):
             # self.sequential_trans_convs.add_module(f"DropOut_{l}", nn.Dropout2d(p=dropout_p, inplace=True))
             #C_out = 128
         if self.args_decoder['M'] <= 15:
+            c_in = self.sequential_trans_convs[l*nb_layers_in_a_block].out_channels
+            c_out = c_in // divisor_value
             l+=1
-            self.sequential_trans_convs.add_module(f"trans_conv{l}", nn.ConvTranspose2d(in_channels=self.sequential_trans_convs[0].out_channels, out_channels=self.sequential_trans_convs[0].out_channels // divisor_value, kernel_size=k, stride=s, padding=p))
+            self.sequential_trans_convs.add_module(f"trans_conv{l}", nn.ConvTranspose2d(in_channels=c_in, out_channels=c_out, kernel_size=k, stride=s, padding=p))
             self.sequential_trans_convs.add_module(f"ReLU_{l}", nn.ReLU(True))
             if self.args_decoder['use_BN']:
-                self.sequential_trans_convs.add_module(f"BN_{l}", nn.BatchNorm2d(self.sequential_trans_convs[nb_layers_in_a_block].out_channels))
+                self.sequential_trans_convs.add_module(f"BN_{l}", nn.BatchNorm2d(c_out))
             # self.sequential_trans_convs.add_module(f"DropOut_{l}", nn.Dropout2d(p=dropout_p, inplace=True))
             #C_out = 64
         if self.args_decoder['M'] <= 7:
+            c_in = self.sequential_trans_convs[l*nb_layers_in_a_block].out_channels
+            c_out = c_in // divisor_value
             l+=1
-            self.sequential_trans_convs.add_module(f"trans_conv{l}", nn.ConvTranspose2d(in_channels=self.sequential_trans_convs[nb_layers_in_a_block].out_channels, out_channels=self.sequential_trans_convs[nb_layers_in_a_block].out_channels // divisor_value, kernel_size=k, stride=s, padding=p))
+            self.sequential_trans_convs.add_module(f"trans_conv{l}", nn.ConvTranspose2d(in_channels=c_in, out_channels=c_out, kernel_size=k, stride=s, padding=p))
             self.sequential_trans_convs.add_module(f"ReLU_{l}", nn.ReLU(True))
             if self.args_decoder['use_BN']:
-                self.sequential_trans_convs.add_module(f"BN_{l}", nn.BatchNorm2d(self.sequential_trans_convs[2*nb_layers_in_a_block].out_channels))
+                self.sequential_trans_convs.add_module(f"BN_{l}", nn.BatchNorm2d(c_out))
             # self.sequential_trans_convs.add_module(f"DropOut_{l}", nn.Dropout2d(dropout_p, inplace=True))
             #C_out = 32
         if self.args_decoder['M'] <= 3:
+            c_in = self.sequential_trans_convs[l*nb_layers_in_a_block].out_channels
+            c_out = c_in // divisor_value
             l+=1
-            self.sequential_trans_convs.add_module(f"trans_conv{l}", nn.ConvTranspose2d(in_channels=self.sequential_trans_convs[2*nb_layers_in_a_block].out_channels, out_channels=self.sequential_trans_convs[2*nb_layers_in_a_block].out_channels // divisor_value, kernel_size=k, stride=s, padding=p))
+            self.sequential_trans_convs.add_module(f"trans_conv{l}", nn.ConvTranspose2d(in_channels=c_in, out_channels=c_out, kernel_size=k, stride=s, padding=p))
             self.sequential_trans_convs.add_module(f"ReLU_{l}", nn.ReLU(True))
             if self.args_decoder['use_BN']:
-                self.sequential_trans_convs.add_module(f"BN_{l}", nn.BatchNorm2d(self.sequential_trans_convs[3*nb_layers_in_a_block].out_channels))
+                self.sequential_trans_convs.add_module(f"BN_{l}", nn.BatchNorm2d(c_out))
             # self.sequential_trans_convs.add_module(f"DropOut_{l}", nn.Dropout2d(p=dropout_p, inplace=True))
             #C_out = 16
-        self.output_conv_layer =  nn.Conv2d(in_channels=self.sequential_trans_convs[-nb_layers_in_a_block].out_channels, out_channels=3, kernel_size=1, stride=1, padding=0)
+        if self.args_decoder['M'] <= 1:
+            c_in = self.sequential_trans_convs[l*nb_layers_in_a_block].out_channels
+            c_out = c_in // divisor_value
+            l+=1
+            self.sequential_trans_convs.add_module(f"trans_conv{l}", nn.ConvTranspose2d(in_channels=c_in, out_channels=c_out, kernel_size=k, stride=s, padding=p))
+            self.sequential_trans_convs.add_module(f"ReLU_{l}", nn.ReLU(True))
+            if self.args_decoder['use_BN']:
+                self.sequential_trans_convs.add_module(f"BN_{l}", nn.BatchNorm2d(c_out))
+            # self.sequential_trans_convs.add_module(f"DropOut_{l}", nn.Dropout2d(p=dropout_p, inplace=True))
+            #C_out = 16
+        self.output_conv_layer =  nn.Conv2d(in_channels=c_out, out_channels=3, kernel_size=1, stride=1, padding=0)
     
     def forward(self, x):
         x = self.channel_adjusting_conv(x)
-        if self.args_decoder['M'] == 1:
-            x = F.pad(x, (1,1,1,1), "constant", 0)
+        # if self.args_decoder['M'] == 1:
+        #     x = F.pad(x, (1,1,1,1), "constant", 0)
+        
+        
         #x = self.upsample(x)
         # x = self.learned_avg_upsampling(x)
         if False:

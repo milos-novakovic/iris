@@ -5,7 +5,9 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import ImageGrid
 import imageio
-
+import torchvision
+import os
+import glob
 
 def get_hyperparam_from_config_file(config_file_path, hyperparam_name):
     #config_path = "/home/novakovm/iris/MILOS/toy_shapes_config.yaml"
@@ -275,3 +277,77 @@ def update_yaml(yaml_folder_name = "/home/novakovm/iris/MILOS/",
         # save the change
         with open(yaml_full_dsc_path, 'w') as yaml_file:
             yaml_file.write( yaml.dump(data_dict, default_flow_style=False))
+            
+
+
+def Grid_of_Randomly_Selected_images_for_MSc_thesis_writing(dataset_short_name = "two-shapes", nrows = 4, ncols = 12, zoom_scale_factor = 1.):#"one-shape" # "crafter"
+    #[Grid_of_Randomly_Selected_images_for_MSc_thesis_writing(dataset_short_name) for dataset_short_name in ["one-shape", "two-shapes", "crafter"]]
+     # 16th images in total shown
+    H,W = 64,64 # height and width of the loaded images
+    
+    dataset_full_name = {}
+    dataset_full_name["one-shape"]  = f"The One-shape Dataset {nrows}x{ncols}"
+    dataset_full_name["two-shapes"] = f"The Two-shapes Dataset {nrows}x{ncols}"
+    dataset_full_name["crafter"]    = f"The Crafter Dataset {nrows}x{ncols}"
+
+    train_data_file_path = {}
+    train_data_file_path["one-shape"]   = "/home/novakovm/DATA_TRAIN_ONE_SHAPE/"# One-shape dataset
+    train_data_file_path["two-shapes"]  = "/home/novakovm/DATA_TRAIN/"          # Two-shapes dataset
+    train_data_file_path["crafter"]     = "/home/novakovm/crafter/DATA_TRAIN/"  # Crafter dataset
+
+    TOTAL_NUMBER_OF_IMAGES = {}
+    TOTAL_NUMBER_OF_IMAGES["one-shape"] = 16_384      # One-shape dataset
+    TOTAL_NUMBER_OF_IMAGES["two-shapes"]= 268_435_456 # Two-shapes dataset
+    TOTAL_NUMBER_OF_IMAGES["crafter"]   = 900_000     # Crafter dataset
+
+    image_id = 1
+    images_data = []
+    np.random.seed(41)#for reproducibility
+    random_start_image_number = np.random.choice(1000)
+    
+    for image_file_path in glob.iglob(train_data_file_path[dataset_short_name] + '*.png'):
+        if random_start_image_number > 0:
+            random_start_image_number -=1
+            continue
+        
+        if image_id > (ncols*nrows):
+            break
+        image_id += 1
+        #image_file_path = train_data_file_path[dataset_short_name] + 'color_img_' + str(image_id).zfill(len(str(TOTAL_NUMBER_OF_IMAGES[dataset_short_name]))) + '.png'
+        #print(image_file_path)
+        if os.path.isfile(image_file_path): 
+            image = torchvision.io.read_image(image_file_path, mode=torchvision.io.image.ImageReadMode.RGB) # .double() = torch.float64 and  .float() = torch.float32
+            image = image.permute(1,2,0)
+            images_data.append(image)
+            print(f"Loading {len(images_data)}th image completed!")
+            #print(f"Img. min = {image.min()}, Img. max = {image.max()}, Img. mean = {image.mean()}")
+        else:
+            print(f"Sorry the image {'color_img_' + str(image_id).zfill(len(str(TOTAL_NUMBER_OF_IMAGES[dataset_short_name]))) + '.png'} is not in the training set.")
+    
+    reduce_left_and_right_margin = 2 if ncols >= 4 else 0
+    fig = plt.figure(figsize=(zoom_scale_factor * (float(ncols)-reduce_left_and_right_margin), zoom_scale_factor * float(nrows)))
+
+
+    grid = ImageGrid(fig, 111,  # similar to subplot(111)
+                    nrows_ncols=(nrows, ncols),  # creates 2x2 grid of axes
+                    axes_pad=0.2,  # pad between axes in inch.
+                    share_all=True, # all axes share their x- and y-axis.
+                    label_mode = "L" # all axes are labelled.
+                    )
+
+    for ax, im in zip(grid, images_data):    
+        # Iterating over the grid returns the Axes.
+        ax.imshow(im)
+        
+    grid[0].set_xticks([0, W - 1])
+    grid[0].set_yticks([0, H - 1])
+    
+    fig.suptitle(f"{nrows} x {ncols} grid of randomly selected\nimages from {dataset_full_name[dataset_short_name]}", fontsize=10)
+    plt.tight_layout()
+    plt.show()
+
+    SAVING_FOLDER_PATH = "/home/novakovm/Grid_of_Randomly_Selected_images_for_MSc_thesis_writing/"
+    if not(os.path.isdir(SAVING_FOLDER_PATH)):
+        os.mkdir(SAVING_FOLDER_PATH)
+
+    fig.savefig(SAVING_FOLDER_PATH + dataset_full_name[dataset_short_name] + ".png")
