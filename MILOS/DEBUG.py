@@ -62,24 +62,44 @@ K_array = 2** np.arange(K_BIT_MIN, K_BIT_MAX+1)
 #K_array = 2 ** np.array([2,3,4])
 
 # trying different pairs of M&K for same number of bits
-M_K_D_array = [ (7, 2**2, 32), 
-                #(3, 2**8,  32), # bits = 128
+# M_K_D_array = [ (7, 2**1,  16),  # bits = 64
+#                 (3, 2**4,  16),  # bits = 64
                 
-                (7, 2**3, 32), 
-                #(3, 2**12, 32), # bits = 192
+#                 (7, 2**2,  16),  # bits = 128 # does not learn!
+#                 (3, 2**8,  16),  # bits = 128
                 
-                (7, 2**4, 32), 
-                (3, 2**16, 32), # bits = 256
+#                 (7, 2**3,  16),  # bits = 192
+#                 (3, 2**12, 16),  # bits = 192
                 
-                #(7, 2**5, 32), 
-                (3, 2**20, 32)] # bits = 320
+#                 (7, 2**4,  16),  # bits = 256
+#                 (3, 2**16, 16)  # bits = 256
+                
+#                 #(7, 2**5,  8),  # bits = 320#too large
+#                 #(3, 2**20, 8)   # bits = 320#too large
+#                 ]
+
+M_K_D_array = [(3, 2**15, 32)]
+ 
+#M_K_D_array = np.array(M_K_D_array)[::-1]
+
+# M_K_D_array = [ #(7, 2**9,  32),  
+#                 (3, 2**9,  32)# for the case with a lot of parameters max_channel_number : 256 & divisor_value : 1
+#                 ] 
+
+#max_channel_number_array = np.array([256])
+#divisor_value_array      = np.array([1])
+
+
+
+#M_K_D_array = [(3, 2**15, 4)]# radi ali  sporo!
+#M_K_D_array = [(3, 2**19, 8)]# radi ali bas bas sporo!
 
 
 # Trying different Ds
-M_K_D_array = M_K_D_array + [ (7, 2**7, 1),
-                (7, 2**7, 2),
-                (7, 2**7, 4),
-                (7, 2**7, 64)]
+# M_K_D_array = M_K_D_array + \
+#             [(7, 2**7, 1),
+#              (7, 2**7, 2),
+#              (7, 2**7, 4)]
 
 
 
@@ -90,12 +110,16 @@ trainers = {}
 custom_logger= "/home/novakovm/iris/MILOS/CUSTOM_LOGGER.txt"
 
 # init values for run_ids
-RUN_ID_DELTA_START = 80#43#37 #37#1
+RUN_ID_DELTA_START = 83#53#80#43#37 #37#1
 run_id = { "toy_dataset" : 100 + RUN_ID_DELTA_START,
         "crafter_dataset" : 500 + RUN_ID_DELTA_START}
 
 
 USE_PRETRAINED_MODEL_run_id_to_get_current_time_str = {
+                                582 : "2023_01_30_22_56_40",# 4x4; D=32	log2(K)=9	M=4	bits = 144 (30 mil. params.)
+                                581 : "2023_01_28_07_36_14",# 4x4; D=32	log2(K)=9	M=4	bits = 144 (7 mil. params.)
+                                539 : "2023_01_26_03_18_43",#iris 8x8 = D=32 log2(K)=9 M=8 bits = 576 
+                                552 : "2023_01_27_06_48_21", # 4x4; D=32	log2(K)=15	M=4	bits = 240
                                 # two-shapes
                                 101 : "2023_01_22_08_56_42",
                                 102 : "2023_01_22_11_28_18",
